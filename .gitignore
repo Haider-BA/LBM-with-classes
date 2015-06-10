@@ -1,0 +1,5 @@
+UnitTest++/
+bin/
+obj/
+unittests/
+UnitTest++.cbp
