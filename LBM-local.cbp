@@ -47,8 +47,8 @@
 			<Add library="UnitTest++/lib/Debug/libUnitTest++.a" />
 			<Add directory="UnitTest++/lib/Debug" />
 		</Linker>
+		<Unit filename="include/Lattice.hpp" />
 		<Unit filename="src/Lattice.cpp" />
-		<Unit filename="src/Lattice.hpp" />
 		<Unit filename="src/TestLatticeBoltzmann.cpp" />
 		<Unit filename="src/main-devel.cpp" />
 		<Extensions>
