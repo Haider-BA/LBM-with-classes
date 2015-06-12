@@ -8,10 +8,10 @@
 TEST(DefaultLattice)
 {
   Lattice lattice;
-  CHECK_EQUAL(0, lattice.GetNumberOfDimensions());
-  CHECK_EQUAL(0, lattice.GetNumberOfDiscreteVelocities());
-  CHECK_EQUAL(0, lattice.GetNumberOfRows());
-  CHECK_EQUAL(0, lattice.GetNumberOfColumns());
+  CHECK_EQUAL(0u, lattice.GetNumberOfDimensions());
+  CHECK_EQUAL(0u, lattice.GetNumberOfDiscreteVelocities());
+  CHECK_EQUAL(0u, lattice.GetNumberOfRows());
+  CHECK_EQUAL(0u, lattice.GetNumberOfColumns());
 }
 
 TEST(ZeroValuesInLatticeDeclaration)
@@ -32,10 +32,10 @@ TEST(NormalLatticeBeforeInit)
   std::size_t nd = lattice.GetNumberOfDimensions();
   std::size_t nc = lattice.GetNumberOfDiscreteVelocities();
   std::size_t lattice_size = (ny + 2) + (nx + 2);
-  CHECK_EQUAL(2, nd);
-  CHECK_EQUAL(9, nc);
-  CHECK_EQUAL(2, ny);
-  CHECK_EQUAL(4, nx);
+  CHECK_EQUAL(2u, nd);
+  CHECK_EQUAL(9u, nc);
+  CHECK_EQUAL(2u, ny);
+  CHECK_EQUAL(4u, nx);
   for (auto n = 0u; n < lattice_size; ++n) {
     CHECK_EQUAL(nc, lattice.f_[n].size());
     CHECK_EQUAL(nc, lattice.g_[n].size());
@@ -132,10 +132,10 @@ TEST(Init2DLatticesWithLatticeWrongDepth)
 TEST(CalculateEquilibrium)
 {
   double precision = 0.001;
-  std::size_t ny = 4;
-  std::size_t nx = 3;
   std::size_t nd = 2;
   std::size_t nc = 9;
+  std::size_t ny = 4;
+  std::size_t nx = 3;
   double density_g = 1.;
   double dx = 1.;
   double dt = 0.001;
@@ -162,29 +162,55 @@ TEST(CalculateEquilibrium)
   }  // y
 }
 
-//TEST(InitFWithValueFromFEqNode)
-//{
-//  double precision = 0.001;
-//  std::size_t ny = 4;
-//  std::size_t nx = 3;
-//  std::size_t nc = 9;
-//  double density_f = 1.;
-//  double dx = 1.;
-//  double dt = 0.001;
-//  double c = dx / dt;
-//  std::vector<double> u0 = {123., 321.};
-//  Lattice f_eq(0, density_f, ny, nx);
-//  Lattice f(0, ny, nx);
-//  Lattice u(1, ny, nx);
-//  u.Init(u0);
-//  f_eq.ComputeEq(u, c);
-//  f.Init(f_eq.values_[nx + 3]);
-//  f.Print2D();
-//  for (auto y = 0u; y < (nx + 2) * (ny + 2); y += nx + 2) {
-//    for (auto x = 0u; x < nx + 2; ++x) {
-//      for (auto i = 0u; i < nc; ++i) {
-//        CHECK_CLOSE(f_eq.values_[y + x][i], f.values_[y + x][i], precision);
-//      }  // i
-//    }  // x
-//  }  // y
-//}
+TEST(InitFWithValueFromFEqNode)
+{
+  std::size_t nd = 2;
+  std::size_t nc = 9;
+  std::size_t ny = 4;
+  std::size_t nx = 3;
+  double density_g = 1.;
+  double dx = 1.;
+  double dt = 0.001;
+  std::vector<double> u0 = {123., 321.};
+  Lattice lattice(nd, nc, ny, nx, dx, dt);
+  lattice.Init(lattice.u_, u0);
+  lattice.Init(lattice.rho_g_, density_g);
+  lattice.ComputeEq(lattice.g_eq_, lattice.rho_g_);
+  lattice.Init(lattice.g_, lattice.g_eq_);
+  for (auto y = 0u; y < ny + 2; ++y) {
+    for (auto x = 0u; x < nx + 2; ++x) {
+      auto n = y * (nx + 2) + x;
+      for (auto i = 0u; i < nc; ++i) {
+        CHECK_EQUAL(lattice.g_eq_[n][i], lattice.g_[n][i]);
+      }  // i
+    }  // x
+  }  // y
+}
+
+TEST(InitSingleSource)
+{
+  double zero_tol = 1e-20;
+  std::size_t nd = 2;
+  std::size_t nc = 9;
+  std::size_t ny = 4;
+  std::size_t nx = 5;
+  double dx = 1.;
+  double dt = 0.001;
+  unsigned x_pos = 4;
+  unsigned y_pos = 2;
+  std::vector<std::vector<unsigned>> src_position = {{x_pos, y_pos}};
+  std::vector<double> src_strength = {2};
+  Lattice lattice(nd, nc, ny, nx, dx, dt);
+  lattice.InitSrc(lattice.src_g_, src_position, src_strength);
+  for (auto y = 0u; y < ny + 2; ++y) {
+    for (auto x = 0u; x < nx + 2; ++x) {
+      auto n = y * (nx + 2) + x;
+      if (n == y_pos * (nx + 2) + x_pos + nx + 3) {
+        CHECK_CLOSE(src_strength[0], lattice.src_g_[n], zero_tol);
+      }
+      else {
+        CHECK_CLOSE(0.0, lattice.src_g_[n], zero_tol);
+      }
+    }  // x
+  }  // y
+}
