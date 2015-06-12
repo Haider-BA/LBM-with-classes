@@ -160,7 +160,6 @@ TEST(CalculateEquilibrium)
       }  // i
     }  // x
   }  // y
-  lattice.Print(0, lattice.g_eq_);
 }
 
 //TEST(InitFWithValueFromFEqNode)

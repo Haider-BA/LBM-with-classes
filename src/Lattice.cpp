@@ -118,11 +118,43 @@ void Lattice::ComputeEq(std::vector<std::vector<double>> &lattice_eq
   }  // y
 }
 
+std::vector<double> Lattice::Flip(const std::vector<double> &lattice)
+{
+  auto flipped_lattice(lattice);
+  auto nx = GetNumberOfColumns();
+  auto ny = GetNumberOfRows();
+  for (int y = ny + 1, y_flipped = 0; y > -1; --y, ++y_flipped) {
+    for (auto x = 0; x < nx + 2; ++x) {
+      auto n = y * (nx + 2) + x;
+      auto n_flipped = y_flipped * (nx + 2) + x;
+      flipped_lattice[n_flipped] = lattice[n];
+    }
+  }
+  return flipped_lattice;
+}
+
+std::vector<std::vector<double>> Lattice::Flip(
+    const std::vector<std::vector<double>> &lattice)
+{
+  auto flipped_lattice(lattice);
+  auto nx = GetNumberOfColumns();
+  auto ny = GetNumberOfRows();
+  for (int y = ny + 1, y_flipped = 0; y > -1; --y, ++y_flipped) {
+    for (auto x = 0; x < nx + 2; ++x) {
+      auto n = y * (nx + 2) + x;
+      auto n_flipped = y_flipped * (nx + 2) + x;
+      flipped_lattice[n_flipped] = lattice[n];
+    }
+  }
+  return flipped_lattice;
+}
+
 void Lattice::Print(const std::vector<double> &lattice)
 {
   auto nx = GetNumberOfColumns();
   int counter = 0;
-  for (auto lat : lattice) {
+  auto flipped_lattice = Lattice::Flip(lattice);
+  for (auto lat : flipped_lattice) {
     std::cout << std::fixed << std::setprecision(2) << lat << " ";
     if (++counter % (nx + 2) == 0) {
       std::cout << std::endl;
@@ -142,7 +174,7 @@ void Lattice::Print(int which_to_print
     case 0: {
       auto nc = GetNumberOfDiscreteVelocities();
       // row of lattice
-      for (auto y = 0u; y < ny + 2; ++y) {
+      for (int y = ny + 1; y >-1; --y) {
         // rows in the Q9 square
         for (auto i = 0u; i < nc / 3; ++i) {
           // column of lattice
@@ -180,7 +212,8 @@ void Lattice::Print(int which_to_print
     case 1: {
       auto nd = GetNumberOfDimensions();
       int counter = 0;
-      for (auto lat : lattice) {
+      auto flipped_lattice = Lattice::Flip(lattice);
+      for (auto lat : flipped_lattice) {
         if (lat.size() != nd) throw std::runtime_error("Wrong depth");
         std::cout << std::fixed << std::setprecision(2)
                   << lat[0] << " " << lat[1] << "  ";

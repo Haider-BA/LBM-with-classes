@@ -97,6 +97,25 @@ class Lattice {
   void ComputeEq(std::vector<std::vector<double>> &lattice_eq
     , const std::vector<double> &rho);
 
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
+  std::vector<double> Flip(const std::vector<double> &lattice);
+
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
+  std::vector<std::vector<double>> Flip(
+      const std::vector<std::vector<double>> &lattice);
+
   /** \brief Prints the lattice for debugging purposes. Does not require
    * additional parameters as it will print based on the value of lattice_type_
    *
@@ -129,11 +148,11 @@ class Lattice {
   std::vector<std::vector<double>> u_;
 
  private:
-  // 6  2  5
-  //  \ | /
-  // 3--0--1
-  //  / | \
-  // 7  4  8
+  // 6  2  5  ^
+  //  \ | /   |
+  // 3--0--1  |
+  //  / | \   |
+  // 7  4  8  +------->
   enum DiscreteDirections {
     E = 1,
     N,
