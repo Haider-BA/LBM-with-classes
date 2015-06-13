@@ -111,7 +111,7 @@ class Lattice {
    *
    */
   void InitSrc(std::vector<std::vector<double>> &lattice_src
-    , const std::vector<std::vector<int>> &src_position
+    , const std::vector<std::vector<unsigned>> &src_position
     , const std::vector<std::vector<double>> &src_strength);
 
   /**
@@ -228,6 +228,9 @@ class Lattice {
   std::size_t number_of_discrete_velocities_;
   std::size_t number_of_rows_;
   std::size_t number_of_columns_;
+  bool is_cd_;
+  bool is_ns_;
+  bool is_instant_;
   double space_step_;
   double time_step_;
   double c_;

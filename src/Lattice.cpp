@@ -115,6 +115,29 @@ void Lattice::InitSrc(std::vector<double> &lattice_src
     lattice_src[n] = *it_strength++;
   }  // src_pos
 }
+
+void Lattice::InitSrc(std::vector<std::vector<double>> &lattice_src
+    , const std::vector<std::vector<unsigned>> &src_position
+    , const std::vector<std::vector<double>> &src_strength)
+{
+  auto nx = GetNumberOfColumns();
+  auto ny = GetNumberOfRows();
+  auto nd = GetNumberOfDimensions();
+  auto it_strength = begin(src_strength);
+  for (auto src_pos : src_position) {
+    if(src_pos.size() != nd) {
+      throw std::runtime_error("Insufficient position information");
+    }
+    else if (src_pos[0] > nx - 1) {
+      throw std::runtime_error("x value out of range");
+    }
+    else if (src_pos[1] > ny - 1) {
+      throw std::runtime_error("y value out of range");
+    }
+    auto n = src_pos[1] * (nx + 2) + src_pos[0] + nx + 3;
+    lattice_src[n] = *it_strength++;
+  }  // src_pos
+}
 void Lattice::ComputeEq(std::vector<std::vector<double>> &lattice_eq
   , const std::vector<double> &rho)
 {

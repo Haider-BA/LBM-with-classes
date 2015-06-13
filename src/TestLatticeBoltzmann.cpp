@@ -214,3 +214,100 @@ TEST(InitSingleSource)
     }  // x
   }  // y
 }
+
+TEST(InitMultipleSource)
+{
+  double zero_tol = 1e-20;
+  std::size_t nd = 2;
+  std::size_t nc = 9;
+  std::size_t ny = 10;
+  std::size_t nx = 10;
+  double dx = 1.;
+  double dt = 0.001;
+  unsigned x_pos = 4;
+  unsigned y_pos = 2;
+  std::vector<std::vector<unsigned>> src_position = {{x_pos, y_pos},
+      {x_pos + 1, y_pos + 2}};
+  std::vector<double> src_strength = {2, 3.4};
+  Lattice lattice(nd, nc, ny, nx, dx, dt);
+  lattice.InitSrc(lattice.src_g_, src_position, src_strength);
+  for (auto y = 0u; y < ny + 2; ++y) {
+    for (auto x = 0u; x < nx + 2; ++x) {
+      auto n = y * (nx + 2) + x;
+      if (n == y_pos * (nx + 2) + x_pos + nx + 3) {
+        CHECK_CLOSE(src_strength[0], lattice.src_g_[n], zero_tol);
+      }
+      else if (n == (y_pos + 2) * (nx + 2) + x_pos + 1 + nx + 3) {
+        CHECK_CLOSE(src_strength[1], lattice.src_g_[n], zero_tol);
+      }
+      else {
+        CHECK_CLOSE(0.0, lattice.src_g_[n], zero_tol);
+      }
+    }  // x
+  }  // y
+}
+
+TEST(InitSingle2DSource)
+{
+  double zero_tol = 1e-20;
+  std::size_t nd = 2;
+  std::size_t nc = 9;
+  std::size_t ny = 4;
+  std::size_t nx = 5;
+  double dx = 1.;
+  double dt = 0.001;
+  unsigned x_pos = 4;
+  unsigned y_pos = 2;
+  std::vector<std::vector<unsigned>> src_position = {{x_pos, y_pos}};
+  std::vector<std::vector<double>> src_strength = {{2, 3}};
+  Lattice lattice(nd, nc, ny, nx, dx, dt);
+  lattice.InitSrc(lattice.src_f_, src_position, src_strength);
+  for (auto y = 0u; y < ny + 2; ++y) {
+    for (auto x = 0u; x < nx + 2; ++x) {
+      auto n = y * (nx + 2) + x;
+      if (n == y_pos * (nx + 2) + x_pos + nx + 3) {
+        CHECK_CLOSE(src_strength[0][0], lattice.src_f_[n][0], zero_tol);
+        CHECK_CLOSE(src_strength[0][1], lattice.src_f_[n][1], zero_tol);
+      }
+      else {
+        CHECK_CLOSE(0.0, lattice.src_f_[n][0], zero_tol);
+        CHECK_CLOSE(0.0, lattice.src_f_[n][1], zero_tol);
+      }
+    }  // x
+  }  // y
+}
+
+TEST(InitMultiple2DSource)
+{
+  double zero_tol = 1e-20;
+  std::size_t nd = 2;
+  std::size_t nc = 9;
+  std::size_t ny = 10;
+  std::size_t nx = 11;
+  double dx = 1.;
+  double dt = 0.001;
+  unsigned x_pos = 4;
+  unsigned y_pos = 2;
+  std::vector<std::vector<unsigned>> src_position = {{x_pos, y_pos},
+      {x_pos + 2, y_pos + 1}};
+  std::vector<std::vector<double>> src_strength = {{2, 3}, {2.3, 4.4}};
+  Lattice lattice(nd, nc, ny, nx, dx, dt);
+  lattice.InitSrc(lattice.src_f_, src_position, src_strength);
+  for (auto y = 0u; y < ny + 2; ++y) {
+    for (auto x = 0u; x < nx + 2; ++x) {
+      auto n = y * (nx + 2) + x;
+      if (n == y_pos * (nx + 2) + x_pos + nx + 3) {
+        CHECK_CLOSE(src_strength[0][0], lattice.src_f_[n][0], zero_tol);
+        CHECK_CLOSE(src_strength[0][1], lattice.src_f_[n][1], zero_tol);
+      }
+      else if (n == (y_pos + 1) * (nx + 2) + x_pos + 2 + nx + 3) {
+        CHECK_CLOSE(src_strength[1][0], lattice.src_f_[n][0], zero_tol);
+        CHECK_CLOSE(src_strength[1][1], lattice.src_f_[n][1], zero_tol);
+      }
+      else {
+        CHECK_CLOSE(0.0, lattice.src_f_[n][0], zero_tol);
+        CHECK_CLOSE(0.0, lattice.src_f_[n][1], zero_tol);
+      }
+    }  // x
+  }  // y
+}
