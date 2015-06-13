@@ -18,13 +18,17 @@ Lattice::Lattice(std::size_t num_dimensions
   , std::size_t num_rows
   , std::size_t num_cols
   , double dx
-  , double dt)
+  , double dt
+  , bool is_cd
+  , bool is_ns)
   : number_of_dimensions_ {num_dimensions},
     number_of_discrete_velocities_ {num_discrete_velocities},
     number_of_rows_ {num_rows},
     number_of_columns_ {num_cols},
     space_step_ {dx},
-    time_step_ {dt}
+    time_step_ {dt},
+    is_cd_ {is_cd},
+    is_ns_ {is_ns}
 
 {
   if (input_parameter_check_value_ == 0) {
@@ -76,9 +80,14 @@ void Lattice::Init(std::vector<double> &lattice
 void Lattice::Init(std::vector<std::vector<double>> &lattice
     , const std::vector<double> &initial_values)
 {
-  if (initial_values.size() != number_of_dimensions_)
+  for (auto &lat : lattice) {
+    if (initial_values.size() != lat.size()) {
       throw std::runtime_error("Depth mismatch");
-  for (auto &lat : lattice) lat = initial_values;
+    }
+    else {
+      lat = initial_values;
+    }
+  }  // lat
 }
 
 void Lattice::Init(std::vector<std::vector<double>> &lattice
@@ -138,6 +147,7 @@ void Lattice::InitSrc(std::vector<std::vector<double>> &lattice_src
     lattice_src[n] = *it_strength++;
   }  // src_pos
 }
+
 void Lattice::ComputeEq(std::vector<std::vector<double>> &lattice_eq
   , const std::vector<double> &rho)
 {
@@ -161,6 +171,38 @@ void Lattice::ComputeEq(std::vector<std::vector<double>> &lattice_eq
       }  // i
     }  // x
   }  // y
+}
+
+void Lattice::BoundaryCondition(std::vector<std::vector<double>> &lattice)
+{
+  auto nx = GetNumberOfColumns();
+  auto ny = GetNumberOfRows();
+  // Periodic boundary condition on left and right
+  for (auto y = 1; y < ny + 1; ++y) {
+    auto n = y * (nx + 2);
+    lattice[n][E] = lattice[n + nx][E];
+    lattice[n][NE] = lattice[n + nx][NE];
+    lattice[n][SE] = lattice[n + nx][SE];
+    lattice[n + nx + 1][W] = lattice[n + 1][W];
+    lattice[n + nx + 1][NW] = lattice[n + 1][NW];
+    lattice[n + nx + 1][SW] = lattice[n + 1][SW];
+  }
+  // no-slip boundary condition on top and bottom
+  for (auto x = 1; x < nx + 1; ++x) {
+    auto n = ny * (nx + 2);
+    lattice[x + n + (nx + 2)][S] = lattice[x + n][N];
+    lattice[x + n + (nx + 2)][SE] = lattice[x + n + 1][NW];
+    lattice[x + n + (nx + 2)][SW] = lattice[x + n - 1][NE];
+    lattice[x][N] = lattice[x + nx + 2][S];
+    lattice[x][NE] = lattice[x + nx + 3][SW];
+    lattice[x][NW] = lattice[x + nx + 1][SE];
+  }
+  // mixture of boundaries at the corners
+  lattice[0][NE] = lattice[nx + 3][SW];
+  lattice[nx + 1][NW] = lattice[2 * nx + 2][SE];
+  lattice[(nx + 2) * (ny + 1)][SE] = lattice[(nx + 2) * ny + 1][NW];
+  lattice[(nx + 2) * (ny + 2) -1][SW] = lattice[(nx + 2) * (ny + 1) - 2][NE];
+
 }
 
 std::vector<double> Lattice::Flip(const std::vector<double> &lattice)

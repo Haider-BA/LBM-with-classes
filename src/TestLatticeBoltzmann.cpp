@@ -5,6 +5,17 @@
 #include "Lattice.hpp"
 #include "UnitTest++.h"
 
+enum DiscreteDirections {
+  E = 1,
+  N,
+  W,
+  S,
+  NE,
+  NW,
+  SW,
+  SE,
+};
+
 TEST(DefaultLattice)
 {
   Lattice lattice;
@@ -16,17 +27,25 @@ TEST(DefaultLattice)
 
 TEST(ZeroValuesInLatticeDeclaration)
 {
-  CHECK_THROW(Lattice lattice(0, 9, 2, 4, 1, 1), std::runtime_error);
-  CHECK_THROW(Lattice lattice(2, 0, 2, 4, 1, 1), std::runtime_error);
-  CHECK_THROW(Lattice lattice(2, 9, 0, 4, 1, 1), std::runtime_error);
-  CHECK_THROW(Lattice lattice(2, 9, 2, 0, 1, 1), std::runtime_error);
-  CHECK_THROW(Lattice lattice(2, 9, 2, 4, 0, 1), std::runtime_error);
-  CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 0), std::runtime_error);
+  CHECK_THROW(Lattice lattice(0, 9, 2, 4, 1, 1, true, true),
+      std::runtime_error);
+  CHECK_THROW(Lattice lattice(2, 0, 2, 4, 1, 1, true, true),
+      std::runtime_error);
+  CHECK_THROW(Lattice lattice(2, 9, 0, 4, 1, 1, true, true),
+      std::runtime_error);
+  CHECK_THROW(Lattice lattice(2, 9, 2, 0, 1, 1, true, true),
+      std::runtime_error);
+  CHECK_THROW(Lattice lattice(2, 9, 2, 4, 0, 1, true, true),
+      std::runtime_error);
+  CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 0, true, true),
+      std::runtime_error);
+  CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 1, false, false),
+      std::runtime_error);
 }
 
 TEST(NormalLatticeBeforeInit)
 {
-  Lattice lattice(2, 9, 2, 4, 1, 1);
+  Lattice lattice(2, 9, 2, 4, 1, 1, true, true);
   std::size_t ny = lattice.GetNumberOfRows();
   std::size_t nx = lattice.GetNumberOfColumns();
   std::size_t nd = lattice.GetNumberOfDimensions();
@@ -61,7 +80,7 @@ TEST(NormalLatticeBeforeInit)
 
 TEST(Init1DLattices)
 {
-  Lattice lattice(2, 9, 2, 4, 1, 1);
+  Lattice lattice(2, 9, 2, 4, 1, 1, true, true);
   const double initial_rho = 1.0;
   lattice.Init(lattice.rho_f_, initial_rho);
   lattice.Init(lattice.rho_g_, initial_rho);
@@ -75,7 +94,7 @@ TEST(Init1DLattices)
 
 TEST(Init2DLatticesWithValues)
 {
-  Lattice lattice(2, 9, 2, 4, 1, 1);
+  Lattice lattice(2, 9, 2, 4, 1, 1, true, true);
   std::vector<double> initial_u = {1.0, 2.0};
   lattice.Init(lattice.u_, initial_u);
   for (auto lat : lattice.u_) {
@@ -86,14 +105,14 @@ TEST(Init2DLatticesWithValues)
 
 TEST(Init2DLatticesWithValuesWrongDimensions)
 {
-  Lattice lattice(2, 9, 2, 4, 1, 1);
+  Lattice lattice(2, 9, 2, 4, 1, 1, true, true);
   std::vector<double> initial_u = {1.0, 2.0, 3.0};
   CHECK_THROW(lattice.Init(lattice.u_, initial_u), std::runtime_error);
 }
 
 TEST(Init2DLatticesWithLattice)
 {
-  Lattice lattice(2, 9, 2, 4, 1, 1);
+  Lattice lattice(2, 9, 2, 4, 1, 1, true, true);
   auto ny = lattice.GetNumberOfRows();
   auto nx = lattice.GetNumberOfColumns();
   std::vector<double> node = {1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -107,7 +126,7 @@ TEST(Init2DLatticesWithLattice)
 
 TEST(Init2DLatticesWithLatticeWrongDimensions)
 {
-  Lattice lattice(2, 9, 2, 4, 1, 1);
+  Lattice lattice(2, 9, 2, 4, 1, 1, true, true);
   auto ny = lattice.GetNumberOfRows();
   auto nx = lattice.GetNumberOfColumns();
   std::vector<double> node = {1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -117,7 +136,7 @@ TEST(Init2DLatticesWithLatticeWrongDimensions)
 
 TEST(Init2DLatticesWithLatticeWrongDepth)
 {
-  Lattice lattice(2, 9, 2, 4, 1, 1);
+  Lattice lattice(2, 9, 2, 4, 1, 1, true, true);
   auto ny = lattice.GetNumberOfRows();
   auto nx = lattice.GetNumberOfColumns();
   auto nc = lattice.GetNumberOfDiscreteVelocities();
@@ -139,8 +158,10 @@ TEST(CalculateEquilibrium)
   double density_g = 1.;
   double dx = 1.;
   double dt = 0.001;
+  bool is_cd = true;
+  bool is_ns = true;
   std::vector<double> u0 = {1., 1.};
-  Lattice lattice(nd, nc, ny, nx, dx, dt);
+  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
   std::vector<double> ans = {0.444,
       0.111, 0.111, 0.111, 0.111,
       0.028, 0.028, 0.028, 0.028};
@@ -171,8 +192,10 @@ TEST(InitFWithValueFromFEqNode)
   double density_g = 1.;
   double dx = 1.;
   double dt = 0.001;
+  bool is_cd = true;
+  bool is_ns = true;
   std::vector<double> u0 = {123., 321.};
-  Lattice lattice(nd, nc, ny, nx, dx, dt);
+  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
   lattice.Init(lattice.u_, u0);
   lattice.Init(lattice.rho_g_, density_g);
   lattice.ComputeEq(lattice.g_eq_, lattice.rho_g_);
@@ -196,11 +219,13 @@ TEST(InitSingleSource)
   std::size_t nx = 5;
   double dx = 1.;
   double dt = 0.001;
+  bool is_cd = true;
+  bool is_ns = true;
   unsigned x_pos = 4;
   unsigned y_pos = 2;
   std::vector<std::vector<unsigned>> src_position = {{x_pos, y_pos}};
   std::vector<double> src_strength = {2};
-  Lattice lattice(nd, nc, ny, nx, dx, dt);
+  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
   lattice.InitSrc(lattice.src_g_, src_position, src_strength);
   for (auto y = 0u; y < ny + 2; ++y) {
     for (auto x = 0u; x < nx + 2; ++x) {
@@ -224,12 +249,14 @@ TEST(InitMultipleSource)
   std::size_t nx = 10;
   double dx = 1.;
   double dt = 0.001;
+  bool is_cd = true;
+  bool is_ns = true;
   unsigned x_pos = 4;
   unsigned y_pos = 2;
   std::vector<std::vector<unsigned>> src_position = {{x_pos, y_pos},
       {x_pos + 1, y_pos + 2}};
   std::vector<double> src_strength = {2, 3.4};
-  Lattice lattice(nd, nc, ny, nx, dx, dt);
+  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
   lattice.InitSrc(lattice.src_g_, src_position, src_strength);
   for (auto y = 0u; y < ny + 2; ++y) {
     for (auto x = 0u; x < nx + 2; ++x) {
@@ -256,11 +283,13 @@ TEST(InitSingle2DSource)
   std::size_t nx = 5;
   double dx = 1.;
   double dt = 0.001;
+  bool is_cd = true;
+  bool is_ns = true;
   unsigned x_pos = 4;
   unsigned y_pos = 2;
   std::vector<std::vector<unsigned>> src_position = {{x_pos, y_pos}};
   std::vector<std::vector<double>> src_strength = {{2, 3}};
-  Lattice lattice(nd, nc, ny, nx, dx, dt);
+  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
   lattice.InitSrc(lattice.src_f_, src_position, src_strength);
   for (auto y = 0u; y < ny + 2; ++y) {
     for (auto x = 0u; x < nx + 2; ++x) {
@@ -286,12 +315,14 @@ TEST(InitMultiple2DSource)
   std::size_t nx = 11;
   double dx = 1.;
   double dt = 0.001;
+  bool is_cd = true;
+  bool is_ns = true;
   unsigned x_pos = 4;
   unsigned y_pos = 2;
   std::vector<std::vector<unsigned>> src_position = {{x_pos, y_pos},
       {x_pos + 2, y_pos + 1}};
   std::vector<std::vector<double>> src_strength = {{2, 3}, {2.3, 4.4}};
-  Lattice lattice(nd, nc, ny, nx, dx, dt);
+  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
   lattice.InitSrc(lattice.src_f_, src_position, src_strength);
   for (auto y = 0u; y < ny + 2; ++y) {
     for (auto x = 0u; x < nx + 2; ++x) {
@@ -310,4 +341,87 @@ TEST(InitMultiple2DSource)
       }
     }  // x
   }  // y
+}
+
+TEST(BoundaryConditionPeriodic)
+{
+  double zero_tol = 1e-20;
+  std::size_t nd = 2;
+  std::size_t nc = 9;
+  std::size_t ny = 3;
+  std::size_t nx = 4;
+  double dx = 1.;
+  double dt = 0.001;
+  bool is_cd = true;
+  bool is_ns = true;
+  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
+  std::vector<double> nums = {0, 1, 0, 2, 4, 5, 6, 7, 8};
+  std::vector<double> nines(nc, 9);
+  lattice.Init(lattice.g_, nums);
+  for (auto y = 0; y < ny + 2; ++y) {
+    auto n = y * (nx + 2);
+    lattice.g_[n] = nines;
+    lattice.g_[n + nx + 1] = nines;
+  }
+  lattice.BoundaryCondition(lattice.g_);
+  for (auto y = 1; y < ny + 1; ++y) {
+    auto n = y * (nx + 2);
+    CHECK_CLOSE(lattice.g_[n + nx][E], lattice.g_[n][E], zero_tol);
+    CHECK_CLOSE(lattice.g_[n + nx][NE], lattice.g_[n][NE], zero_tol);
+    CHECK_CLOSE(lattice.g_[n + nx][SE], lattice.g_[n][SE], zero_tol);
+    CHECK_CLOSE(lattice.g_[n + 1][W], lattice.g_[n + nx + 1][W], zero_tol);
+    CHECK_CLOSE(lattice.g_[n + 1][NW], lattice.g_[n + nx + 1][NW], zero_tol);
+    CHECK_CLOSE(lattice.g_[n + 1][SW], lattice.g_[n + nx + 1][SW], zero_tol);
+  }
+}
+
+TEST(BoundaryConditionBounceBack)
+{
+  double zero_tol = 1e-20;
+  std::size_t nd = 2;
+  std::size_t nc = 9;
+  std::size_t ny = 3;
+  std::size_t nx = 4;
+  double dx = 1.;
+  double dt = 0.001;
+  bool is_cd = true;
+  bool is_ns = true;
+  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
+  std::vector<double> nums = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+  lattice.Init(lattice.g_, nums);
+  lattice.BoundaryCondition(lattice.g_);
+  for (auto x = 1; x < nx + 1; ++x) {
+    auto n = ny * (nx + 2);
+    CHECK_CLOSE(lattice.g_[x + n][N], lattice.g_[x + n+ (nx + 2)][S], zero_tol);
+    CHECK_CLOSE(lattice.g_[x + n + 1][NW], lattice.g_[x + n + (nx + 2)][SE],
+        zero_tol);
+    CHECK_CLOSE(lattice.g_[x + n - 1][NE], lattice.g_[x + n + (nx + 2)][SW],
+        zero_tol);
+    CHECK_CLOSE(lattice.g_[x + nx + 2][S], lattice.g_[x][N], zero_tol);
+    CHECK_CLOSE(lattice.g_[x + nx + 3][SW], lattice.g_[x][NE], zero_tol);
+    CHECK_CLOSE(lattice.g_[x + nx + 1][SE], lattice.g_[x][NW], zero_tol);
+  }
+}
+
+TEST(BoundaryConditionCorner)
+{
+  double zero_tol = 1e-20;
+  std::size_t nd = 2;
+  std::size_t nc = 9;
+  std::size_t ny = 3;
+  std::size_t nx = 4;
+  double dx = 1.;
+  double dt = 0.001;
+  bool is_cd = true;
+  bool is_ns = true;
+  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
+  std::vector<double> nums = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+  lattice.Init(lattice.g_, nums);
+  lattice.BoundaryCondition(lattice.g_);
+  CHECK_CLOSE(lattice.g_[nx + 3][SW], lattice.g_[0][NE], zero_tol);
+  CHECK_CLOSE(lattice.g_[2 * nx + 2][SE], lattice.g_[nx + 1][NW], zero_tol);
+  CHECK_CLOSE(lattice.g_[(nx + 2) * ny + 1][NW],
+      lattice.g_[(nx + 2) * (ny + 1)][SE], zero_tol);
+  CHECK_CLOSE(lattice.g_[(nx + 2) * (ny + 1) - 2][NE],
+      lattice.g_[(nx + 2) * (ny + 2) -1][SW], zero_tol);
 }

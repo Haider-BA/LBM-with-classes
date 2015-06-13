@@ -27,7 +27,9 @@ class Lattice {
     , std::size_t num_rows
     , std::size_t num_cols
     , double dx
-    , double dt);
+    , double dt
+    , bool is_cd
+    , bool is_ns);
 
   /**
    * Get the number of dimensions of the lattice. 2 for 2D and 3 for 3D.
@@ -124,6 +126,14 @@ class Lattice {
    */
   void ComputeEq(std::vector<std::vector<double>> &lattice_eq
     , const std::vector<double> &rho);
+
+  /** \brief
+   *
+   * \param lattice std::vector<std::vector>>&
+   * \return void
+   *
+   */
+  void BoundaryCondition(std::vector<std::vector<double>> &lattice);
 
   /**
    * Flips the lattice for ease of printing out the lattice according to the
@@ -236,6 +246,6 @@ class Lattice {
   double c_;
   double input_parameter_check_value_ = space_step_ * time_step_ *
       number_of_dimensions_ * number_of_discrete_velocities_ * number_of_rows_ *
-      number_of_columns_;
+      number_of_columns_ * (is_cd_ || is_ns_);
 };
 #endif  // LATTICE_HPP_
