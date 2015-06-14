@@ -178,7 +178,7 @@ void Lattice::BoundaryCondition(std::vector<std::vector<double>> &lattice)
   auto nx = GetNumberOfColumns();
   auto ny = GetNumberOfRows();
   // Periodic boundary condition on left and right
-  for (auto y = 1; y < ny + 1; ++y) {
+  for (auto y = 1u; y < ny + 1; ++y) {
     auto n = y * (nx + 2);
     lattice[n][E] = lattice[n + nx][E];
     lattice[n][NE] = lattice[n + nx][NE];
@@ -188,7 +188,7 @@ void Lattice::BoundaryCondition(std::vector<std::vector<double>> &lattice)
     lattice[n + nx + 1][SW] = lattice[n + 1][SW];
   }
   // no-slip boundary condition on top and bottom
-  for (auto x = 1; x < nx + 1; ++x) {
+  for (auto x = 1u; x < nx + 1; ++x) {
     auto n = ny * (nx + 2);
     lattice[x + n + (nx + 2)][S] = lattice[x + n][N];
     lattice[x + n + (nx + 2)][SE] = lattice[x + n + 1][NW];
@@ -203,6 +203,28 @@ void Lattice::BoundaryCondition(std::vector<std::vector<double>> &lattice)
   lattice[(nx + 2) * (ny + 1)][SE] = lattice[(nx + 2) * ny + 1][NW];
   lattice[(nx + 2) * (ny + 2) -1][SW] = lattice[(nx + 2) * (ny + 1) - 2][NE];
 
+}
+
+std::vector<std::vector<double>> Lattice::Stream(
+    const std::vector<std::vector<double>> &lattice)
+{
+  auto nx = GetNumberOfColumns();
+  auto ny = GetNumberOfRows();
+  auto temp_lattice(lattice);
+  for (auto y = 1u; y < ny + 1; ++y) {
+    for (auto x = 1u; x < nx + 1; ++x) {
+      auto n = y * (nx + 2) + x;
+      temp_lattice[n][E] = lattice[n - 1][E];
+      temp_lattice[n][N] = lattice[n - (nx + 2)][N];
+      temp_lattice[n][W] = lattice[n + 1][W];
+      temp_lattice[n][S] = lattice[n + (nx + 2)][S];
+      temp_lattice[n][NE] = lattice[n - (nx + 2) - 1][NE];
+      temp_lattice[n][NW] = lattice[n - (nx + 2) + 1][NW];
+      temp_lattice[n][SW] = lattice[n + (nx + 2) + 1][SW];
+      temp_lattice[n][SE] = lattice[n + (nx + 2) - 1][SE];
+    }  // x
+  }  // y
+  return temp_lattice;
 }
 
 std::vector<double> Lattice::Flip(const std::vector<double> &lattice)

@@ -135,6 +135,16 @@ class Lattice {
    */
   void BoundaryCondition(std::vector<std::vector<double>> &lattice);
 
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
+  std::vector<std::vector<double>> Stream(
+      const std::vector<std::vector<double>> &lattice);
+
   /**
    * Flips the lattice for ease of printing out the lattice according to the
    * direction convention
@@ -238,12 +248,12 @@ class Lattice {
   std::size_t number_of_discrete_velocities_;
   std::size_t number_of_rows_;
   std::size_t number_of_columns_;
-  bool is_cd_;
-  bool is_ns_;
-  bool is_instant_;
   double space_step_;
   double time_step_;
   double c_;
+  bool is_cd_;
+  bool is_ns_;
+  bool is_instant_;
   double input_parameter_check_value_ = space_step_ * time_step_ *
       number_of_dimensions_ * number_of_discrete_velocities_ * number_of_rows_ *
       number_of_columns_ * (is_cd_ || is_ns_);
