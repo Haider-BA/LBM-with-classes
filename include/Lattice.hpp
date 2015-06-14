@@ -94,23 +94,39 @@ class Lattice {
   void Init(std::vector<std::vector<double>> &lattice
     , const std::vector<std::vector<double>> &initial_lattice);
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+  /**
+   * Initialize a depth 1 2D source lattice by reading from the source position
+   * vectors and the source magnitude vectors,
+   * \param lattice_src 2D lattice containing the source strength of each node
+   * \param src_position 2D vector containing position information about the
+   *        source
+   * \param src_strength 2D vector containing strength information about the
+   *        source
+   * \throw runtime_error if size of src_position does not match size of
+   *        src_strength
+   * \throw runtime_error if size of vector in src_position does not match depth
+   *        of lattice
+   * \throw runtime_error if component in vector in src_position exceeds number
+   *        of columns or rows of lattice
    */
   void InitSrc(std::vector<double> &lattice_src
     , const std::vector<std::vector<unsigned>> &src_position
     , const std::vector<double> &src_strength);
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+  /**
+   * Initialize a depth 2 2D source lattice by reading from the source position
+   * vectors and the source magnitude vectors,
+   * \param lattice_src 2D lattice containing the source strength of each node
+   * \param src_position 2D vector containing position information about the
+   *        source
+   * \param src_strength 2D vector containing strength information about the
+   *        source
+   * \throw runtime_error if size of src_position does not match size of
+   *        src_strength
+   * \throw runtime_error if size of vector in src_position does not match depth
+   *        of lattice
+   * \throw runtime_error if component in vector in src_position exceeds number
+   *        of columns or rows of lattice
    */
   void InitSrc(std::vector<std::vector<double>> &lattice_src
     , const std::vector<std::vector<unsigned>> &src_position
@@ -127,23 +143,29 @@ class Lattice {
   void ComputeEq(std::vector<std::vector<double>> &lattice_eq
     , const std::vector<double> &rho);
 
-  /** \brief
-   *
-   * \param lattice std::vector<std::vector>>&
-   * \return void
-   *
+  /**
+   * 2D vector to store distribution functions values for nodes on the edges of
+   * the lattice to be used in the streaming step. Current implementations are:
+   * periodic boundary for the sides, no-slip boundary for top and bottom,
+   * bounce-back for corners
+   * \param lattice 2D lattice containing distribution functions at each node
    */
-  void BoundaryCondition(std::vector<std::vector<double>> &lattice);
+  void BoundaryCondition(const std::vector<std::vector<double>> &lattice
+    , std::vector<std::vector<double>> &boundary);
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+  /**
+   * Streams the lattice based on LBIntro. Takes node values from the boundary
+   * 2D vector for nodes at the edges of lattice.
+   * Chirila, D. B., (2010). Introduction to Lattice Boltzmann Methods
+   * \param lattice 2D lattice containing pre-stream values of distribution
+   *        functions
+   * \param boundary 2D vector containing pre-stream values for nodes on the
+   *        edges of the lattice badges on the pre-defined boundary conditions
+   * \return 2D lattice containing post-stream values of distribution functions
    */
   std::vector<std::vector<double>> Stream(
-      const std::vector<std::vector<double>> &lattice);
+      const std::vector<std::vector<double>> &lattice
+    , const std::vector<std::vector<double>> &boundary);
 
   /**
    * Flips the lattice for ease of printing out the lattice according to the
@@ -173,6 +195,8 @@ class Lattice {
    * \param which_to_print selector to change way the lattice is printed
    *        0 each node is printed as a 3 * 3 square
    *        1 each node is printed as a single line
+   *        2 for boundary
+   *        3 for lattice with boundary
    */
   void Print(int which_to_print
     , const std::vector<std::vector<double>> &lattice);
@@ -216,6 +240,16 @@ class Lattice {
    * Density for CDE stored row-wise in a 1D vector.
    */
   std::vector<double> rho_g_;
+
+  /**
+   * Boundary nodes for NS lattice
+   */
+  std::vector<std::vector<double>> boundary_f_;
+
+  /**
+   * Boundary nodes for CDE lattice
+   */
+  std::vector<std::vector<double>> boundary_g_;
 
   /**
    * Lattice velocity stored row-wise in a 2D vector.

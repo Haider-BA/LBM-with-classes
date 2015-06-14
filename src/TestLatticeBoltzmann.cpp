@@ -50,7 +50,7 @@ TEST(NormalLatticeBeforeInit)
   std::size_t nx = lattice.GetNumberOfColumns();
   std::size_t nd = lattice.GetNumberOfDimensions();
   std::size_t nc = lattice.GetNumberOfDiscreteVelocities();
-  std::size_t lattice_size = (ny + 2) + (nx + 2);
+  std::size_t lattice_size = ny * nx;
   CHECK_EQUAL(2u, nd);
   CHECK_EQUAL(9u, nc);
   CHECK_EQUAL(2u, ny);
@@ -116,7 +116,7 @@ TEST(Init2DLatticesWithLattice)
   auto ny = lattice.GetNumberOfRows();
   auto nx = lattice.GetNumberOfColumns();
   std::vector<double> node = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-  std::vector<std::vector<double>> initial_g((nx + 2) * (ny + 2), node);
+  std::vector<std::vector<double>> initial_g(nx * ny, node);
   lattice.Init(lattice.g_, initial_g);
   for (auto lat : lattice.g_) {
     int index = 0;
@@ -130,7 +130,7 @@ TEST(Init2DLatticesWithLatticeWrongDimensions)
   auto ny = lattice.GetNumberOfRows();
   auto nx = lattice.GetNumberOfColumns();
   std::vector<double> node = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-  std::vector<std::vector<double>> initial_g((nx) * (ny + 2), node);
+  std::vector<std::vector<double>> initial_g(nx * (ny + 2), node);
   CHECK_THROW(lattice.Init(lattice.g_, initial_g), std::runtime_error);
 }
 
@@ -168,19 +168,12 @@ TEST(CalculateEquilibrium)
   lattice.Init(lattice.u_, u0);
   lattice.Init(lattice.rho_g_, density_g);
   lattice.ComputeEq(lattice.g_eq_, lattice.rho_g_);
-  for (auto y = 0u; y < ny + 2; ++y) {
-    for (auto x = 0u; x < nx + 2; ++x) {
-      auto n = y * (nx + 2) + x;
-      for (auto i = 0u; i < nc; ++i) {
-        if (y == 0 || y == ny + 1 || x == 0 || x == nx + 1) {
-          CHECK_CLOSE(0, lattice.g_eq_[n][i], precision);
-        }
-        else {
-          CHECK_CLOSE(ans[i], lattice.g_eq_[n][i], precision);
-        }
-      }  // i
-    }  // x
-  }  // y
+
+  for (auto lat_eq : lattice.g_eq_) {
+    for (auto i = 0u; i < nc; ++i) {
+      CHECK_CLOSE(ans[i], lat_eq[i], precision);
+    }  // i
+  }  // lat_eq
 }
 
 TEST(InitFWithValueFromFEqNode)
@@ -200,14 +193,11 @@ TEST(InitFWithValueFromFEqNode)
   lattice.Init(lattice.rho_g_, density_g);
   lattice.ComputeEq(lattice.g_eq_, lattice.rho_g_);
   lattice.Init(lattice.g_, lattice.g_eq_);
-  for (auto y = 0u; y < ny + 2; ++y) {
-    for (auto x = 0u; x < nx + 2; ++x) {
-      auto n = y * (nx + 2) + x;
-      for (auto i = 0u; i < nc; ++i) {
-        CHECK_EQUAL(lattice.g_eq_[n][i], lattice.g_[n][i]);
-      }  // i
-    }  // x
-  }  // y
+  for (auto n = 0u; n < nx * ny; ++n) {
+    for (auto i = 0u; i < nc; ++i) {
+      CHECK_EQUAL(lattice.g_eq_[n][i], lattice.g_[n][i]);
+    }  // i
+  }  // n
 }
 
 TEST(InitSingleSource)
@@ -227,17 +217,14 @@ TEST(InitSingleSource)
   std::vector<double> src_strength = {2};
   Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
   lattice.InitSrc(lattice.src_g_, src_position, src_strength);
-  for (auto y = 0u; y < ny + 2; ++y) {
-    for (auto x = 0u; x < nx + 2; ++x) {
-      auto n = y * (nx + 2) + x;
-      if (n == y_pos * (nx + 2) + x_pos + nx + 3) {
-        CHECK_CLOSE(src_strength[0], lattice.src_g_[n], zero_tol);
-      }
-      else {
-        CHECK_CLOSE(0.0, lattice.src_g_[n], zero_tol);
-      }
-    }  // x
-  }  // y
+  for (auto n = 0u; n < nx * ny; ++n) {
+    if (n == y_pos * nx + x_pos) {
+      CHECK_CLOSE(src_strength[0], lattice.src_g_[n], zero_tol);
+    }
+    else {
+      CHECK_CLOSE(0.0, lattice.src_g_[n], zero_tol);
+    }
+  }  // n
 }
 
 TEST(InitMultipleSource)
@@ -258,20 +245,17 @@ TEST(InitMultipleSource)
   std::vector<double> src_strength = {2, 3.4};
   Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
   lattice.InitSrc(lattice.src_g_, src_position, src_strength);
-  for (auto y = 0u; y < ny + 2; ++y) {
-    for (auto x = 0u; x < nx + 2; ++x) {
-      auto n = y * (nx + 2) + x;
-      if (n == y_pos * (nx + 2) + x_pos + nx + 3) {
-        CHECK_CLOSE(src_strength[0], lattice.src_g_[n], zero_tol);
-      }
-      else if (n == (y_pos + 2) * (nx + 2) + x_pos + 1 + nx + 3) {
-        CHECK_CLOSE(src_strength[1], lattice.src_g_[n], zero_tol);
-      }
-      else {
-        CHECK_CLOSE(0.0, lattice.src_g_[n], zero_tol);
-      }
-    }  // x
-  }  // y
+  for (auto n = 0u; n < nx * ny; ++n) {
+    if (n == y_pos * nx + x_pos) {
+      CHECK_CLOSE(src_strength[0], lattice.src_g_[n], zero_tol);
+    }
+    else if (n == (y_pos + 2) * nx + x_pos + 1) {
+      CHECK_CLOSE(src_strength[1], lattice.src_g_[n], zero_tol);
+    }
+    else {
+      CHECK_CLOSE(0.0, lattice.src_g_[n], zero_tol);
+    }
+  }  // n
 }
 
 TEST(InitSingle2DSource)
@@ -291,19 +275,16 @@ TEST(InitSingle2DSource)
   std::vector<std::vector<double>> src_strength = {{2, 3}};
   Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
   lattice.InitSrc(lattice.src_f_, src_position, src_strength);
-  for (auto y = 0u; y < ny + 2; ++y) {
-    for (auto x = 0u; x < nx + 2; ++x) {
-      auto n = y * (nx + 2) + x;
-      if (n == y_pos * (nx + 2) + x_pos + nx + 3) {
-        CHECK_CLOSE(src_strength[0][0], lattice.src_f_[n][0], zero_tol);
-        CHECK_CLOSE(src_strength[0][1], lattice.src_f_[n][1], zero_tol);
-      }
-      else {
-        CHECK_CLOSE(0.0, lattice.src_f_[n][0], zero_tol);
-        CHECK_CLOSE(0.0, lattice.src_f_[n][1], zero_tol);
-      }
-    }  // x
-  }  // y
+  for (auto n = 0u; n < nx * ny; ++n) {
+    if (n == y_pos * nx + x_pos) {
+      CHECK_CLOSE(src_strength[0][0], lattice.src_f_[n][0], zero_tol);
+      CHECK_CLOSE(src_strength[0][1], lattice.src_f_[n][1], zero_tol);
+    }
+    else {
+      CHECK_CLOSE(0.0, lattice.src_f_[n][0], zero_tol);
+      CHECK_CLOSE(0.0, lattice.src_f_[n][1], zero_tol);
+    }
+  }  // n
 }
 
 TEST(InitMultiple2DSource)
@@ -324,24 +305,23 @@ TEST(InitMultiple2DSource)
   std::vector<std::vector<double>> src_strength = {{2, 3}, {2.3, 4.4}};
   Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
   lattice.InitSrc(lattice.src_f_, src_position, src_strength);
-  for (auto y = 0u; y < ny + 2; ++y) {
-    for (auto x = 0u; x < nx + 2; ++x) {
-      auto n = y * (nx + 2) + x;
-      if (n == y_pos * (nx + 2) + x_pos + nx + 3) {
-        CHECK_CLOSE(src_strength[0][0], lattice.src_f_[n][0], zero_tol);
-        CHECK_CLOSE(src_strength[0][1], lattice.src_f_[n][1], zero_tol);
-      }
-      else if (n == (y_pos + 1) * (nx + 2) + x_pos + 2 + nx + 3) {
-        CHECK_CLOSE(src_strength[1][0], lattice.src_f_[n][0], zero_tol);
-        CHECK_CLOSE(src_strength[1][1], lattice.src_f_[n][1], zero_tol);
-      }
-      else {
-        CHECK_CLOSE(0.0, lattice.src_f_[n][0], zero_tol);
-        CHECK_CLOSE(0.0, lattice.src_f_[n][1], zero_tol);
-      }
-    }  // x
-  }  // y
+  for (auto n = 0u; n < nx * ny; ++n) {
+    if (n == y_pos * nx + x_pos) {
+      CHECK_CLOSE(src_strength[0][0], lattice.src_f_[n][0], zero_tol);
+      CHECK_CLOSE(src_strength[0][1], lattice.src_f_[n][1], zero_tol);
+    }
+    else if (n == (y_pos + 1) * nx + x_pos + 2) {
+      CHECK_CLOSE(src_strength[1][0], lattice.src_f_[n][0], zero_tol);
+      CHECK_CLOSE(src_strength[1][1], lattice.src_f_[n][1], zero_tol);
+    }
+    else {
+      CHECK_CLOSE(0.0, lattice.src_f_[n][0], zero_tol);
+      CHECK_CLOSE(0.0, lattice.src_f_[n][1], zero_tol);
+    }
+  }  // n
 }
+
+// TODO CHECK_THROW for InitSrc
 
 TEST(BoundaryConditionPeriodic)
 {
@@ -356,22 +336,18 @@ TEST(BoundaryConditionPeriodic)
   bool is_ns = true;
   Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
   std::vector<double> nums = {0, 1, 0, 2, 4, 5, 6, 7, 8};
-  std::vector<double> nines(nc, 9);
   lattice.Init(lattice.g_, nums);
-  for (auto y = 0u; y < ny + 2; ++y) {
-    auto n = y * (nx + 2);
-    lattice.g_[n] = nines;
-    lattice.g_[n + nx + 1] = nines;
-  }
-  lattice.BoundaryCondition(lattice.g_);
-  for (auto y = 1u; y < ny + 1; ++y) {
-    auto n = y * (nx + 2);
-    CHECK_CLOSE(lattice.g_[n + nx][E], lattice.g_[n][E], zero_tol);
-    CHECK_CLOSE(lattice.g_[n + nx][NE], lattice.g_[n][NE], zero_tol);
-    CHECK_CLOSE(lattice.g_[n + nx][SE], lattice.g_[n][SE], zero_tol);
-    CHECK_CLOSE(lattice.g_[n + 1][W], lattice.g_[n + nx + 1][W], zero_tol);
-    CHECK_CLOSE(lattice.g_[n + 1][NW], lattice.g_[n + nx + 1][NW], zero_tol);
-    CHECK_CLOSE(lattice.g_[n + 1][SW], lattice.g_[n + nx + 1][SW], zero_tol);
+  lattice.BoundaryCondition(lattice.g_, lattice.boundary_g_);
+  for (auto y = 0u; y < ny; ++y) {
+    auto n = y * (nx);
+    CHECK_CLOSE(lattice.g_[n + nx - 1][E], lattice.boundary_g_[y][E], zero_tol);
+    CHECK_CLOSE(lattice.g_[n + nx - 1][NE], lattice.boundary_g_[y][NE],
+        zero_tol);
+    CHECK_CLOSE(lattice.g_[n + nx - 1][SE], lattice.boundary_g_[y][SE],
+        zero_tol);
+    CHECK_CLOSE(lattice.g_[n][W], lattice.boundary_g_[y + ny][W], zero_tol);
+    CHECK_CLOSE(lattice.g_[n][NW], lattice.boundary_g_[y + ny][NW], zero_tol);
+    CHECK_CLOSE(lattice.g_[n][SW], lattice.boundary_g_[y + ny][SW], zero_tol);
   }  // y
 }
 
@@ -388,19 +364,42 @@ TEST(BoundaryConditionBounceBack)
   bool is_ns = true;
   Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
   std::vector<double> nums = {0, 1, 2, 3, 4, 5, 6, 7, 8};
-  lattice.Init(lattice.g_, nums);
-  lattice.BoundaryCondition(lattice.g_);
-  for (auto x = 1u; x < nx + 1; ++x) {
-    auto n = ny * (nx + 2);
-    CHECK_CLOSE(lattice.g_[x + n][N], lattice.g_[x + n+ (nx + 2)][S], zero_tol);
-    CHECK_CLOSE(lattice.g_[x + n + 1][NW], lattice.g_[x + n + (nx + 2)][SE],
+  double value = 0;
+  for (auto &lat : lattice.g_) lat = std::vector<double>(nc, value++);
+  lattice.BoundaryCondition(lattice.g_, lattice.boundary_g_);
+  auto top = 2 * ny;
+  auto bottom = 2 * ny + nx;
+  for (auto x = 0u; x < nx; ++x) {
+    auto n = (ny - 1) * (nx);
+    CHECK_CLOSE(lattice.g_[x + n][N], lattice.boundary_g_[top + x][S],
         zero_tol);
-    CHECK_CLOSE(lattice.g_[x + n - 1][NE], lattice.g_[x + n + (nx + 2)][SW],
+    CHECK_CLOSE(lattice.g_[x][S], lattice.boundary_g_[bottom + x][N],
         zero_tol);
-    CHECK_CLOSE(lattice.g_[x + nx + 2][S], lattice.g_[x][N], zero_tol);
-    CHECK_CLOSE(lattice.g_[x + nx + 3][SW], lattice.g_[x][NE], zero_tol);
-    CHECK_CLOSE(lattice.g_[x + nx + 1][SE], lattice.g_[x][NW], zero_tol);
-  }  // x
+    if (x == 0) {
+      CHECK_CLOSE(lattice.g_[n + ny][NE], lattice.boundary_g_[top + x][SW],
+          zero_tol);
+      CHECK_CLOSE(lattice.g_[nx - 1][SE], lattice.boundary_g_[bottom + x][NW],
+          zero_tol);
+    }
+    else {
+      CHECK_CLOSE(lattice.g_[x + n - 1][NE], lattice.boundary_g_[top + x][SW],
+          zero_tol);
+      CHECK_CLOSE(lattice.g_[x - 1][SE], lattice.boundary_g_[bottom + x][NW],
+          zero_tol);
+    }
+    if (x == nx - 1) {
+      CHECK_CLOSE(lattice.g_[n][NW], lattice.boundary_g_[top + x][SE],
+          zero_tol);
+      CHECK_CLOSE(lattice.g_[0][SW], lattice.boundary_g_[bottom + x][NE],
+          zero_tol);
+    }
+    else {
+      CHECK_CLOSE(lattice.g_[x + n + 1][NW], lattice.boundary_g_[top + x][SE],
+          zero_tol);
+      CHECK_CLOSE(lattice.g_[x + 1][SW], lattice.boundary_g_[bottom + x][NE],
+          zero_tol);
+    }
+  }
 }
 
 TEST(BoundaryConditionCorner)
@@ -408,7 +407,7 @@ TEST(BoundaryConditionCorner)
   double zero_tol = 1e-20;
   std::size_t nd = 2;
   std::size_t nc = 9;
-  std::size_t ny = 3;
+  std::size_t ny = 5;
   std::size_t nx = 4;
   double dx = 1.;
   double dt = 0.001;
@@ -417,13 +416,15 @@ TEST(BoundaryConditionCorner)
   Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
   std::vector<double> nums = {0, 1, 2, 3, 4, 5, 6, 7, 8};
   lattice.Init(lattice.g_, nums);
-  lattice.BoundaryCondition(lattice.g_);
-  CHECK_CLOSE(lattice.g_[nx + 3][SW], lattice.g_[0][NE], zero_tol);
-  CHECK_CLOSE(lattice.g_[2 * nx + 2][SE], lattice.g_[nx + 1][NW], zero_tol);
-  CHECK_CLOSE(lattice.g_[(nx + 2) * ny + 1][NW],
-      lattice.g_[(nx + 2) * (ny + 1)][SE], zero_tol);
-  CHECK_CLOSE(lattice.g_[(nx + 2) * (ny + 1) - 2][NE],
-      lattice.g_[(nx + 2) * (ny + 2) -1][SW], zero_tol);
+  lattice.BoundaryCondition(lattice.g_, lattice.boundary_g_);
+  auto corner = 2 * nx + 2 * ny;
+  CHECK_CLOSE(lattice.g_[0][SW], lattice.boundary_g_[corner][NE], zero_tol);
+  CHECK_CLOSE(lattice.g_[nx - 1][SE], lattice.boundary_g_[corner + 1][NW],
+      zero_tol);
+  CHECK_CLOSE(lattice.g_[(ny - 1) * nx][NW],
+      lattice.boundary_g_[corner + 2][SE], zero_tol);
+  CHECK_CLOSE(lattice.g_[ny * nx - 1][NE], lattice.boundary_g_[corner + 3][SW],
+      zero_tol);
 }
 
 TEST(StreamHorizontal)
@@ -431,7 +432,7 @@ TEST(StreamHorizontal)
   double zero_tol = 1e-20;
   std::size_t nd = 2;
   std::size_t nc = 9;
-  std::size_t ny = 5;
+  std::size_t ny = 6;
   std::size_t nx = 4;
   double dx = 1.;
   double dt = 0.001;
@@ -445,20 +446,32 @@ TEST(StreamHorizontal)
   std::vector<double> second_result = {4, 2, 4, 0, 4, 2, 0, 0, 2};
   int counter = 0;
   for (auto &lat : lattice.g_) lat = nodes[counter++ % 2];
-  lattice.g_ = lattice.Stream(lattice.g_);
-  for (auto y = 1u; y < ny + 1; ++y) {
-    for (auto x = 1u; x < nx + 1; ++x) {
-      auto n = y * (nx + 2) + x;
-      for (auto i = 0u; i < nc; ++i) {
-        if ((lattice.g_[n][0] - 1) < zero_tol) {
-        CHECK_CLOSE(first_result[i], lattice.g_[n][i], zero_tol);
-        }
-        else {
-          CHECK_CLOSE(second_result[i], lattice.g_[n][i], zero_tol);
-        }
-      }  // i
-    }  // x
-  }  // y
+  lattice.BoundaryCondition(lattice.g_, lattice.boundary_g_);
+  for (auto n = 0u; n < lattice.boundary_g_.size(); ++n) {
+    if (n < ny) {
+      lattice.boundary_g_[n] = nodes[1];
+    }
+    else if (n < 2 * ny) {
+      lattice.boundary_g_[n] = nodes[ny % 2];
+    }
+    else if (n < 2 * ny + 2 * nx) {
+      lattice.boundary_g_[n] = nodes[n % 2];
+    }
+    else {
+      lattice.boundary_g_[n] = nodes[(n + 1) % 2];
+    }
+  }  // n
+  lattice.g_ = lattice.Stream(lattice.g_, lattice.boundary_g_);
+  for (auto lat : lattice.g_) {
+    for (auto i = 0u; i < nc; ++i) {
+      if ((lat[0] - 1) < zero_tol) {
+      CHECK_CLOSE(first_result[i], lat[i], zero_tol);
+      }
+      else {
+        CHECK_CLOSE(second_result[i], lat[i], zero_tol);
+      }
+    }  // i
+  }  // lat
 }
 
 TEST(StreamVertical)
@@ -479,21 +492,33 @@ TEST(StreamVertical)
   std::vector<double> first_result = {1, 1, 3, 1, 5, 3, 3, 5, 5};
   std::vector<double> second_result = {4, 4, 0, 4, 2, 0, 0, 2, 2};
   int counter = 0;
-  for (auto &lat : lattice.g_) lat = nodes[(counter++ / (nx + 2)) % 2];
-  lattice.g_ = lattice.Stream(lattice.g_);
-  for (auto y = 1u; y < ny + 1; ++y) {
-    for (auto x = 1u; x < nx + 1; ++x) {
-      auto n = y * (nx + 2) + x;
-      for (auto i = 0u; i < nc; ++i) {
-        if ((lattice.g_[n][0] - 1) < zero_tol) {
-        CHECK_CLOSE(first_result[i], lattice.g_[n][i], zero_tol);
-        }
-        else {
-          CHECK_CLOSE(second_result[i], lattice.g_[n][i], zero_tol);
-        }
-      }  // i
-    }  // x
-  }  // y
+  for (auto &lat : lattice.g_) lat = nodes[(counter++ / nx) % 2];
+  lattice.BoundaryCondition(lattice.g_, lattice.boundary_g_);
+  for (auto n = 0u; n < lattice.boundary_g_.size(); ++n) {
+    if (n < ny) {
+      lattice.boundary_g_[n] = nodes[n % 2];
+    }
+    else if (n < 2 * ny) {
+      lattice.boundary_g_[n] = nodes[(n + 1) % 2];
+    }
+    else if (n < 2 * ny + 2 * nx) {
+      lattice.boundary_g_[n] = nodes[1];
+    }
+    else {
+      lattice.boundary_g_[n] = nodes[(n % 2 + (n + 1) % 2) % 2];
+    }
+  }  // n
+  lattice.g_ = lattice.Stream(lattice.g_, lattice.boundary_g_);
+  for (auto lat : lattice.g_) {
+    for (auto i = 0u; i < nc; ++i) {
+      if ((lat[0] - 1) < zero_tol) {
+      CHECK_CLOSE(first_result[i], lat[i], zero_tol);
+      }
+      else {
+        CHECK_CLOSE(second_result[i], lat[i], zero_tol);
+      }
+    }  // i
+  }  // lat
 }
 
 TEST(StreamDiagonalNESW)
@@ -513,16 +538,34 @@ TEST(StreamDiagonalNESW)
   std::vector<double> threes(9, 3);
   std::vector<std::vector<double>> nodes = {ones, twos, threes};
   std::vector<double> result = {1, 2, 3};
-  for (auto y = 0u; y < ny + 2; ++y) {
-    for (auto x = 0u; x < nx + 2; ++x) {
-      auto n = y * (nx + 2) + x;
+  for (auto y = 0u; y < ny; ++y) {
+    for (auto x = 0u; x < nx; ++x) {
+      auto n = y * nx + x;
       lattice.g_[n] = nodes[(x % 3 + y % 3) % 3];
     }  // x
   }  // y
-  lattice.g_ = lattice.Stream(lattice.g_);
-  for (auto y = 1u; y < ny + 1; ++y) {
-    for (auto x = 1u; x < nx + 1; ++x) {
-      auto n = y * (nx + 2) + x;
+  lattice.BoundaryCondition(lattice.g_, lattice.boundary_g_);
+  for (auto n = 0u; n < lattice.boundary_g_.size(); ++n) {
+    if (n < ny) {
+      lattice.boundary_g_[n] = nodes[(n + 2) % 3];
+    }
+    else if (n < 2 * ny) {
+      lattice.boundary_g_[n] = nodes[(n + 2) % 3];
+    }
+    else if (n < 2 * ny + nx) {
+      lattice.boundary_g_[n] = nodes[(n + 1) % 3];
+    }
+    else if (n < 2 * ny + 2 * nx) {
+      lattice.boundary_g_[n] = nodes[n % 3];
+    }
+    else {
+      lattice.boundary_g_[n] = nodes[(n + 1) % 2];
+    }
+  }  // n
+  lattice.g_ = lattice.Stream(lattice.g_, lattice.boundary_g_);
+  for (auto y = 0u; y < ny; ++y) {
+    for (auto x = 0u; x < nx; ++x) {
+      auto n = y * nx + x;
       CHECK_CLOSE(result[(x % 3 + y % 3 + 1) % 3], lattice.g_[n][NE], zero_tol);
       CHECK_CLOSE(result[(x % 3 + y % 3 + 2) % 3], lattice.g_[n][SW], zero_tol);
     }  // x
@@ -546,16 +589,34 @@ TEST(StreamDiagonalNWSE)
   std::vector<double> threes(9, 3);
   std::vector<std::vector<double>> nodes = {ones, twos, threes};
   std::vector<double> result = {1, 2, 3};
-  for (auto y = 0u; y < ny + 2; ++y) {
-    for (auto x = 0u; x < nx + 2; ++x) {
-      auto n = y * (nx + 2) + x;
+  for (auto y = 0u; y < ny; ++y) {
+    for (auto x = 0u; x < nx; ++x) {
+      auto n = y * nx + x;
       lattice.g_[n] = nodes[(2 - x % 3 + y % 3) % 3];
     }  // x
   }  // y
-  lattice.g_ = lattice.Stream(lattice.g_);
-  for (auto y = 1u; y < ny + 1; ++y) {
-    for (auto x = 1u; x < nx + 1; ++x) {
-      auto n = y * (nx + 2) + x;
+  lattice.BoundaryCondition(lattice.g_, lattice.boundary_g_);
+  for (auto n = 0u; n < lattice.boundary_g_.size(); ++n) {
+    if (n < ny) {
+      lattice.boundary_g_[n] = nodes[n % 3];
+    }
+    else if (n < 2 * ny) {
+      lattice.boundary_g_[n] = nodes[(n + 2) % 3];
+    }
+    else if (n < 2 * ny + nx) {
+      lattice.boundary_g_[n] = nodes[(1 - n) % 3];
+    }
+    else if (n < 2 * ny + 2 * nx) {
+      lattice.boundary_g_[n] = nodes[(2 - n) % 3];
+    }
+    else {
+      lattice.boundary_g_[n] = nodes[2 * ((n + 1) % 2)];
+    }
+  }  // n
+  lattice.g_ = lattice.Stream(lattice.g_, lattice.boundary_g_);
+  for (auto y = 0u; y < ny; ++y) {
+    for (auto x = 0u; x < nx; ++x) {
+      auto n = y * nx + x;
       CHECK_CLOSE(result[(3 - x % 3 + y % 3) % 3], lattice.g_[n][NW], zero_tol);
       CHECK_CLOSE(result[(4 - x % 3 + y % 3) % 3], lattice.g_[n][SE], zero_tol);
     }  // x
