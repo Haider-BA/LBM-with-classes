@@ -2,7 +2,7 @@
 <CodeBlocks_project_file>
 	<FileVersion major="1" minor="6" />
 	<Project>
-		<Option title="LBM-local" />
+		<Option title="LBM-with-classes" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
@@ -44,13 +44,13 @@
 			<Add directory="include" />
 		</Compiler>
 		<Linker>
-			<Add library="UnitTest++/lib/Debug/libUnitTest++.a" />
+			<Add library="UnitTest++\lib\Debug\libUnitTest++.a" />
 			<Add directory="UnitTest++/lib/Debug" />
 		</Linker>
 		<Unit filename="include/Lattice.hpp" />
 		<Unit filename="src/Lattice.cpp" />
-		<Unit filename="src/TestLatticeBoltzmann.cpp" />
 		<Unit filename="src/main-devel.cpp" />
+		<Unit filename="unittests/TestLatticeBoltzmann.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

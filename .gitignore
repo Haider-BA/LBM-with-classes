@@ -1,8 +1,8 @@
 UnitTest++/
 bin/
 obj/
-unittests/
 UnitTest++.cbp
 *.depend
 *.layout
 main.cpp
+unittests/UnitTestCustomUtilities.hpp
