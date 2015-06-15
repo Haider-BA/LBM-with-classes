@@ -189,7 +189,35 @@ class Lattice {
    */
   void Collide(std::vector<std::vector<double>> &lattice
     , const std::vector<std::vector<double>> &lattice_eq
-    , std::vector<std::vector<double>> &src);
+    , std::vector<std::vector<double>> &src
+    , const std::vector<double> &rho);
+
+  /** \brief
+   *
+   * \param lattice const std::vector<double>&
+   * \return std::vector<double>
+   *
+   */
+  std::vector<double> ComputeRho(
+      const std::vector<std::vector<double>> &lattice);
+
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
+  void ComputeU(const std::vector<std::vector<double>> &lattice
+  , const std::vector<double> &rho
+  , const std::vector<std::vector<double>> &src);
+
+  /** \brief
+   *
+   * \return void
+   *
+   */
+  void TakeStep();
 
   /**
    * Flips the lattice for ease of printing out the lattice according to the
@@ -228,57 +256,57 @@ class Lattice {
   /**
    * NS distribution function stored row-wise in a 2D vector.
    */
-  std::vector<std::vector<double>> f_;
+  std::vector<std::vector<double>> f;
 
   /**
    * CDE distribution function stored row-wise in a 2D vector.
    */
-  std::vector<std::vector<double>> g_;
+  std::vector<std::vector<double>> g;
 
   /**
    * NS equilibrium distribution function stored row-wise in a 2D vector.
    */
-  std::vector<std::vector<double>> f_eq_;
+  std::vector<std::vector<double>> f_eq;
 
   /**
    * CDE equilibrium distribution function stored row-wise in a 2D vector.
    */
-  std::vector<std::vector<double>> g_eq_;
+  std::vector<std::vector<double>> g_eq;
 
   /**
    * Body force values for NS stored row-wise in a 2D vector.
    */
-  std::vector<std::vector<double>> src_f_;
+  std::vector<std::vector<double>> src_f;
 
   /**
    * Source term for CDE stored row-wise in a 1D vector.
    */
-  std::vector<double> src_g_;
+  std::vector<double> src_g;
 
   /**
    * Density for NS stored row-wise in a 1D vector.
    */
-  std::vector<double> rho_f_;
+  std::vector<double> rho_f;
 
   /**
    * Density for CDE stored row-wise in a 1D vector.
    */
-  std::vector<double> rho_g_;
+  std::vector<double> rho_g;
 
   /**
    * Boundary nodes for NS lattice
    */
-  std::vector<std::vector<double>> boundary_f_;
+  std::vector<std::vector<double>> boundary_f;
 
   /**
    * Boundary nodes for CDE lattice
    */
-  std::vector<std::vector<double>> boundary_g_;
+  std::vector<std::vector<double>> boundary_g;
 
   /**
    * Lattice velocity stored row-wise in a 2D vector.
    */
-  std::vector<std::vector<double>> u_;
+  std::vector<std::vector<double>> u;
 
  private:
   // 6  2  5  ^
@@ -294,7 +322,7 @@ class Lattice {
     NE,
     NW,
     SW,
-    SE,
+    SE
   };
   const std::vector<std::vector<double>> e_ = {{0, 0},
                                             {1, 0}, {0, 1}, {-1, 0}, {0, -1},
