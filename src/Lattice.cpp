@@ -21,8 +21,16 @@ Lattice::Lattice(std::size_t num_dimensions
   , double dt
   , double diffusion_coefficient
   , double kinematic_viscosity
+  , double density_f
+  , double density_g
+  , const std::vector<double> &u0
+  , const std::vector<std::vector<unsigned>> &src_pos_f
+  , const std::vector<std::vector<unsigned>> &src_pos_g
+  , const std::vector<std::vector<double>> &src_strength_f
+  , const std::vector<double> &src_strength_g
   , bool is_cd
-  , bool is_ns)
+  , bool is_ns
+  , bool is_instant)
   : number_of_dimensions_ {num_dimensions},
     number_of_discrete_velocities_ {num_discrete_velocities},
     number_of_rows_ {num_rows},
@@ -31,9 +39,16 @@ Lattice::Lattice(std::size_t num_dimensions
     time_step_ {dt},
     diffusion_coefficient_ {diffusion_coefficient},
     kinematic_viscosity_ {kinematic_viscosity},
+    initial_density_f_ {density_f},
+    initial_density_g_ {density_g},
+    initial_velocity_ {u0},
+    source_position_f_ {src_pos_f},
+    source_position_g_ {src_pos_g},
+    source_strength_f_ {src_strength_f},
+    source_strength_g_ {src_strength_g},
     is_cd_ {is_cd},
-    is_ns_ {is_ns}
-
+    is_ns_ {is_ns},
+    is_instant_ {is_instant}
 {
   if (input_parameter_check_value_ == 0) {
     throw std::runtime_error("Zero value in input parameters");
@@ -159,6 +174,23 @@ void Lattice::InitSrc(std::vector<std::vector<double>> &lattice_src
     }
     lattice_src[src_pos[1] * nx + src_pos[0]] = *it_strength++;
   }  // src_pos
+}
+
+void Lattice::InitAll()
+{
+  Lattice::Init(u, initial_velocity_);
+  if (is_ns_) {
+    Lattice::Init(rho_f, initial_density_f_);
+    Lattice::ComputeEq(f_eq, rho_f);
+    Lattice::Init(f, f_eq);
+    Lattice::InitSrc(src_f, source_position_f_, source_strength_f_);
+  }
+  if (is_cd_) {
+    Lattice::Init(rho_g, initial_density_g_);
+    Lattice::ComputeEq(g_eq, rho_g);
+    Lattice::Init(g, g_eq);
+    Lattice::InitSrc(src_g, source_position_g_, source_strength_g_);
+  }
 }
 
 void Lattice::ComputeEq(std::vector<std::vector<double>> &lattice_eq
@@ -365,6 +397,9 @@ void Lattice::ComputeU(const std::vector<std::vector<double>> &lattice
   , const std::vector<double> &rho
   , const std::vector<std::vector<double>> &src)
 {
+  // variadic templates?
+  // https://stackoverflow.com/questions/15208831/check-to-see-if-all-variable-
+  // are-equal-to-the-same-value-in-c
   if (lattice.size() != src.size() || lattice.size() != rho.size() ||
       src.size() != rho.size()) throw std::runtime_error("Input size mismatch");
   auto nx = GetNumberOfColumns();

@@ -20,7 +20,15 @@ class Lattice {
    * \param which_type specifies the type of lattice to be created
    * \param num_rows number of rows for the lattice
    * \param num_cols number of columns for the lattice
-   * \throw 1 if which_type is not 0 or 1
+   * \param dx
+   * \param dt
+   * \param diffusion_coefficient
+   * \param kinematic_viscosity
+   * \param is_cd
+   * \param is_ns
+   * \param is_instant
+   * \throw std::runtime_error if there is incorrect values in the input
+   *        parameters
    */
   Lattice(std::size_t num_dimensions
     , std::size_t num_discrete_velocities
@@ -30,8 +38,16 @@ class Lattice {
     , double dt
     , double diffusion_coefficient
     , double kinematic_viscosity
+    , double density_f
+    , double density_g
+    , const std::vector<double> &u0
+    , const std::vector<std::vector<unsigned>> &src_pos_f
+    , const std::vector<std::vector<unsigned>> &src_pos_g
+    , const std::vector<std::vector<double>> &src_strength_f
+    , const std::vector<double> &src_strength_g
     , bool is_cd
-    , bool is_ns);
+    , bool is_ns
+    , bool is_instant);
 
   /**
    * Get the number of dimensions of the lattice. 2 for 2D and 3 for 3D.
@@ -134,6 +150,13 @@ class Lattice {
     , const std::vector<std::vector<unsigned>> &src_position
     , const std::vector<std::vector<double>> &src_strength);
 
+  /** \brief
+   *
+   * \return void
+   *
+   */
+  void InitAll();
+
   /**
    * Calculates the equilibrium distribution function values at each node and
    * writes that to lattice_eq using <some formula>
@@ -169,22 +192,24 @@ class Lattice {
       const std::vector<std::vector<double>> &lattice
     , const std::vector<std::vector<double>> &boundary);
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+  /**
+   * Performs the collision step based on "A new scheme for source term in LBGK
+   * model for convection–diffusion equation"
+   * \param lattice 2D lattice containing the distribution functions
+   * \param lattice_eq 2D lattice containing the equilibrium distribution
+   *        functions
    */
   void Collide(std::vector<std::vector<double>> &lattice
     , const std::vector<std::vector<double>> &lattice_eq
     , std::vector<double> &src);
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
+  /**
+   * Performs the collision step based on Guo2002
+   * \param lattice 2D lattice containing the distribution functions
+   * \param lattice_eq 2D lattice containing the equilibrium distribution
+   *        functions
+   * \param src 2D lattice containing the source magnitude at each node
+   * \param rho 2D lattice containing the density at each node
    *
    */
   void Collide(std::vector<std::vector<double>> &lattice
@@ -192,30 +217,29 @@ class Lattice {
     , std::vector<std::vector<double>> &src
     , const std::vector<double> &rho);
 
-  /** \brief
-   *
-   * \param lattice const std::vector<double>&
-   * \return std::vector<double>
-   *
+  /**
+   * Computes density at each node of the lattice
+   * \param lattice 2D lattice containing the distribution functions
+   * \return 2D lattice containing the density value at each node
    */
   std::vector<double> ComputeRho(
       const std::vector<std::vector<double>> &lattice);
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+  /**
+   * Computes macroscopic velocity of the lattice
+   * \param lattice 2D lattice containing the distribution functions of the NS
+   *        equation
+   * \param rho lattice containing the density of the NS equation
+   * \param src lattice containing the source of the NS equation
+   * \throw std::runtime_error if the size of the 3 input lattices do not match
    */
   void ComputeU(const std::vector<std::vector<double>> &lattice
   , const std::vector<double> &rho
   , const std::vector<std::vector<double>> &src);
 
-  /** \brief
-   *
-   * \return void
-   *
+  /**
+   * Performance a series of streaming and collision depending on is_cd and
+   * is_ns toggles
    */
   void TakeStep();
 
@@ -342,6 +366,13 @@ class Lattice {
   double cs_sqr_;
   double tau_cd_;
   double tau_ns_;
+  double initial_density_f_;
+  double initial_density_g_;
+  std::vector<double> initial_velocity_;
+  std::vector<std::vector<unsigned>> source_position_f_;
+  std::vector<std::vector<unsigned>> source_position_g_;
+  std::vector<std::vector<double>> source_strength_f_;
+  std::vector<double> source_strength_g_;
   bool is_cd_;
   bool is_ns_;
   bool is_instant_;
