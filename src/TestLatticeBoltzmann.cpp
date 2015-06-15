@@ -5,6 +5,8 @@
 #include "Lattice.hpp"
 #include "UnitTest++.h"
 
+static const double zero_tol = 1e-20;
+static const double loose_tol = 1e-5;
 enum DiscreteDirections {
   E = 1,
   N,
@@ -15,6 +17,18 @@ enum DiscreteDirections {
   SW,
   SE,
 };
+static const std::size_t g_num_dimensions = 2;
+static const std::size_t g_num_discrete_velocities = 9;
+static const std::size_t g_num_rows = 5;
+static const std::size_t g_num_cols = 4;
+static const double g_dx = 0.0316;
+static const double g_dt = 0.001;
+static const double g_diffusion_coefficient = 0.2;
+static const double g_kinematic_viscosity = 0.2;
+static const bool g_is_cd = true;
+static const bool g_is_ns = true;
+static const double g_density_g = 1.0;
+static const double g_density_f = 1.0;
 
 TEST(DefaultLattice)
 {
@@ -27,25 +41,31 @@ TEST(DefaultLattice)
 
 TEST(ZeroValuesInLatticeDeclaration)
 {
-  CHECK_THROW(Lattice lattice(0, 9, 2, 4, 1, 1, true, true),
+  CHECK_THROW(Lattice lattice(0, 9, 2, 4, 1, 1, 0.2, 0.2, true, true),
       std::runtime_error);
-  CHECK_THROW(Lattice lattice(2, 0, 2, 4, 1, 1, true, true),
+  CHECK_THROW(Lattice lattice(2, 0, 2, 4, 1, 1, 0.2, 0.2, true, true),
       std::runtime_error);
-  CHECK_THROW(Lattice lattice(2, 9, 0, 4, 1, 1, true, true),
+  CHECK_THROW(Lattice lattice(2, 9, 0, 4, 1, 1, 0.2, 0.2, true, true),
       std::runtime_error);
-  CHECK_THROW(Lattice lattice(2, 9, 2, 0, 1, 1, true, true),
+  CHECK_THROW(Lattice lattice(2, 9, 2, 0, 1, 1, 0.2, 0.2, true, true),
       std::runtime_error);
-  CHECK_THROW(Lattice lattice(2, 9, 2, 4, 0, 1, true, true),
+  CHECK_THROW(Lattice lattice(2, 9, 2, 4, 0, 1, 0.2, 0.2, true, true),
       std::runtime_error);
-  CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 0, true, true),
+  CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 0, 0.2, 0.2, true, true),
       std::runtime_error);
-  CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 1, false, false),
+  CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 1, 0.0, 0.2, true, true),
+      std::runtime_error);
+  CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 1, 0.2, 0.0, true, true),
+      std::runtime_error);
+  CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 1, 0.2, 0.2, false, false),
       std::runtime_error);
 }
 
 TEST(NormalLatticeBeforeInit)
 {
-  Lattice lattice(2, 9, 2, 4, 1, 1, true, true);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
   std::size_t ny = lattice.GetNumberOfRows();
   std::size_t nx = lattice.GetNumberOfColumns();
   std::size_t nd = lattice.GetNumberOfDimensions();
@@ -53,7 +73,7 @@ TEST(NormalLatticeBeforeInit)
   std::size_t lattice_size = ny * nx;
   CHECK_EQUAL(2u, nd);
   CHECK_EQUAL(9u, nc);
-  CHECK_EQUAL(2u, ny);
+  CHECK_EQUAL(5u, ny);
   CHECK_EQUAL(4u, nx);
   for (auto n = 0u; n < lattice_size; ++n) {
     CHECK_EQUAL(nc, lattice.f_[n].size());
@@ -80,7 +100,9 @@ TEST(NormalLatticeBeforeInit)
 
 TEST(Init1DLattices)
 {
-  Lattice lattice(2, 9, 2, 4, 1, 1, true, true);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
   const double initial_rho = 1.0;
   lattice.Init(lattice.rho_f_, initial_rho);
   lattice.Init(lattice.rho_g_, initial_rho);
@@ -94,7 +116,9 @@ TEST(Init1DLattices)
 
 TEST(Init2DLatticesWithValues)
 {
-  Lattice lattice(2, 9, 2, 4, 1, 1, true, true);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
   std::vector<double> initial_u = {1.0, 2.0};
   lattice.Init(lattice.u_, initial_u);
   for (auto lat : lattice.u_) {
@@ -105,14 +129,18 @@ TEST(Init2DLatticesWithValues)
 
 TEST(Init2DLatticesWithValuesWrongDimensions)
 {
-  Lattice lattice(2, 9, 2, 4, 1, 1, true, true);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
   std::vector<double> initial_u = {1.0, 2.0, 3.0};
   CHECK_THROW(lattice.Init(lattice.u_, initial_u), std::runtime_error);
 }
 
 TEST(Init2DLatticesWithLattice)
 {
-  Lattice lattice(2, 9, 2, 4, 1, 1, true, true);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
   auto ny = lattice.GetNumberOfRows();
   auto nx = lattice.GetNumberOfColumns();
   std::vector<double> node = {1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -126,7 +154,9 @@ TEST(Init2DLatticesWithLattice)
 
 TEST(Init2DLatticesWithLatticeWrongDimensions)
 {
-  Lattice lattice(2, 9, 2, 4, 1, 1, true, true);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
   auto ny = lattice.GetNumberOfRows();
   auto nx = lattice.GetNumberOfColumns();
   std::vector<double> node = {1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -136,61 +166,52 @@ TEST(Init2DLatticesWithLatticeWrongDimensions)
 
 TEST(Init2DLatticesWithLatticeWrongDepth)
 {
-  Lattice lattice(2, 9, 2, 4, 1, 1, true, true);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
   auto ny = lattice.GetNumberOfRows();
   auto nx = lattice.GetNumberOfColumns();
   auto nc = lattice.GetNumberOfDiscreteVelocities();
   for (auto n = 0u; n < 100; ++n) {
     if (n == nc) continue;
     std::vector<double> node(n, 0.0);
-    std::vector<std::vector<double>> initial_g((nx + 2) * (ny + 2), node);
+    std::vector<std::vector<double>> initial_g(nx * ny, node);
     CHECK_THROW(lattice.Init(lattice.g_, initial_g), std::runtime_error);
   }
 }
 
 TEST(CalculateEquilibrium)
 {
-  double precision = 0.001;
-  std::size_t nd = 2;
-  std::size_t nc = 9;
-  std::size_t ny = 4;
-  std::size_t nx = 3;
-  double density_g = 1.;
-  double dx = 1.;
-  double dt = 0.001;
-  bool is_cd = true;
-  bool is_ns = true;
   std::vector<double> u0 = {1., 1.};
-  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
-  std::vector<double> ans = {0.444,
-      0.111, 0.111, 0.111, 0.111,
-      0.028, 0.028, 0.028, 0.028};
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
+  auto nc = lattice.GetNumberOfDiscreteVelocities();
+  std::vector<double> ans = {0.443100,
+      0.121827, 0.121827, 0.100729, 0.100729,
+      0.033469, 0.027694, 0.022921, 0.027694};
   lattice.Init(lattice.u_, u0);
-  lattice.Init(lattice.rho_g_, density_g);
+  lattice.Init(lattice.rho_g_, g_density_g);
   lattice.ComputeEq(lattice.g_eq_, lattice.rho_g_);
 
   for (auto lat_eq : lattice.g_eq_) {
     for (auto i = 0u; i < nc; ++i) {
-      CHECK_CLOSE(ans[i], lat_eq[i], precision);
+      CHECK_CLOSE(ans[i], lat_eq[i], loose_tol);
     }  // i
   }  // lat_eq
 }
 
 TEST(InitFWithValueFromFEqNode)
 {
-  std::size_t nd = 2;
-  std::size_t nc = 9;
-  std::size_t ny = 4;
-  std::size_t nx = 3;
-  double density_g = 1.;
-  double dx = 1.;
-  double dt = 0.001;
-  bool is_cd = true;
-  bool is_ns = true;
   std::vector<double> u0 = {123., 321.};
-  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
+  auto nx = lattice.GetNumberOfColumns();
+  auto ny = lattice.GetNumberOfRows();
+  auto nc = lattice.GetNumberOfDiscreteVelocities();
   lattice.Init(lattice.u_, u0);
-  lattice.Init(lattice.rho_g_, density_g);
+  lattice.Init(lattice.rho_g_, g_density_g);
   lattice.ComputeEq(lattice.g_eq_, lattice.rho_g_);
   lattice.Init(lattice.g_, lattice.g_eq_);
   for (auto n = 0u; n < nx * ny; ++n) {
@@ -202,20 +223,15 @@ TEST(InitFWithValueFromFEqNode)
 
 TEST(InitSingleSource)
 {
-  double zero_tol = 1e-20;
-  std::size_t nd = 2;
-  std::size_t nc = 9;
-  std::size_t ny = 4;
-  std::size_t nx = 5;
-  double dx = 1.;
-  double dt = 0.001;
-  bool is_cd = true;
-  bool is_ns = true;
-  unsigned x_pos = 4;
+  unsigned x_pos = 1;
   unsigned y_pos = 2;
   std::vector<std::vector<unsigned>> src_position = {{x_pos, y_pos}};
   std::vector<double> src_strength = {2};
-  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
+  auto nx = lattice.GetNumberOfColumns();
+  auto ny = lattice.GetNumberOfRows();
   lattice.InitSrc(lattice.src_g_, src_position, src_strength);
   for (auto n = 0u; n < nx * ny; ++n) {
     if (n == y_pos * nx + x_pos) {
@@ -229,21 +245,16 @@ TEST(InitSingleSource)
 
 TEST(InitMultipleSource)
 {
-  double zero_tol = 1e-20;
-  std::size_t nd = 2;
-  std::size_t nc = 9;
-  std::size_t ny = 10;
-  std::size_t nx = 10;
-  double dx = 1.;
-  double dt = 0.001;
-  bool is_cd = true;
-  bool is_ns = true;
-  unsigned x_pos = 4;
-  unsigned y_pos = 2;
+  unsigned x_pos = 2;
+  unsigned y_pos = 1;
   std::vector<std::vector<unsigned>> src_position = {{x_pos, y_pos},
       {x_pos + 1, y_pos + 2}};
   std::vector<double> src_strength = {2, 3.4};
-  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
+  auto nx = lattice.GetNumberOfColumns();
+  auto ny = lattice.GetNumberOfRows();
   lattice.InitSrc(lattice.src_g_, src_position, src_strength);
   for (auto n = 0u; n < nx * ny; ++n) {
     if (n == y_pos * nx + x_pos) {
@@ -260,20 +271,15 @@ TEST(InitMultipleSource)
 
 TEST(InitSingle2DSource)
 {
-  double zero_tol = 1e-20;
-  std::size_t nd = 2;
-  std::size_t nc = 9;
-  std::size_t ny = 4;
-  std::size_t nx = 5;
-  double dx = 1.;
-  double dt = 0.001;
-  bool is_cd = true;
-  bool is_ns = true;
-  unsigned x_pos = 4;
+  unsigned x_pos = 1;
   unsigned y_pos = 2;
   std::vector<std::vector<unsigned>> src_position = {{x_pos, y_pos}};
   std::vector<std::vector<double>> src_strength = {{2, 3}};
-  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
+  auto nx = lattice.GetNumberOfColumns();
+  auto ny = lattice.GetNumberOfRows();
   lattice.InitSrc(lattice.src_f_, src_position, src_strength);
   for (auto n = 0u; n < nx * ny; ++n) {
     if (n == y_pos * nx + x_pos) {
@@ -289,21 +295,16 @@ TEST(InitSingle2DSource)
 
 TEST(InitMultiple2DSource)
 {
-  double zero_tol = 1e-20;
-  std::size_t nd = 2;
-  std::size_t nc = 9;
-  std::size_t ny = 10;
-  std::size_t nx = 11;
-  double dx = 1.;
-  double dt = 0.001;
-  bool is_cd = true;
-  bool is_ns = true;
-  unsigned x_pos = 4;
-  unsigned y_pos = 2;
+  unsigned x_pos = 1;
+  unsigned y_pos = 1;
   std::vector<std::vector<unsigned>> src_position = {{x_pos, y_pos},
       {x_pos + 2, y_pos + 1}};
   std::vector<std::vector<double>> src_strength = {{2, 3}, {2.3, 4.4}};
-  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
+  auto nx = lattice.GetNumberOfColumns();
+  auto ny = lattice.GetNumberOfRows();
   lattice.InitSrc(lattice.src_f_, src_position, src_strength);
   for (auto n = 0u; n < nx * ny; ++n) {
     if (n == y_pos * nx + x_pos) {
@@ -325,16 +326,11 @@ TEST(InitMultiple2DSource)
 
 TEST(BoundaryConditionPeriodic)
 {
-  double zero_tol = 1e-20;
-  std::size_t nd = 2;
-  std::size_t nc = 9;
-  std::size_t ny = 3;
-  std::size_t nx = 4;
-  double dx = 1.;
-  double dt = 0.001;
-  bool is_cd = true;
-  bool is_ns = true;
-  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
+  auto nx = lattice.GetNumberOfColumns();
+  auto ny = lattice.GetNumberOfRows();
   std::vector<double> nums = {0, 1, 0, 2, 4, 5, 6, 7, 8};
   lattice.Init(lattice.g_, nums);
   lattice.BoundaryCondition(lattice.g_, lattice.boundary_g_);
@@ -353,16 +349,12 @@ TEST(BoundaryConditionPeriodic)
 
 TEST(BoundaryConditionBounceBack)
 {
-  double zero_tol = 1e-20;
-  std::size_t nd = 2;
-  std::size_t nc = 9;
-  std::size_t ny = 3;
-  std::size_t nx = 4;
-  double dx = 1.;
-  double dt = 0.001;
-  bool is_cd = true;
-  bool is_ns = true;
-  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
+  auto nx = lattice.GetNumberOfColumns();
+  auto ny = lattice.GetNumberOfRows();
+  auto nc = lattice.GetNumberOfDiscreteVelocities();
   std::vector<double> nums = {0, 1, 2, 3, 4, 5, 6, 7, 8};
   double value = 0;
   for (auto &lat : lattice.g_) lat = std::vector<double>(nc, value++);
@@ -376,7 +368,7 @@ TEST(BoundaryConditionBounceBack)
     CHECK_CLOSE(lattice.g_[x][S], lattice.boundary_g_[bottom + x][N],
         zero_tol);
     if (x == 0) {
-      CHECK_CLOSE(lattice.g_[n + ny][NE], lattice.boundary_g_[top + x][SW],
+      CHECK_CLOSE(lattice.g_[n + nx - 1][NE], lattice.boundary_g_[top + x][SW],
           zero_tol);
       CHECK_CLOSE(lattice.g_[nx - 1][SE], lattice.boundary_g_[bottom + x][NW],
           zero_tol);
@@ -404,16 +396,11 @@ TEST(BoundaryConditionBounceBack)
 
 TEST(BoundaryConditionCorner)
 {
-  double zero_tol = 1e-20;
-  std::size_t nd = 2;
-  std::size_t nc = 9;
-  std::size_t ny = 5;
-  std::size_t nx = 4;
-  double dx = 1.;
-  double dt = 0.001;
-  bool is_cd = true;
-  bool is_ns = true;
-  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
+  auto nx = lattice.GetNumberOfColumns();
+  auto ny = lattice.GetNumberOfRows();
   std::vector<double> nums = {0, 1, 2, 3, 4, 5, 6, 7, 8};
   lattice.Init(lattice.g_, nums);
   lattice.BoundaryCondition(lattice.g_, lattice.boundary_g_);
@@ -429,16 +416,12 @@ TEST(BoundaryConditionCorner)
 
 TEST(StreamHorizontal)
 {
-  double zero_tol = 1e-20;
-  std::size_t nd = 2;
-  std::size_t nc = 9;
-  std::size_t ny = 6;
-  std::size_t nx = 4;
-  double dx = 1.;
-  double dt = 0.001;
-  bool is_cd = true;
-  bool is_ns = true;
-  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
+  auto nx = lattice.GetNumberOfColumns();
+  auto ny = lattice.GetNumberOfRows();
+  auto nc = lattice.GetNumberOfDiscreteVelocities();
   std::vector<double> first_three = {1, 2, 1, 0, 1, 2, 0, 0, 2};
   std::vector<double> second_three = {4, 5, 4, 3, 4, 5, 3, 3, 5};
   std::vector<std::vector<double>> nodes = {first_three, second_three};
@@ -452,7 +435,10 @@ TEST(StreamHorizontal)
       lattice.boundary_g_[n] = nodes[1];
     }
     else if (n < 2 * ny) {
-      lattice.boundary_g_[n] = nodes[ny % 2];
+      lattice.boundary_g_[n] = nodes[(ny + 1) % 2];
+    }
+    else if (n < 2 * ny + nx) {
+      lattice.boundary_g_[n] = nodes[n % 2];
     }
     else if (n < 2 * ny + 2 * nx) {
       lattice.boundary_g_[n] = nodes[n % 2];
@@ -476,16 +462,12 @@ TEST(StreamHorizontal)
 
 TEST(StreamVertical)
 {
-  double zero_tol = 1e-20;
-  std::size_t nd = 2;
-  std::size_t nc = 9;
-  std::size_t ny = 5;
-  std::size_t nx = 4;
-  double dx = 1.;
-  double dt = 0.001;
-  bool is_cd = true;
-  bool is_ns = true;
-  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
+  auto nx = lattice.GetNumberOfColumns();
+  auto ny = lattice.GetNumberOfRows();
+  auto nc = lattice.GetNumberOfDiscreteVelocities();
   std::vector<double> first_three = {1, 1, 0, 1, 2, 0, 0, 2, 2};
   std::vector<double> second_three = {4, 4, 3, 4, 5, 3, 3, 5, 5};
   std::vector<std::vector<double>> nodes = {first_three, second_three};
@@ -523,16 +505,12 @@ TEST(StreamVertical)
 
 TEST(StreamDiagonalNESW)
 {
-  double zero_tol = 1e-20;
-  std::size_t nd = 2;
-  std::size_t nc = 9;
-  std::size_t ny = 5;
-  std::size_t nx = 4;
-  double dx = 1.;
-  double dt = 0.001;
-  bool is_cd = true;
-  bool is_ns = true;
-  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
+  auto nx = lattice.GetNumberOfColumns();
+  auto ny = lattice.GetNumberOfRows();
+  auto nc = lattice.GetNumberOfDiscreteVelocities();
   std::vector<double> ones(9, 1);
   std::vector<double> twos(9, 2);
   std::vector<double> threes(9, 3);
@@ -574,16 +552,12 @@ TEST(StreamDiagonalNESW)
 
 TEST(StreamDiagonalNWSE)
 {
-  double zero_tol = 1e-20;
-  std::size_t nd = 2;
-  std::size_t nc = 9;
-  std::size_t ny = 5;
-  std::size_t nx = 4;
-  double dx = 1.;
-  double dt = 0.001;
-  bool is_cd = true;
-  bool is_ns = true;
-  Lattice lattice(nd, nc, ny, nx, dx, dt, is_cd, is_ns);
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
+  auto nx = lattice.GetNumberOfColumns();
+  auto ny = lattice.GetNumberOfRows();
+  auto nc = lattice.GetNumberOfDiscreteVelocities();
   std::vector<double> ones(9, 1);
   std::vector<double> twos(9, 2);
   std::vector<double> threes(9, 3);
@@ -622,3 +596,54 @@ TEST(StreamDiagonalNWSE)
     }  // x
   }  // y
 }
+/*
+TEST(CollideCDEWithSource)
+{
+  std::size_t nx = 1;
+  std::size_t ny = 1;
+  int nc = 9;
+  double dx = 1.;
+  double dt = 0.01;
+  double precision = 0.01;
+  double lat = 1.;
+  double lat_eq = 1.;
+  double src0 = 50.5;
+  bool is_instant = false;
+  std::vector<double> c (9, lat);
+  std::vector<double> c_eq (9, lat_eq);
+  std::vector<double> c_exp1 = {1.2244, 1.05611, 1.05611, 1.05611, 1.05611,
+                                1.01403, 1.01403, 1.01403, 1.01403};
+  std::vector<double> c_exp2 = {0.99783, 0.99946, 0.99946, 0.99946, 0.99946,
+                                0.99986, 0.99986, 0.99986, 0.99986};
+  std::vector<double> zeros (9,0);
+  std::vector<double> src((nx + 2) * (ny + 2), 0.);
+  std::vector<std::vector<double>> f((nx + 2) * (ny + 2), c);
+  std::vector<std::vector<double>> f_eq((nx + 2) * (ny + 2), c_eq);
+  std::vector<std::vector<double>> f_exp1((nx + 2) * (ny + 2), c_exp1);
+  std::vector<std::vector<double>> f_exp2((nx + 2) * (ny + 2), c_exp2);
+  std::vector<std::vector<double>> u((nx + 2) * (ny + 2), {0, 0});
+  std::vector<std::vector<double>> src_pos = {{0, 0, src0}};
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, ny, nx,
+      g_dx, g_dt, g_diffusion_coefficient, g_kinematic_viscosity,
+      g_is_cd, g_is_ns);
+
+  // First collide
+  CHECK_EQUAL(0, Collide(f, f_eq, u, src, is_instant, nx, ny, nc, dx, dt));
+  for (auto y = nx + 2; y < (nx + 2) * (ny + 1); y += nx + 2) {
+    for (auto x = 1; x < nx + 1; ++x) {
+      for (auto i = 0; i < nc; ++i) {
+        CHECK_CLOSE(f_exp1[y + x][i], f[y + x][i], precision);
+      }
+    }
+  }
+  // Second collide
+  CHECK_EQUAL(0, Collide(f, f_eq, u, src, is_instant, nx, ny, nc, dx, dt));
+  for (auto y = nx + 2; y < (nx + 2) * (ny + 1); y += nx + 2) {
+    for (auto x = 1; x < nx + 1; ++x) {
+      for (auto i = 0; i < nc; ++i) {
+        CHECK_CLOSE(f_exp2[y + x][i], f[y + x][i], precision);
+      }
+    }
+  }
+}
+*/

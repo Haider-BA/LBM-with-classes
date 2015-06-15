@@ -19,6 +19,8 @@ Lattice::Lattice(std::size_t num_dimensions
   , std::size_t num_cols
   , double dx
   , double dt
+  , double diffusion_coefficient
+  , double kinematic_viscosity
   , bool is_cd
   , bool is_ns)
   : number_of_dimensions_ {num_dimensions},
@@ -27,6 +29,8 @@ Lattice::Lattice(std::size_t num_dimensions
     number_of_columns_ {num_cols},
     space_step_ {dx},
     time_step_ {dt},
+    diffusion_coefficient_ {diffusion_coefficient},
+    kinematic_viscosity_ {kinematic_viscosity},
     is_cd_ {is_cd},
     is_ns_ {is_ns}
 
@@ -36,6 +40,7 @@ Lattice::Lattice(std::size_t num_dimensions
   }
   else {
     c_ = space_step_ / time_step_;
+    cs_sqr_ = c_ * c_ / 3.0;
     std::size_t lattice_size = (num_rows) * (num_cols);
     std::vector<double> length_d(num_dimensions, 0.0);
     std::vector<double> length_q(num_discrete_velocities, 0.0);
@@ -48,6 +53,12 @@ Lattice::Lattice(std::size_t num_dimensions
     rho_f_.assign(lattice_size, 0.0);
     rho_g_.assign(lattice_size, 0.0);
     u_.assign(lattice_size, length_d);
+    // tau_cd_ formula from "A new scheme for source term in LBGK model for
+    // convection–diffusion equation"
+    if (is_cd) tau_cd_ = 0.5 + diffusion_coefficient / cs_sqr_ / dt;
+    // tau_ns_ formula from "Discrete lattice effects on the forcing term in the
+    // lattice Boltzmann method" Guo2002
+    if (is_ns) tau_ns_ = 0.5 + kinematic_viscosity / cs_sqr_ / dt;
   }
 }
 
@@ -72,13 +83,13 @@ std::size_t Lattice::GetNumberOfColumns() const
 }
 
 void Lattice::Init(std::vector<double> &lattice
-    , double initial_value)
+  , double initial_value)
 {
   for (auto &lat : lattice) lat = initial_value;
 }
 
 void Lattice::Init(std::vector<std::vector<double>> &lattice
-    , const std::vector<double> &initial_values)
+  , const std::vector<double> &initial_values)
 {
   for (auto &lat : lattice) {
     if (initial_values.size() != lat.size()) {
@@ -103,8 +114,8 @@ void Lattice::Init(std::vector<std::vector<double>> &lattice
 }
 
 void Lattice::InitSrc(std::vector<double> &lattice_src
-    , const std::vector<std::vector<unsigned>> &src_position
-    , const std::vector<double> &src_strength)
+  , const std::vector<std::vector<unsigned>> &src_position
+  , const std::vector<double> &src_strength)
 {
   if (src_position.size() != src_strength.size())
       throw std::runtime_error("Insufficient source information");
@@ -127,8 +138,8 @@ void Lattice::InitSrc(std::vector<double> &lattice_src
 }
 
 void Lattice::InitSrc(std::vector<std::vector<double>> &lattice_src
-    , const std::vector<std::vector<unsigned>> &src_position
-    , const std::vector<std::vector<double>> &src_strength)
+  , const std::vector<std::vector<unsigned>> &src_position
+  , const std::vector<std::vector<double>> &src_strength)
 {
   if (src_position.size() != src_strength.size())
       throw std::runtime_error("Insufficient source information");
@@ -282,6 +293,40 @@ std::vector<std::vector<double>> Lattice::Stream(
     }  // x
   }  // y
   return temp_lattice;
+}
+
+void Lattice::Collide(std::vector<std::vector<double>> &lattice
+  , const std::vector<std::vector<double>> &lattice_eq
+  , std::vector<double> &src)
+{
+  if (lattice.size() != lattice_eq.size())
+      throw std::runtime_error("Lattice size mismatch");
+  auto nx = GetNumberOfColumns();
+  auto ny = GetNumberOfRows();
+  auto nc = GetNumberOfDiscreteVelocities();
+//  auto src_i(lattice);
+  for (auto n = 0u; n < nx * ny; ++n) {
+    for (auto i = 0u; i < nc; ++i) {
+      double c_dot_u = u_[n][0] * e_[i][0] + u_[n][1] * e_[n][1];
+      c_dot_u /= cs_sqr_ / c_;
+      // Source term using forward scheme, theta = 0
+      auto src_i = omega_[i] * src[n] * (1.0 + (1.0 - 0.5 / tau_cd_) *
+          c_dot_u);
+      lattice[n][i] += (lattice_eq[n][i] - lattice[n][i]) / tau_cd_ +
+          time_step_ * src_i;
+    }  // i
+    if (is_instant_) src[n] = 0.0;
+  }  // n
+}
+
+void Lattice::Collide(std::vector<std::vector<double>> &lattice
+  , const std::vector<std::vector<double>> &lattice_eq
+  , std::vector<std::vector<double>> &src)
+{
+  if (lattice.size() != lattice_eq.size())
+      throw std::runtime_error("Lattice size mismatch");
+  auto cs_sqr = c_ * c_ / 3.0;
+
 }
 
 std::vector<double> Lattice::Flip(const std::vector<double> &lattice)

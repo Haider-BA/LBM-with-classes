@@ -28,6 +28,8 @@ class Lattice {
     , std::size_t num_cols
     , double dx
     , double dt
+    , double diffusion_coefficient
+    , double kinematic_viscosity
     , bool is_cd
     , bool is_ns);
 
@@ -167,6 +169,28 @@ class Lattice {
       const std::vector<std::vector<double>> &lattice
     , const std::vector<std::vector<double>> &boundary);
 
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
+  void Collide(std::vector<std::vector<double>> &lattice
+    , const std::vector<std::vector<double>> &lattice_eq
+    , std::vector<double> &src);
+
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
+  void Collide(std::vector<std::vector<double>> &lattice
+    , const std::vector<std::vector<double>> &lattice_eq
+    , std::vector<std::vector<double>> &src);
+
   /**
    * Flips the lattice for ease of printing out the lattice according to the
    * direction convention
@@ -284,12 +308,18 @@ class Lattice {
   std::size_t number_of_columns_;
   double space_step_;
   double time_step_;
+  double diffusion_coefficient_;
+  double kinematic_viscosity_;
   double c_;
+  double cs_sqr_;
+  double tau_cd_;
+  double tau_ns_;
   bool is_cd_;
   bool is_ns_;
   bool is_instant_;
   double input_parameter_check_value_ = space_step_ * time_step_ *
       number_of_dimensions_ * number_of_discrete_velocities_ * number_of_rows_ *
-      number_of_columns_ * (is_cd_ || is_ns_);
+      number_of_columns_ * diffusion_coefficient_ * kinematic_viscosity_ *
+      (is_cd_ || is_ns_);
 };
 #endif  // LATTICE_HPP_
