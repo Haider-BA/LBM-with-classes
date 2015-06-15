@@ -6,3 +6,4 @@ UnitTest++.cbp
 *.layout
 main.cpp
 unittests/UnitTestCustomUtilities.hpp
+*.xlsx
