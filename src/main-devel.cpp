@@ -3,7 +3,13 @@
 
 int main()
 {
-  return Unfit::RunAllTheTests();
+//  return Unfit::RunAllTheTests();
+//  return Unfit::RunOneSuite("FunctionalityAndExceptionTests");
+//  return Unfit::RunOneSuite("PrintDemo");
+//  return Unfit::RunOneSuite("AnalyticalSolutionTests");
+  return Unfit::RunOneTest("DiffusionEquation");
+//  return Unfit::RunOneTest("CoupledNSCDE");
+//  return Unfit::RunOneTest("NavierStokesEquation");
 
   // to run only one suite, uncomment the following line
   // and specify the name of the suite. Also, comment out the RunAllTheTests()

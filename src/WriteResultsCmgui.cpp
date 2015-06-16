@@ -1,9 +1,10 @@
+#include <iostream>
 #include <fstream>
 #include <vector>
 #include "WriteResultsCmgui.hpp"
 
 void WriteResultsCmgui(
-    const std::vector<std::vector<double>> &CDEg
+    const std::vector<std::vector<double>> &lattice
   , int num_nodes_x
   , int num_nodes_y
   , int time)
@@ -13,9 +14,10 @@ void WriteResultsCmgui(
   std::vector<double> solute_conc(num_nodes, 0.0);
 
   // Calculate the solute density
+  auto depth = lattice[0].size();
   for (auto n = 0; n < num_nodes; ++n) {
     double rho = 0.0;
-    for (auto i = 0; i < 9; ++i) rho += CDEg[n][i];
+    for (auto i = 0; i < depth; ++i) rho += lattice[n][i];
     solute_conc[n] = rho;
   }
 
@@ -100,7 +102,7 @@ void WriteResultsCmgui(
   cmgui_elem_file << "   Values:" << std::endl;
   for (auto n : solute_conc) cmgui_elem_file << "  " << n << std::endl;
   cmgui_elem_file << "   Nodes:" << std::endl;
-  cmgui_elem_file << "                2            1            4            3" << std::endl;  // BASED ON THE INCORRECT LATTICE ORDER; NEEDS TO BE CHANGED IN OUR CODE, AND THIS SHOULD GO BACK TO 1 2 3 4
+  cmgui_elem_file << "                4            3            2            1" << std::endl;  // BASED ON THE INCORRECT LATTICE ORDER; NEEDS TO BE CHANGED IN OUR CODE, AND THIS SHOULD GO BACK TO 1 2 3 4
   cmgui_elem_file << "   Scale factors:" << std::endl;
   cmgui_elem_file << "       1.0   1.0   1.0   1.0" << std::endl;
 

@@ -179,9 +179,10 @@ class Lattice {
    * periodic boundary for the sides, no-slip boundary for top and bottom,
    * bounce-back for corners
    * \param lattice 2D lattice containing distribution functions at each node
+   * \return updated boundary nodes
    */
-  void BoundaryCondition(const std::vector<std::vector<double>> &lattice
-    , std::vector<std::vector<double>> &boundary);
+  std::vector<std::vector<double>> BoundaryCondition(
+      const std::vector<std::vector<double>> &lattice);
 
   /**
    * Streams the lattice based on LBIntro. Takes node values from the boundary
@@ -247,6 +248,14 @@ class Lattice {
    * is_ns toggles
    */
   void TakeStep();
+
+  /**
+   * Runs the initialization and multiple simulation steps over a stipulated
+   * period of time
+   *
+   * \param lattice 2D lattice containing the distribution function
+   */
+  void RunSim(std::vector<std::vector<double>> &lattice);
 
   /**
    * Flips the lattice for ease of printing out the lattice according to the
@@ -387,5 +396,9 @@ class Lattice {
       initial_density_f_ * initial_density_g_ * initial_velocity_.size() *
       number_of_columns_ * diffusion_coefficient_ * kinematic_viscosity_ *
       (is_cd_ || is_ns_);
+  double GetZerothMoment(const std::vector<double> &node);
+  std::vector<double> GetFirstMoment(const std::vector<double> &node);
+  double InnerProduct(const std::vector<double> &a_vector
+    , const std::vector<double> &b_vector);
 };
 #endif  // LATTICE_HPP_

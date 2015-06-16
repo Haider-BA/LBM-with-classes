@@ -1,10 +1,12 @@
 #include "Lattice.hpp"
+#include <cmath>
 #include <iomanip> // std::setprecision
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <typeinfo>
 #include <vector>
+#include "WriteResultsCmgui.hpp"
 
 Lattice::Lattice()
   : number_of_dimensions_ {0},
@@ -69,6 +71,8 @@ Lattice::Lattice(std::size_t num_dimensions
     src_g.assign(lattice_size, 0.0);
     rho_f.assign(lattice_size, 0.0);
     rho_g.assign(lattice_size, 0.0);
+    boundary_f.assign(2 * num_rows + 2 * num_cols + 4, length_q);
+    boundary_g.assign(2 * num_rows + 2 * num_cols + 4, length_q);
     u.assign(lattice_size, length_d);
     // tau_cd_ formula from "A new scheme for source term in LBGK model for
     // convection–diffusion equation"
@@ -102,18 +106,18 @@ std::size_t Lattice::GetNumberOfColumns() const
 void Lattice::Init(std::vector<double> &lattice
   , double initial_value)
 {
-  for (auto &lat : lattice) lat = initial_value;
+  for (auto &node : lattice) node = initial_value;
 }
 
 void Lattice::Init(std::vector<std::vector<double>> &lattice
   , const std::vector<double> &initial_values)
 {
-  for (auto &lat : lattice) {
-    if (initial_values.size() != lat.size()) {
+  for (auto &node : lattice) {
+    if (initial_values.size() != node.size()) {
       throw std::runtime_error("Depth mismatch");
     }
     else {
-      lat = initial_values;
+      node = initial_values;
     }
   }  // lat
 }
@@ -124,9 +128,9 @@ void Lattice::Init(std::vector<std::vector<double>> &lattice
   if (initial_lattice.size() != lattice.size())
       throw std::runtime_error("Size mismatch");
   auto nc = GetNumberOfDiscreteVelocities();
-  for (auto init_lat : initial_lattice) {
-    if (init_lat.size() != nc) throw std::runtime_error("Depth mismatch");
-  }  // init_lat
+  for (auto init_node : initial_lattice) {
+    if (init_node.size() != nc) throw std::runtime_error("Depth mismatch");
+  }  // init_node
   lattice = initial_lattice;
 }
 
@@ -199,17 +203,17 @@ void Lattice::ComputeEq(std::vector<std::vector<double>> &lattice_eq
   , const std::vector<double> &rho)
 {
   auto nc = GetNumberOfDiscreteVelocities();
-  for (auto lat : lattice_eq) {
-    if (lat.size() != nc) throw std::runtime_error("Not depth 9 lattice.");
+  for (auto node : lattice_eq) {
+    if (node.size() != nc) throw std::runtime_error("Not depth 9 lattice.");
   }  // lat
   auto nx = GetNumberOfColumns();
   auto ny = GetNumberOfRows();
   double cs_sqr = c_ * c_ / 3.;
   for (auto n = 0u; n < nx * ny; ++n) {
-    double u_sqr = u[n][0] * u[n][0] + u[n][1] * u[n][1];
+    double u_sqr = Lattice::InnerProduct(u[n], u[n]);
     u_sqr /= 2. * cs_sqr;
     for (auto i = 0u; i < nc; ++i) {
-      double c_dot_u = u[n][0] * e_[i][0] + u[n][1] * e_[i][1];
+      double c_dot_u = Lattice::InnerProduct(u[n], e_[i]);
       c_dot_u /= cs_sqr / c_;
       lattice_eq[n][i] = omega_[i] * rho[n] * (1. + c_dot_u *
           (1. + c_dot_u / 2.) - u_sqr);
@@ -217,11 +221,12 @@ void Lattice::ComputeEq(std::vector<std::vector<double>> &lattice_eq
   }  // n
 }
 
-void Lattice::BoundaryCondition(const std::vector<std::vector<double>> &lattice
-  , std::vector<std::vector<double>> &boundary)
+std::vector<std::vector<double>> Lattice::BoundaryCondition(
+    const std::vector<std::vector<double>> &lattice)
 {
   auto nx = GetNumberOfColumns();
   auto ny = GetNumberOfRows();
+  std::vector<std::vector<double>> boundary;
   std::vector<std::vector<double>> left_boundary(ny,
       std::vector<double>(9, 0.0));
   std::vector<std::vector<double>> right_boundary(ny,
@@ -275,6 +280,7 @@ void Lattice::BoundaryCondition(const std::vector<std::vector<double>> &lattice
   boundary.insert(end(boundary), begin(top_boundary), end(top_boundary));
   boundary.insert(end(boundary), begin(bottom_boundary), end(bottom_boundary));
   boundary.insert(end(boundary), begin(corner_boundary), end(corner_boundary));
+  return boundary;
 }
 
 std::vector<std::vector<double>> Lattice::Stream(
@@ -340,7 +346,7 @@ void Lattice::Collide(std::vector<std::vector<double>> &lattice
   auto nc = GetNumberOfDiscreteVelocities();
   for (auto n = 0u; n < nx * ny; ++n) {
     for (auto i = 0u; i < nc; ++i) {
-      double c_dot_u = u[n][0] * e_[i][0] + u[n][1] * e_[i][1];
+      double c_dot_u = Lattice::InnerProduct(u[n], e_[i]);
       c_dot_u /= cs_sqr_ / c_;
       // Source term using forward scheme, theta = 0
       auto src_i = omega_[i] * src[n] * (1.0 + (1.0 - 0.5 / tau_cd_) *
@@ -365,7 +371,7 @@ void Lattice::Collide(std::vector<std::vector<double>> &lattice
   auto nd = GetNumberOfDimensions();
   for (auto n = 0u; n < nx * ny; ++n) {
     for (auto i = 0u; i < nc; ++i) {
-      double c_dot_u = u[n][0] * e_[i][0] + u[n][1] * e_[i][1];
+      double c_dot_u = Lattice::InnerProduct(u[n], e_[i]);
       c_dot_u /= cs_sqr_ / c_;
       // Guo2002 Eq20
       double src_dot_product = 0.0;
@@ -388,9 +394,8 @@ std::vector<double> Lattice::ComputeRho(
   auto ny = GetNumberOfRows();
   std::vector<double> result_rho(nx * ny, 0.0);
   auto it_rho = begin(result_rho);
-  for (auto lat : lattice) {
-    for (auto i : lat) *it_rho += i;
-    ++it_rho;
+  for (auto node : lattice) {
+    (*it_rho++) = Lattice::GetZerothMoment(node);
   }  // lat
   return result_rho;
 }
@@ -407,13 +412,12 @@ void Lattice::ComputeU(const std::vector<std::vector<double>> &lattice
   auto nx = GetNumberOfColumns();
   auto ny = GetNumberOfRows();
   auto nd = GetNumberOfDimensions();
-  auto nc = GetNumberOfDiscreteVelocities();
   for (auto n = 0u; n < nx * ny; ++n) {
+    u[n].assign(nd, 0);
+    u[n] = Lattice::GetFirstMoment(lattice[n]);
+    // overload operator+ ?
     for (auto d = 0u; d < nd; ++d) {
-      u[n][d] = 0.0;
-      for (auto i = 0u; i < nc; ++i) {
-        u[n][d] += lattice[n][i] * e_[i][d] * c_ + 0.5 * time_step_ * src[n][d];
-      }  // i
+      u[n][d] += 0.5 * time_step_ * src[n][d];
       u[n][d] /= rho[n];
     }  // d
   }  // n
@@ -423,19 +427,63 @@ void Lattice::TakeStep()
 {
   if(is_ns_) {
     Lattice::Collide(f, f_eq, src_f, rho_f);
-    Lattice::BoundaryCondition(f, boundary_f);
-    Lattice::Stream(f, boundary_f);
+    boundary_f = Lattice::BoundaryCondition(f);
+    f = Lattice::Stream(f, boundary_f);
     rho_f = Lattice::ComputeRho(f);
     Lattice::ComputeU(f, rho_f, src_f);
     Lattice::ComputeEq(f_eq, rho_f);
   }
   if(is_cd_) {
     Lattice::Collide(g, g_eq, src_g);
-    Lattice::BoundaryCondition(g, boundary_g);
-    Lattice::Stream(g, boundary_g);
+    boundary_g = Lattice::BoundaryCondition(g);
+    g = Lattice::Stream(g, boundary_g);
     rho_g = Lattice::ComputeRho(g);
     Lattice::ComputeEq(g_eq, rho_g);
   }
+}
+
+void Lattice::RunSim(std::vector<std::vector<double>> &lattice)
+{
+  int t = 0;
+  auto nx = GetNumberOfColumns();
+  auto ny = GetNumberOfRows();
+  Lattice::InitAll();
+  WriteResultsCmgui(lattice, nx, ny, t);
+  for (auto elapsed_t = 0.0; elapsed_t < total_time_; elapsed_t += time_step_) {
+    Lattice::TakeStep();
+    if (std::fmod(elapsed_t, 0.001) < 1e-3) {
+      WriteResultsCmgui(lattice, nx, ny, ++t);
+      std::cout << t << " " << elapsed_t << std::endl;
+    }
+    else std::cout << elapsed_t << std::endl;
+  }
+}
+
+double Lattice::GetZerothMoment(const std::vector<double> &node)
+{
+  double result = 0.0;
+  for (auto i : node) result += i;
+  return result;
+}
+
+std::vector<double> Lattice::GetFirstMoment(const std::vector<double> &node)
+{
+  auto nc = GetNumberOfDiscreteVelocities();
+  auto nd = GetNumberOfDimensions();
+  std::vector<double> result(nd, 0.0);
+  for (auto i = 0u; i < nc; ++i) {
+    for (auto d = 0u; d < nd; ++d) result[d] += node[i] * e_[i][d] * c_;
+  }
+  return result;
+}
+
+double Lattice::InnerProduct(const std::vector<double> &a_vector
+  , const std::vector<double> &b_vector)
+{
+  double result = 0.0;
+  auto it_b = begin(b_vector);
+  for (auto a : a_vector) result += a * (*it_b++);
+  return result;
 }
 
 std::vector<double> Lattice::Flip(const std::vector<double> &lattice)
@@ -474,8 +522,8 @@ void Lattice::Print(const std::vector<double> &lattice)
   auto nx = GetNumberOfColumns();
   int counter = 0;
   auto flipped_lattice = Lattice::Flip(lattice);
-  for (auto lat : flipped_lattice) {
-    std::cout << std::fixed << std::setprecision(2) << lat << " ";
+  for (auto node : flipped_lattice) {
+    std::cout << std::fixed << std::setprecision(2) << node << " ";
     if (++counter % nx == 0) {
       std::cout << std::endl;
       counter = 0;
@@ -533,10 +581,10 @@ void Lattice::Print(int which_to_print
       auto nd = GetNumberOfDimensions();
       int counter = 0;
       auto flipped_lattice = Lattice::Flip(lattice);
-      for (auto lat : flipped_lattice) {
-        if (lat.size() != nd) throw std::runtime_error("Wrong depth");
+      for (auto node : flipped_lattice) {
+        if (node.size() != nd) throw std::runtime_error("Wrong depth");
         std::cout << std::fixed << std::setprecision(2)
-                  << lat[0] << " " << lat[1] << "  ";
+                  << node[0] << " " << node[1] << "  ";
         if (++counter % nx == 0) {
           std::cout << std::endl;
           counter = 0;
