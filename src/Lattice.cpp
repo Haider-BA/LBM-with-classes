@@ -19,6 +19,7 @@ Lattice::Lattice(std::size_t num_dimensions
   , std::size_t num_cols
   , double dx
   , double dt
+  , double t_total
   , double diffusion_coefficient
   , double kinematic_viscosity
   , double density_f
@@ -37,6 +38,7 @@ Lattice::Lattice(std::size_t num_dimensions
     number_of_columns_ {num_cols},
     space_step_ {dx},
     time_step_ {dt},
+    total_time_ {t_total},
     diffusion_coefficient_ {diffusion_coefficient},
     kinematic_viscosity_ {kinematic_viscosity},
     initial_density_f_ {density_f},

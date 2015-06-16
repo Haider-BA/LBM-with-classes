@@ -36,6 +36,7 @@ class Lattice {
     , std::size_t num_cols
     , double dx
     , double dt
+    , double t_total
     , double diffusion_coefficient
     , double kinematic_viscosity
     , double density_f
@@ -48,6 +49,10 @@ class Lattice {
     , bool is_cd
     , bool is_ns
     , bool is_instant);
+
+  Lattice(const Lattice&) = default;
+
+  ~Lattice() = default;
 
   /**
    * Get the number of dimensions of the lattice. 2 for 2D and 3 for 3D.
@@ -360,6 +365,7 @@ class Lattice {
   std::size_t number_of_columns_;
   double space_step_;
   double time_step_;
+  double total_time_;
   double diffusion_coefficient_;
   double kinematic_viscosity_;
   double c_;
@@ -376,8 +382,9 @@ class Lattice {
   bool is_cd_;
   bool is_ns_;
   bool is_instant_;
-  double input_parameter_check_value_ = space_step_ * time_step_ *
+  double input_parameter_check_value_ = space_step_ * time_step_ * total_time_ *
       number_of_dimensions_ * number_of_discrete_velocities_ * number_of_rows_ *
+      initial_density_f_ * initial_density_g_ * initial_velocity_.size() *
       number_of_columns_ * diffusion_coefficient_ * kinematic_viscosity_ *
       (is_cd_ || is_ns_);
 };
