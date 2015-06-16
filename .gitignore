@@ -7,3 +7,5 @@ UnitTest++.cbp
 main.cpp
 unittests/UnitTestCustomUtilities.hpp
 *.xlsx
+*.exelem
+*.exnode

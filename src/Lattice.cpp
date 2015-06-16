@@ -182,23 +182,6 @@ void Lattice::InitSrc(std::vector<std::vector<double>> &lattice_src
   }  // src_pos
 }
 
-void Lattice::InitAll()
-{
-  Lattice::Init(u, initial_velocity_);
-  if (is_ns_) {
-    Lattice::Init(rho_f, initial_density_f_);
-    Lattice::ComputeEq(f_eq, rho_f);
-    Lattice::Init(f, f_eq);
-    Lattice::InitSrc(src_f, source_position_f_, source_strength_f_);
-  }
-  if (is_cd_) {
-    Lattice::Init(rho_g, initial_density_g_);
-    Lattice::ComputeEq(g_eq, rho_g);
-    Lattice::Init(g, g_eq);
-    Lattice::InitSrc(src_g, source_position_g_, source_strength_g_);
-  }
-}
-
 void Lattice::ComputeEq(std::vector<std::vector<double>> &lattice_eq
   , const std::vector<double> &rho)
 {
@@ -423,6 +406,23 @@ void Lattice::ComputeU(const std::vector<std::vector<double>> &lattice
   }  // n
 }
 
+void Lattice::InitAll()
+{
+  Lattice::Init(u, initial_velocity_);
+  if (is_ns_) {
+    Lattice::Init(rho_f, initial_density_f_);
+    Lattice::ComputeEq(f_eq, rho_f);
+    Lattice::Init(f, f_eq);
+    Lattice::InitSrc(src_f, source_position_f_, source_strength_f_);
+  }
+  if (is_cd_) {
+    Lattice::Init(rho_g, initial_density_g_);
+    Lattice::ComputeEq(g_eq, rho_g);
+    Lattice::Init(g, g_eq);
+    Lattice::InitSrc(src_g, source_position_g_, source_strength_g_);
+  }
+}
+
 void Lattice::TakeStep()
 {
   if(is_ns_) {
@@ -440,6 +440,12 @@ void Lattice::TakeStep()
     rho_g = Lattice::ComputeRho(g);
     Lattice::ComputeEq(g_eq, rho_g);
   }
+}
+
+void Lattice::RunSim()
+{
+  Lattice::InitAll();
+  for (auto t = 0.0; t < total_time_; t += time_step_) Lattice::TakeStep();
 }
 
 void Lattice::RunSim(std::vector<std::vector<double>> &lattice)

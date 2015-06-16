@@ -4,10 +4,10 @@
 int main()
 {
 //  return Unfit::RunAllTheTests();
-//  return Unfit::RunOneSuite("FunctionalityAndExceptionTests");
+  return Unfit::RunOneSuite("FunctionalityAndExceptionTests");
 //  return Unfit::RunOneSuite("PrintDemo");
 //  return Unfit::RunOneSuite("AnalyticalSolutionTests");
-  return Unfit::RunOneTest("DiffusionEquation");
+//  return Unfit::RunOneTest("DiffusionEquation");
 //  return Unfit::RunOneTest("CoupledNSCDE");
 //  return Unfit::RunOneTest("NavierStokesEquation");
 

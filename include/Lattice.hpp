@@ -155,13 +155,6 @@ class Lattice {
     , const std::vector<std::vector<unsigned>> &src_position
     , const std::vector<std::vector<double>> &src_strength);
 
-  /** \brief
-   *
-   * \return void
-   *
-   */
-  void InitAll();
-
   /**
    * Calculates the equilibrium distribution function values at each node and
    * writes that to lattice_eq using <some formula>
@@ -243,11 +236,23 @@ class Lattice {
   , const std::vector<double> &rho
   , const std::vector<std::vector<double>> &src);
 
+  /** \brief
+   *
+   * \return void
+   *
+   */
+  void InitAll();
+
   /**
    * Performance a series of streaming and collision depending on is_cd and
    * is_ns toggles
    */
   void TakeStep();
+
+  /**
+   * Runs simulation without writing to cmgui
+   */
+  void RunSim();
 
   /**
    * Runs the initialization and multiple simulation steps over a stipulated

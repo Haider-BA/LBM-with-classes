@@ -17,7 +17,7 @@ void WriteResultsCmgui(
   auto depth = lattice[0].size();
   for (auto n = 0; n < num_nodes; ++n) {
     double rho = 0.0;
-    for (auto i = 0; i < depth; ++i) rho += lattice[n][i];
+    for (auto i = 0u; i < depth; ++i) rho += lattice[n][i];
     solute_conc[n] = rho;
   }
 
