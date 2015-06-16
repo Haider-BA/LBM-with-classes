@@ -187,7 +187,7 @@ void Lattice::ComputeEq(std::vector<std::vector<double>> &lattice_eq
 {
   auto nc = GetNumberOfDiscreteVelocities();
   for (auto node : lattice_eq) {
-    if (node.size() != nc) throw std::runtime_error("Not depth 9 lattice.");
+    if (node.size() != nc) throw std::runtime_error("Wrong depth");
   }  // lat
   auto nx = GetNumberOfColumns();
   auto ny = GetNumberOfRows();

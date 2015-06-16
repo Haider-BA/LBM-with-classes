@@ -47,8 +47,13 @@
 			<Add library="UnitTest++\lib\Debug\libUnitTest++.a" />
 			<Add directory="UnitTest++/lib/Debug" />
 		</Linker>
+		<Unit filename="examples/PrintDemo.cpp" />
+		<Unit filename="examples/SimulationDemo.cpp" />
+		<Unit filename="examples/TestAgainstAnalyticalSolutions.cpp" />
 		<Unit filename="include/Lattice.hpp" />
+		<Unit filename="include/WriteResultsCmgui.hpp" />
 		<Unit filename="src/Lattice.cpp" />
+		<Unit filename="src/WriteResultsCmgui.cpp" />
 		<Unit filename="src/main-devel.cpp" />
 		<Unit filename="unittests/TestLatticeBoltzmann.cpp" />
 		<Extensions>
