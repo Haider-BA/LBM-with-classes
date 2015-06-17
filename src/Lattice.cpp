@@ -82,6 +82,77 @@ Lattice::Lattice(std::size_t num_dimensions
     if (is_ns) tau_ns_ = 0.5 + kinematic_viscosity / cs_sqr_ / dt;
   }
 }
+// temp implementation
+Lattice::Lattice(std::size_t num_dimensions
+  , std::size_t num_discrete_velocities
+  , std::size_t num_rows
+  , std::size_t num_cols
+  , double dx
+  , double dt
+  , double t_total
+  , double diffusion_coefficient
+  , double kinematic_viscosity
+  , double density_f
+  , double density_g
+  , const std::vector<double> &u0
+  , const std::vector<std::vector<unsigned>> &src_pos_f
+  , const std::vector<std::vector<unsigned>> &src_pos_g
+  , const std::vector<std::vector<double>> &src_strength_f
+  , const std::vector<double> &src_strength_g
+  , const std::vector<std::vector<unsigned>> &obstacles_pos
+  , bool is_cd
+  , bool is_ns
+  , bool is_instant)
+  : number_of_dimensions_ {num_dimensions},
+    number_of_discrete_velocities_ {num_discrete_velocities},
+    number_of_rows_ {num_rows},
+    number_of_columns_ {num_cols},
+    space_step_ {dx},
+    time_step_ {dt},
+    total_time_ {t_total},
+    diffusion_coefficient_ {diffusion_coefficient},
+    kinematic_viscosity_ {kinematic_viscosity},
+    initial_density_f_ {density_f},
+    initial_density_g_ {density_g},
+    initial_velocity_ {u0},
+    source_position_f_ {src_pos_f},
+    source_position_g_ {src_pos_g},
+    source_strength_f_ {src_strength_f},
+    source_strength_g_ {src_strength_g},
+    obstacles_position_ {obstacles_pos},
+    is_cd_ {is_cd},
+    is_ns_ {is_ns},
+    is_instant_ {is_instant}
+{
+  if (input_parameter_check_value_ < 1e-20) {
+    throw std::runtime_error("Zero value in input parameters");
+  }
+  else {
+    c_ = space_step_ / time_step_;
+    cs_sqr_ = c_ * c_ / 3.0;
+    std::size_t lattice_size = (num_rows) * (num_cols);
+    std::vector<double> length_d(num_dimensions, 0.0);
+    std::vector<double> length_q(num_discrete_velocities, 0.0);
+    f.assign(lattice_size, length_q);
+    g.assign(lattice_size, length_q);
+    f_eq.assign(lattice_size, length_q);
+    g_eq.assign(lattice_size, length_q);
+    src_f.assign(lattice_size, length_d);
+    src_g.assign(lattice_size, 0.0);
+    obstacles.assign(lattice_size, false);
+    rho_f.assign(lattice_size, 0.0);
+    rho_g.assign(lattice_size, 0.0);
+    boundary_f.assign(2 * num_rows + 2 * num_cols + 4, length_q);
+    boundary_g.assign(2 * num_rows + 2 * num_cols + 4, length_q);
+    u.assign(lattice_size, length_d);
+    // tau_cd_ formula from "A new scheme for source term in LBGK model for
+    // convection–diffusion equation"
+    if (is_cd) tau_cd_ = 0.5 + diffusion_coefficient / cs_sqr_ / dt;
+    // tau_ns_ formula from "Discrete lattice effects on the forcing term in the
+    // lattice Boltzmann method" Guo2002
+    if (is_ns) tau_ns_ = 0.5 + kinematic_viscosity / cs_sqr_ / dt;
+  }
+}
 
 std::size_t Lattice::GetNumberOfDimensions() const
 {
@@ -132,6 +203,26 @@ void Lattice::Init(std::vector<std::vector<double>> &lattice
     if (init_node.size() != nc) throw std::runtime_error("Depth mismatch");
   }  // init_node
   lattice = initial_lattice;
+}
+
+void Lattice::Init(std::vector<bool> &obstacles
+  , const std::vector<std::vector<unsigned>> &obstacles_position)
+{
+  auto nx = GetNumberOfColumns();
+  auto ny = GetNumberOfRows();
+  auto nd = GetNumberOfDimensions();
+  for (auto obstacle_pos : obstacles_position) {
+    if(obstacle_pos.size() != nd) {
+      throw std::runtime_error("Insufficient position information");
+    }
+    else if (obstacle_pos[0] > nx - 1) {
+      throw std::runtime_error("x value out of range");
+    }
+    else if (obstacle_pos[1] > ny - 1) {
+      throw std::runtime_error("y value out of range");
+    }
+    obstacles[obstacle_pos[1] * nx + obstacle_pos[0]] = true;
+  }  // obstacle_pos
 }
 
 void Lattice::InitSrc(std::vector<double> &lattice_src
@@ -202,6 +293,94 @@ void Lattice::ComputeEq(std::vector<std::vector<double>> &lattice_eq
           (1. + c_dot_u / 2.) - u_sqr);
     }  // i
   }  // n
+}
+
+void Lattice::Collide(std::vector<std::vector<double>> &lattice
+  , const std::vector<std::vector<double>> &lattice_eq
+  , std::vector<double> &src)
+{
+  if (lattice.size() != lattice_eq.size())
+      throw std::runtime_error("Lattice size mismatch");
+  auto nx = GetNumberOfColumns();
+  auto ny = GetNumberOfRows();
+  auto nc = GetNumberOfDiscreteVelocities();
+  for (auto n = 0u; n < nx * ny; ++n) {
+    for (auto i = 0u; i < nc; ++i) {
+      double c_dot_u = Lattice::InnerProduct(u[n], e_[i]);
+      c_dot_u /= cs_sqr_ / c_;
+      // Source term using forward scheme, theta = 0
+      auto src_i = omega_[i] * src[n] * (1.0 + (1.0 - 0.5 / tau_cd_) *
+          c_dot_u);
+      lattice[n][i] += (lattice_eq[n][i] - lattice[n][i]) / tau_cd_ +
+          time_step_ * src_i;
+    }  // i
+    if (is_instant_) src[n] = 0.0;
+  }  // n
+}
+
+void Lattice::Collide(std::vector<std::vector<double>> &lattice
+  , const std::vector<std::vector<double>> &lattice_eq
+  , std::vector<std::vector<double>> &src
+  , const std::vector<double> &rho)
+{
+  if (lattice.size() != lattice_eq.size())
+      throw std::runtime_error("Lattice size mismatch");
+  auto nx = GetNumberOfColumns();
+  auto ny = GetNumberOfRows();
+  auto nc = GetNumberOfDiscreteVelocities();
+  auto nd = GetNumberOfDimensions();
+  for (auto n = 0u; n < nx * ny; ++n) {
+    for (auto i = 0u; i < nc; ++i) {
+      double c_dot_u = Lattice::InnerProduct(u[n], e_[i]);
+      c_dot_u /= cs_sqr_ / c_;
+      // Guo2002 Eq20
+      double src_dot_product = 0.0;
+      for (auto d = 0u; d < nd; ++d) {
+        src_dot_product += (e_[i][d] * c_ - u[n][d] + c_dot_u * e_[i][d] * c_)
+            * src[n][d] * rho[n];
+      }
+      src_dot_product /= cs_sqr_;
+      auto src_i = (1.0 - 0.5 / tau_ns_) * omega_[i] * src_dot_product;
+      lattice[n][i] += (lattice_eq[n][i] - lattice[n][i]) / tau_ns_ +
+          time_step_ * src_i;
+    }  // i
+  }  // n
+}
+
+void Lattice::Obstacles(std::vector<std::vector<double>> &lattice
+  , const std::vector<bool> &obstacles)
+{
+  auto nx = GetNumberOfColumns();
+  auto ny = GetNumberOfRows();
+  for (auto y = 0u; y < ny; ++y) {
+    bool is_not_top = y != ny - 1;
+    bool is_not_bottom = y != 0;
+    for (auto x = 0u; x < nx; ++x) {
+      auto n = y * nx + x;
+      bool is_not_left = x != 0;
+      bool is_not_right = x != nx - 1;
+      if (obstacles[n]) {
+        if (is_not_top) {
+          if (!obstacles[n + nx]) lattice[n][N] = lattice[n + nx][S];
+          if (is_not_right && !obstacles[n + nx + 1])
+              lattice[n][NE] = lattice[n + nx + 1][SW];
+          if (is_not_left && !obstacles[n + nx - 1])
+              lattice[n][NW] = lattice[n + nx - 1][SE];
+        }
+        if (is_not_bottom) {
+          if (!obstacles[n - nx]) lattice[n][S] = lattice[n - nx][N];
+          if (is_not_right && !obstacles[n - nx + 1])
+              lattice[n][SE] = lattice[n - nx + 1][NW];
+          if (is_not_left && !obstacles[n - nx - 1])
+              lattice[n][SW] = lattice[n - nx - 1][NE];
+        }
+        if (is_not_right && !obstacles[n + 1])
+            lattice[n][E] = lattice[n + 1][W];
+        if (is_not_left && !obstacles[n - 1])
+            lattice[n][W] = lattice[n - 1][E];
+      }
+    }  // x
+  }  // y
 }
 
 std::vector<std::vector<double>> Lattice::BoundaryCondition(
@@ -318,58 +497,6 @@ std::vector<std::vector<double>> Lattice::Stream(
   return temp_lattice;
 }
 
-void Lattice::Collide(std::vector<std::vector<double>> &lattice
-  , const std::vector<std::vector<double>> &lattice_eq
-  , std::vector<double> &src)
-{
-  if (lattice.size() != lattice_eq.size())
-      throw std::runtime_error("Lattice size mismatch");
-  auto nx = GetNumberOfColumns();
-  auto ny = GetNumberOfRows();
-  auto nc = GetNumberOfDiscreteVelocities();
-  for (auto n = 0u; n < nx * ny; ++n) {
-    for (auto i = 0u; i < nc; ++i) {
-      double c_dot_u = Lattice::InnerProduct(u[n], e_[i]);
-      c_dot_u /= cs_sqr_ / c_;
-      // Source term using forward scheme, theta = 0
-      auto src_i = omega_[i] * src[n] * (1.0 + (1.0 - 0.5 / tau_cd_) *
-          c_dot_u);
-      lattice[n][i] += (lattice_eq[n][i] - lattice[n][i]) / tau_cd_ +
-          time_step_ * src_i;
-    }  // i
-    if (is_instant_) src[n] = 0.0;
-  }  // n
-}
-
-void Lattice::Collide(std::vector<std::vector<double>> &lattice
-  , const std::vector<std::vector<double>> &lattice_eq
-  , std::vector<std::vector<double>> &src
-  , const std::vector<double> &rho)
-{
-  if (lattice.size() != lattice_eq.size())
-      throw std::runtime_error("Lattice size mismatch");
-  auto nx = GetNumberOfColumns();
-  auto ny = GetNumberOfRows();
-  auto nc = GetNumberOfDiscreteVelocities();
-  auto nd = GetNumberOfDimensions();
-  for (auto n = 0u; n < nx * ny; ++n) {
-    for (auto i = 0u; i < nc; ++i) {
-      double c_dot_u = Lattice::InnerProduct(u[n], e_[i]);
-      c_dot_u /= cs_sqr_ / c_;
-      // Guo2002 Eq20
-      double src_dot_product = 0.0;
-      for (auto d = 0u; d < nd; ++d) {
-        src_dot_product += (e_[i][d] * c_ - u[n][d] + c_dot_u * e_[i][d] * c_)
-            * src[n][d] * rho[n];
-      }
-      src_dot_product /= cs_sqr_;
-      auto src_i = (1.0 - 0.5 / tau_ns_) * omega_[i] * src_dot_product;
-      lattice[n][i] += (lattice_eq[n][i] - lattice[n][i]) / tau_ns_ +
-          time_step_ * src_i;
-    }  // i
-  }  // n
-}
-
 std::vector<double> Lattice::ComputeRho(
     const std::vector<std::vector<double>> &lattice)
 {
@@ -409,6 +536,7 @@ void Lattice::ComputeU(const std::vector<std::vector<double>> &lattice
 void Lattice::InitAll()
 {
   Lattice::Init(u, initial_velocity_);
+  Lattice::Init(obstacles, obstacles_position_);
   if (is_ns_) {
     Lattice::Init(rho_f, initial_density_f_);
     Lattice::ComputeEq(f_eq, rho_f);
@@ -435,6 +563,7 @@ void Lattice::TakeStep()
   }
   if(is_cd_) {
     Lattice::Collide(g, g_eq, src_g);
+    Lattice::Obstacles(g, obstacles);
     boundary_g = Lattice::BoundaryCondition(g);
     g = Lattice::Stream(g, boundary_g);
     rho_g = Lattice::ComputeRho(g);

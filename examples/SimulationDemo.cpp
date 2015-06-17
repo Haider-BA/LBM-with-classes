@@ -78,4 +78,25 @@ TEST(NavierStokesEquation)
       g_is_not_instant);
   lattice.RunSim(lattice.u);
 }
+
+TEST(DiffusionEquationWithDiffusion)
+{
+  std::vector<std::vector<unsigned>> obs_pos;
+  for (auto y = 0u; y < g_num_rows; ++y) {
+    obs_pos.push_back({10, y});
+    obs_pos.push_back({20, y});
+  }
+  for (auto x = 0u; x < g_num_cols; ++x) {
+    obs_pos.push_back({x, 5});
+  }
+  double t_total = 0.002;
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities,
+      g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
+      g_kinematic_viscosity, g_density_f, g_density_g, g_u0_zero, g_src_pos_f,
+      g_src_pos_g, g_src_strength_f, g_src_strength_g, obs_pos, g_is_cd,
+      g_is_not_ns, g_is_not_instant);
+
+  lattice.RunSim(lattice.g);
+//  lattice.RunSim();
+}
 }

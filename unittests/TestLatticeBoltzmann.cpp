@@ -616,7 +616,7 @@ TEST(ComputeU)
     }  // x
   }  // y
   std::vector<double> nums = {0, 1, 2, 3, 4, 5, 6, 7, 8};
-  std::vector<double> expected = {-31.56925, -94.71975};
+  std::vector<double> expected = {-31.5385, -94.6395};
   lattice.Init(lattice.f, nums);
   lattice.Init(lattice.rho_f, g_density_f);
   lattice.InitSrc(lattice.src_f, src_position, src_strength);

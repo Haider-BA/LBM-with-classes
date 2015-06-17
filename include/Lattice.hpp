@@ -50,6 +50,28 @@ class Lattice {
     , bool is_ns
     , bool is_instant);
 
+  // temporary to test obstacles functions
+  Lattice(std::size_t num_dimensions
+    , std::size_t num_discrete_velocities
+    , std::size_t num_rows
+    , std::size_t num_cols
+    , double dx
+    , double dt
+    , double t_total
+    , double diffusion_coefficient
+    , double kinematic_viscosity
+    , double density_f
+    , double density_g
+    , const std::vector<double> &u0
+    , const std::vector<std::vector<unsigned>> &src_pos_f
+    , const std::vector<std::vector<unsigned>> &src_pos_g
+    , const std::vector<std::vector<double>> &src_strength_f
+    , const std::vector<double> &src_strength_g
+    , const std::vector<std::vector<unsigned>> &obstacles_pos
+    , bool is_cd
+    , bool is_ns
+    , bool is_instant);
+
   Lattice(const Lattice&) = default;
 
   ~Lattice() = default;
@@ -118,6 +140,14 @@ class Lattice {
     , const std::vector<std::vector<double>> &initial_lattice);
 
   /**
+   * Initialize obstacles lattice
+   * \param
+   * \param
+   */
+  void Init(std::vector<bool> &obstacles
+  , const std::vector<std::vector<unsigned>> &obstacles_position);
+
+  /**
    * Initialize a depth 1 2D source lattice by reading from the source position
    * vectors and the source magnitude vectors,
    * \param lattice_src 2D lattice containing the source strength of each node
@@ -167,31 +197,6 @@ class Lattice {
     , const std::vector<double> &rho);
 
   /**
-   * 2D vector to store distribution functions values for nodes on the edges of
-   * the lattice to be used in the streaming step. Current implementations are:
-   * periodic boundary for the sides, no-slip boundary for top and bottom,
-   * bounce-back for corners
-   * \param lattice 2D lattice containing distribution functions at each node
-   * \return updated boundary nodes
-   */
-  std::vector<std::vector<double>> BoundaryCondition(
-      const std::vector<std::vector<double>> &lattice);
-
-  /**
-   * Streams the lattice based on LBIntro. Takes node values from the boundary
-   * 2D vector for nodes at the edges of lattice.
-   * Chirila, D. B., (2010). Introduction to Lattice Boltzmann Methods
-   * \param lattice 2D lattice containing pre-stream values of distribution
-   *        functions
-   * \param boundary 2D vector containing pre-stream values for nodes on the
-   *        edges of the lattice badges on the pre-defined boundary conditions
-   * \return 2D lattice containing post-stream values of distribution functions
-   */
-  std::vector<std::vector<double>> Stream(
-      const std::vector<std::vector<double>> &lattice
-    , const std::vector<std::vector<double>> &boundary);
-
-  /**
    * Performs the collision step based on "A new scheme for source term in LBGK
    * model for convection–diffusion equation"
    * \param lattice 2D lattice containing the distribution functions
@@ -215,6 +220,34 @@ class Lattice {
     , const std::vector<std::vector<double>> &lattice_eq
     , std::vector<std::vector<double>> &src
     , const std::vector<double> &rho);
+
+  void Obstacles(std::vector<std::vector<double>> &lattice
+    , const std::vector<bool> &obstacles);
+
+  /**
+   * 2D vector to store distribution functions values for nodes on the edges of
+   * the lattice to be used in the streaming step. Current implementations are:
+   * periodic boundary for the sides, no-slip boundary for top and bottom,
+   * bounce-back for corners
+   * \param lattice 2D lattice containing distribution functions at each node
+   * \return updated boundary nodes
+   */
+  std::vector<std::vector<double>> BoundaryCondition(
+      const std::vector<std::vector<double>> &lattice);
+
+  /**
+   * Streams the lattice based on LBIntro. Takes node values from the boundary
+   * 2D vector for nodes at the edges of lattice.
+   * Chirila, D. B., (2010). Introduction to Lattice Boltzmann Methods
+   * \param lattice 2D lattice containing pre-stream values of distribution
+   *        functions
+   * \param boundary 2D vector containing pre-stream values for nodes on the
+   *        edges of the lattice badges on the pre-defined boundary conditions
+   * \return 2D lattice containing post-stream values of distribution functions
+   */
+  std::vector<std::vector<double>> Stream(
+      const std::vector<std::vector<double>> &lattice
+    , const std::vector<std::vector<double>> &boundary);
 
   /**
    * Computes density at each node of the lattice
@@ -322,6 +355,11 @@ class Lattice {
   std::vector<std::vector<double>> src_f;
 
   /**
+   * Lattice containing obstacles
+   */
+  std::vector<bool> obstacles;
+
+  /**
    * Source term for CDE stored row-wise in a 1D vector.
    */
   std::vector<double> src_g;
@@ -386,6 +424,7 @@ class Lattice {
   double cs_sqr_;
   double tau_cd_;
   double tau_ns_;
+  // initial disposable(?) variables, may choose to discard
   double initial_density_f_;
   double initial_density_g_;
   std::vector<double> initial_velocity_;
@@ -393,6 +432,7 @@ class Lattice {
   std::vector<std::vector<unsigned>> source_position_g_;
   std::vector<std::vector<double>> source_strength_f_;
   std::vector<double> source_strength_g_;
+  std::vector<std::vector<unsigned>> obstacles_position_;
   bool is_cd_;
   bool is_ns_;
   bool is_instant_;
