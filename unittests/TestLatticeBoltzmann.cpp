@@ -77,18 +77,18 @@ TEST(NormalLatticeBeforeInit)
     CHECK_EQUAL(nd, lattice.src_f[n].size());
     CHECK_EQUAL(nd, lattice.u[n].size());
     for (auto i = 0u; i < nc; ++i) {
-      CHECK_EQUAL(0.0, lattice.f[n][i]);
-      CHECK_EQUAL(0.0, lattice.g[n][i]);
-      CHECK_EQUAL(0.0, lattice.f_eq[n][i]);
-      CHECK_EQUAL(0.0, lattice.g_eq[n][i]);
+      CHECK_CLOSE(0.0, lattice.f[n][i], zero_tol);
+      CHECK_CLOSE(0.0, lattice.g[n][i], zero_tol);
+      CHECK_CLOSE(0.0, lattice.f_eq[n][i], zero_tol);
+      CHECK_CLOSE(0.0, lattice.g_eq[n][i], zero_tol);
     }  // i
     for (auto d = 0u; d < nd; ++d) {
-      CHECK_EQUAL(0.0, lattice.src_f[n][d]);
-      CHECK_EQUAL(0.0, lattice.u[n][d]);
+      CHECK_CLOSE(0.0, lattice.src_f[n][d], zero_tol);
+      CHECK_CLOSE(0.0, lattice.u[n][d], zero_tol);
     }  // d
-    CHECK_EQUAL(0.0, lattice.src_g[n]);
-    CHECK_EQUAL(0.0, lattice.rho_f[n]);
-    CHECK_EQUAL(0.0, lattice.rho_g[n]);
+    CHECK_CLOSE(0.0, lattice.src_g[n], zero_tol);
+    CHECK_CLOSE(0.0, lattice.rho_f[n], zero_tol);
+    CHECK_CLOSE(0.0, lattice.rho_g[n], zero_tol);
   }  // n
 }
 
@@ -99,10 +99,10 @@ TEST(Init1DLattices)
   lattice.Init(lattice.rho_f, initial_rho);
   lattice.Init(lattice.rho_g, initial_rho);
   for (auto node : lattice.rho_f) {
-    CHECK_EQUAL(initial_rho, node);
+    CHECK_CLOSE(initial_rho, node, zero_tol);
   }
   for (auto node : lattice.rho_g) {
-    CHECK_EQUAL(initial_rho, node);
+    CHECK_CLOSE(initial_rho, node, zero_tol);
   }
 }
 
@@ -112,8 +112,8 @@ TEST(Init2DLatticesWithValues)
   std::vector<double> initial_u = {1.0, 2.0};
   lattice.Init(lattice.u, initial_u);
   for (auto node : lattice.u) {
-    CHECK_EQUAL(initial_u[0], node[0]);
-    CHECK_EQUAL(initial_u[1], node[1]);
+    CHECK_CLOSE(initial_u[0], node[0], zero_tol);
+    CHECK_CLOSE(initial_u[1], node[1], zero_tol);
   }
 }
 
@@ -122,12 +122,12 @@ TEST(Init2DLatticesWithLattice)
   Lattice lattice(g_lattice);
   auto ny = lattice.GetNumberOfRows();
   auto nx = lattice.GetNumberOfColumns();
-  std::vector<double> node = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-  std::vector<std::vector<double>> initial_g(nx * ny, node);
+  std::vector<double> initial_node = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+  std::vector<std::vector<double>> initial_g(nx * ny, initial_node);
   lattice.Init(lattice.g, initial_g);
   for (auto node : lattice.g) {
     int index = 0;
-    for (auto i : node) CHECK_EQUAL(node[index++], i);
+    for (auto i : node) CHECK_CLOSE(initial_node[index++], i, zero_tol);
   }  // lat
 }
 
@@ -163,7 +163,7 @@ TEST(InitFWithValueFromFEqNode)
   lattice.Init(lattice.g, lattice.g_eq);
   for (auto n = 0u; n < nx * ny; ++n) {
     for (auto i = 0u; i < nc; ++i) {
-      CHECK_EQUAL(lattice.g_eq[n][i], lattice.g[n][i]);
+      CHECK_CLOSE(lattice.g_eq[n][i], lattice.g[n][i], zero_tol);
     }  // i
   }  // n
 }
@@ -937,9 +937,22 @@ TEST(InitSrcWrongPosition)
       std::runtime_error);
 }
 
-TEST(InitPostionOutOfBound)
+TEST(InitSrcXPostionOutOfBound)
 {
   std::vector<std::vector<unsigned>> src_pos_g = {{10, 2}};
+  std::vector<double> src_strength_g = {1.0};
+  std::vector<std::vector<unsigned>> src_pos_f = {{10, 2}};
+  std::vector<std::vector<double>> src_strength_f = {{1, 2}};
+  Lattice lattice(g_lattice);
+  CHECK_THROW(lattice.InitSrc(lattice.src_g, src_pos_g, src_strength_g),
+      std::runtime_error);
+  CHECK_THROW(lattice.InitSrc(lattice.src_f, src_pos_f, src_strength_f),
+      std::runtime_error);
+}
+
+TEST(InitSrcYPostionOutOfBound)
+{
+  std::vector<std::vector<unsigned>> src_pos_g = {{1, 20}};
   std::vector<double> src_strength_g = {1.0};
   std::vector<std::vector<unsigned>> src_pos_f = {{1, 20}};
   std::vector<std::vector<double>> src_strength_f = {{1, 2}};
@@ -948,5 +961,35 @@ TEST(InitPostionOutOfBound)
       std::runtime_error);
   CHECK_THROW(lattice.InitSrc(lattice.src_f, src_pos_f, src_strength_f),
       std::runtime_error);
+}
+
+TEST(CollideWrongLatticeSize)
+{
+  Lattice lattice(g_lattice);
+  auto ny = lattice.GetNumberOfRows();
+  auto nx = lattice.GetNumberOfColumns();
+  auto nc = lattice.GetNumberOfDiscreteVelocities();
+  std::vector<std::vector<double>> smaller_lattice((nx - 1) * (ny - 1),
+      std::vector<double>(nc, 1));
+  lattice.InitAll();
+  CHECK_THROW(lattice.Collide(lattice.g, smaller_lattice, lattice.src_g),
+      std::runtime_error);
+  CHECK_THROW(lattice.Collide(lattice.f, smaller_lattice, lattice.src_f,
+      lattice.rho_f), std::runtime_error);
+}
+
+TEST(PrintWrongDepth)
+{
+  Lattice lattice(g_lattice);
+  auto ny = lattice.GetNumberOfRows();
+  auto nx = lattice.GetNumberOfColumns();
+  auto nc = lattice.GetNumberOfDiscreteVelocities();
+  lattice.InitAll();
+  std::vector<std::vector<double>> shallow_boundary((2 * nx + 2 * ny + 4),
+      std::vector<double>(nc - 1, 1));
+  CHECK_THROW(lattice.Print(0, lattice.u), std::runtime_error);
+  CHECK_THROW(lattice.Print(1, lattice.g), std::runtime_error);
+  CHECK_THROW(lattice.Print(2, shallow_boundary), std::runtime_error);
+  CHECK_THROW(lattice.Print(4, lattice.g), std::runtime_error);
 }
 }  // suite FunctionalityAndExceptionsTests

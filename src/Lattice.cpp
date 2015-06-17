@@ -54,7 +54,7 @@ Lattice::Lattice(std::size_t num_dimensions
     is_ns_ {is_ns},
     is_instant_ {is_instant}
 {
-  if (input_parameter_check_value_ == 0) {
+  if (input_parameter_check_value_ < 1e-20) {
     throw std::runtime_error("Zero value in input parameters");
   }
   else {
@@ -400,7 +400,7 @@ void Lattice::ComputeU(const std::vector<std::vector<double>> &lattice
     u[n] = Lattice::GetFirstMoment(lattice[n]);
     // overload operator+ ?
     for (auto d = 0u; d < nd; ++d) {
-      u[n][d] += 0.5 * time_step_ * src[n][d];
+      u[n][d] += 0.5 * time_step_ * src[n][d] * rho[n];
       u[n][d] /= rho[n];
     }  // d
   }  // n
@@ -461,8 +461,7 @@ void Lattice::RunSim(std::vector<std::vector<double>> &lattice)
       WriteResultsCmgui(lattice, nx, ny, ++t);
       std::cout << t << " " << elapsed_t << std::endl;
     }
-    else std::cout << elapsed_t << std::endl;
-  }
+  }  // elapsed_t
 }
 
 double Lattice::GetZerothMoment(const std::vector<double> &node)

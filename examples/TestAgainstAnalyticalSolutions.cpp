@@ -1,4 +1,5 @@
 #include <cmath>  // exp
+#include <iostream>
 #include "Lattice.hpp"
 #include "UnitTest++.h"
 
@@ -18,8 +19,8 @@ enum DiscreteDirections {
 };
 static const std::size_t g_num_dimensions = 2;
 static const std::size_t g_num_discrete_velocities = 9;
-static const std::size_t g_num_rows = 5;
-static const std::size_t g_num_cols = 4;
+static const std::size_t g_num_rows = 18  ;
+static const std::size_t g_num_cols = 34;
 static const double g_dx = 0.0316;
 static const double g_dt = 0.001;
 static const double g_t_total = 1.0;
@@ -79,6 +80,38 @@ TEST(DiffusionEquation)
 
 TEST(PoiseiuilleFlow)
 {
-
+  double body_force = 1.0;
+  std::vector<std::vector<unsigned>> src_pos_f((g_num_cols * g_num_rows),
+      {0, 0});
+  std::vector<std::vector<double>> src_strength_f((g_num_cols * g_num_rows),
+      {body_force, 0});
+  for (auto y = 0u; y < g_num_rows; ++y) {
+    for (auto x = 0u; x < g_num_cols; ++x) {
+      auto n = y * g_num_cols + x;
+      src_pos_f[n] = {x, y};
+    }
+  }
+  double density_f = 1.0;
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
+      g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
+      g_kinematic_viscosity, density_f, g_density_g, g_u0_zero, src_pos_f,
+      g_src_pos_g, src_strength_f, g_src_strength_g, g_is_not_cd, g_is_ns,
+      g_is_instant);
+  lattice.RunSim();
+  // calculation of analytical u_max?
+  double u_max = body_force / 1000 * (g_num_rows / 2) * (g_num_rows / 2) / 2 /
+      g_kinematic_viscosity;
+  for (auto x = 0u; x < g_num_cols; ++x) {
+    unsigned y_an = 1;
+    for (auto y = 0u; y < g_num_rows; ++y) {
+      auto n = y * g_num_cols + x;
+      double u_an = u_max * (1.0 - (y_an - 10.0) * (y_an - 10.0) / 100.0);
+      double u_sim = lattice.u[n][0] + lattice.u[n][1];
+      // accuracy of answer?
+      CHECK_CLOSE(u_an, u_sim, 0.02);
+      if (y < 8) ++y_an;
+      if (y > 8) --y_an;
+    }  // y
+  }  // x
 }
 }
