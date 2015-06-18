@@ -32,19 +32,21 @@ static const std::vector<std::vector<unsigned>> g_src_pos_f = {{0, 0}};
 static const std::vector<std::vector<unsigned>> g_src_pos_g = {{0, 0}};
 static const std::vector<std::vector<double>> g_src_strength_f = {{1, 1}};
 static const std::vector<double> g_src_strength_g = {1000};
+static const std::vector<std::vector<unsigned>> g_obstacles_pos = {{0, 0}};
 static const bool g_is_cd = true;
 static const bool g_is_ns = true;
 static const bool g_is_instant = true;
 static const bool g_is_not_cd = false;
 static const bool g_is_not_ns = false;
 static const bool g_is_not_instant = false;
+static const bool g_no_obstacles = false;
 static const double g_density_g = 2.0;
 static const double g_density_f = 2.0;
 static const Lattice g_lattice(g_num_dimensions, g_num_discrete_velocities,
       g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
       g_kinematic_viscosity, g_density_f, g_density_g, g_u0, g_src_pos_f,
-      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_is_cd, g_is_ns,
-      g_is_not_instant);
+      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_obstacles_pos, g_is_cd,
+      g_is_ns, g_is_not_instant, g_no_obstacles);
 
 TEST(DiffusionEquation)
 {
@@ -55,7 +57,8 @@ TEST(DiffusionEquation)
   Lattice lattice(g_num_dimensions, g_num_discrete_velocities, ny, nx, g_dx,
       g_dt, g_t_total, g_diffusion_coefficient, g_kinematic_viscosity,
       g_density_f, density_g, g_u0_zero, g_src_pos_f, src_pos_g,
-      g_src_strength_f, g_src_strength_g, g_is_cd, g_is_not_ns, g_is_instant);
+      g_src_strength_f, g_src_strength_g, g_obstacles_pos, g_is_cd, g_is_not_ns,
+      g_is_instant, g_no_obstacles);
   lattice.InitAll();
   for (auto t = 0; t < 100; ++t) {
     lattice.TakeStep();
@@ -95,8 +98,8 @@ TEST(PoiseiuilleFlow)
   Lattice lattice(g_num_dimensions, g_num_discrete_velocities, g_num_rows,
       g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
       g_kinematic_viscosity, density_f, g_density_g, g_u0_zero, src_pos_f,
-      g_src_pos_g, src_strength_f, g_src_strength_g, g_is_not_cd, g_is_ns,
-      g_is_instant);
+      g_src_pos_g, src_strength_f, g_src_strength_g, g_obstacles_pos,
+      g_is_not_cd, g_is_ns, g_is_instant, g_no_obstacles);
   lattice.RunSim();
   // calculation of analytical u_max?
   double u_max = body_force / 1000 * (g_num_rows / 2) * (g_num_rows / 2) / 2 /

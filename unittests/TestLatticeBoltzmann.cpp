@@ -33,19 +33,22 @@ static const std::vector<std::vector<unsigned>> g_src_pos_f = {{0, 0}};
 static const std::vector<std::vector<unsigned>> g_src_pos_g = {{0, 0}};
 static const std::vector<std::vector<double>> g_src_strength_f = {{1, 1}};
 static const std::vector<double> g_src_strength_g = {1};
+static const std::vector<std::vector<unsigned>> g_obstacles_pos = {{0, 0}};
 static const bool g_is_cd = true;
 static const bool g_is_ns = true;
 static const bool g_is_instant = true;
+static const bool g_has_obstacles = true;
 static const bool g_is_not_cd = false;
 static const bool g_is_not_ns = false;
 static const bool g_is_not_instant = false;
+static const bool g_no_obstacles = false;
 static const double g_density_g = 2.0;
 static const double g_density_f = 2.0;
 static const Lattice g_lattice(g_num_dimensions, g_num_discrete_velocities,
       g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
       g_kinematic_viscosity, g_density_f, g_density_g, g_u0, g_src_pos_f,
-      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_is_cd, g_is_ns,
-      g_is_not_instant);
+      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_obstacles_pos, g_is_cd,
+      g_is_ns, g_is_not_instant, g_no_obstacles);
 
 // Functionality Tests
 TEST(DefaultLattice)
@@ -177,7 +180,7 @@ TEST(InitSingleSource)
   Lattice lattice(g_lattice);
   auto nx = lattice.GetNumberOfColumns();
   auto ny = lattice.GetNumberOfRows();
-  lattice.InitSrc(lattice.src_g, src_position, src_strength);
+  lattice.Init(lattice.src_g, src_position, src_strength);
   for (auto n = 0u; n < nx * ny; ++n) {
     if (n == y_pos * nx + x_pos) {
       CHECK_CLOSE(src_strength[0], lattice.src_g[n], zero_tol);
@@ -198,7 +201,7 @@ TEST(InitMultipleSource)
   Lattice lattice(g_lattice);
   auto nx = lattice.GetNumberOfColumns();
   auto ny = lattice.GetNumberOfRows();
-  lattice.InitSrc(lattice.src_g, src_position, src_strength);
+  lattice.Init(lattice.src_g, src_position, src_strength);
   for (auto n = 0u; n < nx * ny; ++n) {
     if (n == y_pos * nx + x_pos) {
       CHECK_CLOSE(src_strength[0], lattice.src_g[n], zero_tol);
@@ -221,7 +224,7 @@ TEST(InitSingle2DSource)
   Lattice lattice(g_lattice);
   auto nx = lattice.GetNumberOfColumns();
   auto ny = lattice.GetNumberOfRows();
-  lattice.InitSrc(lattice.src_f, src_position, src_strength);
+  lattice.Init(lattice.src_f, src_position, src_strength);
   for (auto n = 0u; n < nx * ny; ++n) {
     if (n == y_pos * nx + x_pos) {
       CHECK_CLOSE(src_strength[0][0], lattice.src_f[n][0], zero_tol);
@@ -244,7 +247,7 @@ TEST(InitMultiple2DSource)
   Lattice lattice(g_lattice);
   auto nx = lattice.GetNumberOfColumns();
   auto ny = lattice.GetNumberOfRows();
-  lattice.InitSrc(lattice.src_f, src_position, src_strength);
+  lattice.Init(lattice.src_f, src_position, src_strength);
   for (auto n = 0u; n < nx * ny; ++n) {
     if (n == y_pos * nx + x_pos) {
       CHECK_CLOSE(src_strength[0][0], lattice.src_f[n][0], zero_tol);
@@ -525,7 +528,8 @@ TEST(CollideCDEWithSource)
   Lattice lattice(g_num_dimensions, g_num_discrete_velocities, ny, nx, g_dx,
       g_dt, g_t_total, g_diffusion_coefficient, g_kinematic_viscosity,
       g_density_f, g_density_g, g_u0, g_src_pos_f, g_src_pos_g,
-      g_src_strength_f, g_src_strength_g, g_is_cd, g_is_ns, g_is_not_instant);
+      g_src_strength_f, g_src_strength_g, g_obstacles_pos, g_is_cd, g_is_ns,
+      g_is_not_instant, g_no_obstacles);
   auto nc = lattice.GetNumberOfDiscreteVelocities();
   std::vector<double> g_exp1 = {0.114068,
                                 1.005902, 1.914569, 2.822073, 3.730159,
@@ -541,7 +545,7 @@ TEST(CollideCDEWithSource)
   lattice.Init(lattice.g, ones);
   lattice.Init(lattice.g_eq, nums);
   lattice.Init(lattice.u, u0);
-  lattice.InitSrc(lattice.src_g, src_pos, src_strength);
+  lattice.Init(lattice.src_g, src_pos, src_strength);
   // First collide
   lattice.Collide(lattice.g, lattice.g_eq, lattice.src_g);
   for (auto i = 0u; i < nc; ++i) {
@@ -561,8 +565,8 @@ TEST(CollideNSWithSource)
   Lattice lattice(g_num_dimensions, g_num_discrete_velocities, ny,
       nx, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
       g_kinematic_viscosity, g_density_f, g_density_g, g_u0, g_src_pos_f,
-      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_is_cd, g_is_ns,
-      g_is_not_instant);
+      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_obstacles_pos, g_is_cd,
+      g_is_ns, g_is_not_instant, g_no_obstacles);
   auto nc = lattice.GetNumberOfDiscreteVelocities();
   std::vector<double> f_exp1 = {-0.15245685,
                                 0.97186065, 2.00264452, 2.78578074, 3.81200867,
@@ -579,7 +583,7 @@ TEST(CollideNSWithSource)
   lattice.Init(lattice.f_eq, nums);
   lattice.Init(lattice.u, u0);
   lattice.Init(lattice.rho_f, 2.0);
-  lattice.InitSrc(lattice.src_f, src_pos, src_strength);
+  lattice.Init(lattice.src_f, src_pos, src_strength);
   // First collide
   lattice.Collide(lattice.f, lattice.f_eq, lattice.src_f, lattice.rho_f);
   for (auto i = 0u; i < nc; ++i) {
@@ -619,7 +623,7 @@ TEST(ComputeU)
   std::vector<double> expected = {-31.5385, -94.6395};
   lattice.Init(lattice.f, nums);
   lattice.Init(lattice.rho_f, g_density_f);
-  lattice.InitSrc(lattice.src_f, src_position, src_strength);
+  lattice.Init(lattice.src_f, src_position, src_strength);
   lattice.ComputeU(lattice.f, lattice.rho_f, lattice.src_f);
   for (auto u : lattice.u) {
     CHECK_CLOSE(expected[0], u[0], loose_tol);
@@ -641,11 +645,11 @@ TEST(InitAllAgainstManualInit)
   lattice2.Init(lattice2.rho_f, g_density_f);
   lattice2.ComputeEq(lattice2.f_eq, lattice2.rho_f);
   lattice2.Init(lattice2.f, lattice2.f_eq);
-  lattice2.InitSrc(lattice2.src_f, g_src_pos_f, g_src_strength_f);
+  lattice2.Init(lattice2.src_f, g_src_pos_f, g_src_strength_f);
   lattice2.Init(lattice2.rho_g, g_density_g);
   lattice2.ComputeEq(lattice2.g_eq, lattice2.rho_g);
   lattice2.Init(lattice2.g, lattice2.g_eq);
-  lattice2.InitSrc(lattice2.src_g, g_src_pos_g, g_src_strength_g);
+  lattice2.Init(lattice2.src_g, g_src_pos_g, g_src_strength_g);
   for (auto n = 0u; n < nx * ny; ++n) {
     CHECK_CLOSE(lattice.rho_g[n], lattice2.rho_g[n], zero_tol);
     CHECK_CLOSE(lattice.rho_f[n], lattice2.rho_f[n], zero_tol);
@@ -709,8 +713,8 @@ TEST(InstantSourceToggle)
   Lattice lattice(g_num_dimensions, g_num_discrete_velocities,
       g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
       g_kinematic_viscosity, g_density_f, g_density_g, g_u0, g_src_pos_f,
-      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_is_cd, g_is_ns,
-      g_is_instant);
+      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_obstacles_pos, g_is_cd,
+      g_is_ns, g_is_instant, g_no_obstacles);
   auto nx = lattice.GetNumberOfColumns();
   auto ny = lattice.GetNumberOfRows();
   auto nd = lattice.GetNumberOfDimensions();
@@ -734,13 +738,13 @@ TEST(ToggleCDE)
   Lattice lattice(g_num_dimensions, g_num_discrete_velocities,
       g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
       g_kinematic_viscosity, g_density_f, g_density_g, u0, g_src_pos_f,
-      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_is_cd, g_is_not_ns,
-      g_is_not_instant);
+      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_obstacles_pos, g_is_cd,
+      g_is_not_ns, g_is_not_instant, g_no_obstacles);
   Lattice lattice2(g_num_dimensions, g_num_discrete_velocities,
       g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
       g_kinematic_viscosity, g_density_f, g_density_g, u0, g_src_pos_f,
-      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_is_cd, g_is_not_ns,
-      g_is_not_instant);
+      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_obstacles_pos, g_is_cd,
+      g_is_not_ns, g_is_not_instant, g_no_obstacles);
   auto nx = lattice.GetNumberOfColumns();
   auto ny = lattice.GetNumberOfRows();
   auto nc = lattice.GetNumberOfDiscreteVelocities();
@@ -750,7 +754,7 @@ TEST(ToggleCDE)
   lattice2.Init(lattice2.rho_g, g_density_g);
   lattice2.ComputeEq(lattice2.g_eq, lattice2.rho_g);
   lattice2.Init(lattice2.g, lattice2.g_eq);
-  lattice2.InitSrc(lattice2.src_g, g_src_pos_g, g_src_strength_g);
+  lattice2.Init(lattice2.src_g, g_src_pos_g, g_src_strength_g);
   for (auto t = 0.0; t < g_t_total; t += g_dt) {
     lattice2.Collide(lattice2.g, lattice2.g_eq, lattice2.src_g);
     lattice2.boundary_g = lattice2.BoundaryCondition(lattice2.g);
@@ -787,13 +791,13 @@ TEST(ToggleNS)
   Lattice lattice(g_num_dimensions, g_num_discrete_velocities,
       g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
       g_kinematic_viscosity, g_density_f, g_density_g, u0, g_src_pos_f,
-      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_is_not_cd, g_is_ns,
-      g_is_not_instant);
+      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_obstacles_pos,
+      g_is_not_cd, g_is_ns, g_is_not_instant, g_no_obstacles);
   Lattice lattice2(g_num_dimensions, g_num_discrete_velocities,
       g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
       g_kinematic_viscosity, g_density_f, g_density_g, u0, g_src_pos_f,
-      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_is_not_cd, g_is_ns,
-      g_is_not_instant);
+      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_obstacles_pos,
+      g_is_not_cd, g_is_ns, g_is_not_instant, g_no_obstacles);
   auto nx = lattice.GetNumberOfColumns();
   auto ny = lattice.GetNumberOfRows();
   auto nc = lattice.GetNumberOfDiscreteVelocities();
@@ -803,7 +807,7 @@ TEST(ToggleNS)
   lattice2.Init(lattice2.rho_f, g_density_f);
   lattice2.ComputeEq(lattice2.f_eq, lattice2.rho_f);
   lattice2.Init(lattice2.f, lattice2.f_eq);
-  lattice2.InitSrc(lattice2.src_f, g_src_pos_f, g_src_strength_f);
+  lattice2.Init(lattice2.src_f, g_src_pos_f, g_src_strength_f);
   for (auto t = 0.0; t < g_t_total; t += g_dt) {
     lattice2.Collide(lattice2.f, lattice2.f_eq, lattice2.src_f, lattice2.rho_f);
     lattice2.boundary_f = lattice2.BoundaryCondition(lattice2.f);
@@ -840,44 +844,44 @@ TEST(ZeroValuesInLatticeDeclaration)
 {
   std::vector<double> u0;
   CHECK_THROW(Lattice lattice(0, 9, 2, 4, 1, 1, 1, 0.2, 0.2, 2.0, 2.0, g_u0,
-      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g, true,
-      true, true), std::runtime_error);
+      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g,
+      g_obstacles_pos, true, true, true, false), std::runtime_error);
   CHECK_THROW(Lattice lattice(2, 0, 2, 4, 1, 1, 1, 0.2, 0.2, 2.0, 2.0, g_u0,
-      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g, true,
-      true, true), std::runtime_error);
+      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g,
+      g_obstacles_pos, true, true, true, false), std::runtime_error);
   CHECK_THROW(Lattice lattice(2, 9, 0, 4, 1, 1, 1, 0.2, 0.2, 2.0, 2.0, g_u0,
-      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g, true,
-      true, true), std::runtime_error);
+      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g,
+      g_obstacles_pos, true, true, true, false), std::runtime_error);
   CHECK_THROW(Lattice lattice(2, 9, 2, 0, 1, 1, 1, 0.2, 0.2, 2.0, 2.0, g_u0,
-      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g, true,
-      true, true), std::runtime_error);
+      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g,
+      g_obstacles_pos, true, true, true, false), std::runtime_error);
   CHECK_THROW(Lattice lattice(2, 9, 2, 4, 0, 1, 1, 0.2, 0.2, 2.0, 2.0, g_u0,
-      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g, true,
-      true, true), std::runtime_error);
+      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g,
+      g_obstacles_pos, true, true, true, false), std::runtime_error);
   CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 0, 1, 0.2, 0.2, 2.0, 2.0, g_u0,
-      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g, true,
-      true, true), std::runtime_error);
+      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g,
+      g_obstacles_pos, true, true, true, false), std::runtime_error);
   CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 1, 0, 0.2, 0.2, 2.0, 2.0, g_u0,
-      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g, true,
-      true, true), std::runtime_error);
+      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g,
+      g_obstacles_pos, true, true, true, false), std::runtime_error);
   CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 1, 1, 0.0, 0.2, 2.0, 2.0, g_u0,
-      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g, true,
-      true, true), std::runtime_error);
+      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g,
+      g_obstacles_pos, true, true, true, false), std::runtime_error);
   CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 1, 1, 0.2, 0.0, 2.0, 2.0, g_u0,
-      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g, true,
-      true, true), std::runtime_error);
+      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g,
+      g_obstacles_pos, true, true, true, false), std::runtime_error);
   CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 1, 1, 0.2, 0.2, 0.0, 2.0, g_u0,
-      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g, true,
-      true, true), std::runtime_error);
+      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g,
+      g_obstacles_pos, true, true, true, false), std::runtime_error);
   CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 1, 1, 0.2, 0.2, 2.0, 0.0, g_u0,
-      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g, true,
-      true, true), std::runtime_error);
+      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g,
+      g_obstacles_pos, true, true, true, false), std::runtime_error);
   CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 1, 1, 0.2, 0.2, 2.0, 2.0, u0,
-      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g, true,
-      true, true), std::runtime_error);
+      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g,
+      g_obstacles_pos, true, true, true, false), std::runtime_error);
   CHECK_THROW(Lattice lattice(2, 9, 2, 4, 1, 1, 1, 0.2, 0.2, 2.0, 2.0, g_u0,
-      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g, false,
-      false, true), std::runtime_error);
+      g_src_pos_f, g_src_pos_g, g_src_strength_f, g_src_strength_g,
+      g_obstacles_pos, false, false, true, false), std::runtime_error);
 }
 
 TEST(Init2DLatticesWithValuesWrongDimensions)
@@ -911,55 +915,55 @@ TEST(Init2DLatticesWithLatticeWrongDepth)
   }
 }
 
-TEST(InitSrcPosStrengthMismatch)
+TEST(InitPosStrengthMismatch)
 {
   std::vector<std::vector<unsigned>> src_pos_g = {{1, 2}};
   std::vector<double> src_strength_g = {1.0, 1.5};
   std::vector<std::vector<unsigned>> src_pos_f = {{1, 2}};
   std::vector<std::vector<double>> src_strength_f = {{1, 2}, {2, 2}};
   Lattice lattice(g_lattice);
-  CHECK_THROW(lattice.InitSrc(lattice.src_g, src_pos_g, src_strength_g),
+  CHECK_THROW(lattice.Init(lattice.src_g, src_pos_g, src_strength_g),
       std::runtime_error);
-  CHECK_THROW(lattice.InitSrc(lattice.src_f, src_pos_f, src_strength_f),
+  CHECK_THROW(lattice.Init(lattice.src_f, src_pos_f, src_strength_f),
       std::runtime_error);
 }
 
-TEST(InitSrcWrongPosition)
+TEST(InitWrongPosition)
 {
   std::vector<std::vector<unsigned>> src_pos_g = {{1, 2, 3}};
   std::vector<double> src_strength_g = {1.0};
   std::vector<std::vector<unsigned>> src_pos_f = {{1}};
   std::vector<std::vector<double>> src_strength_f = {{1, 2}};
   Lattice lattice(g_lattice);
-  CHECK_THROW(lattice.InitSrc(lattice.src_g, src_pos_g, src_strength_g),
+  CHECK_THROW(lattice.Init(lattice.src_g, src_pos_g, src_strength_g),
       std::runtime_error);
-  CHECK_THROW(lattice.InitSrc(lattice.src_f, src_pos_f, src_strength_f),
+  CHECK_THROW(lattice.Init(lattice.src_f, src_pos_f, src_strength_f),
       std::runtime_error);
 }
 
-TEST(InitSrcXPostionOutOfBound)
+TEST(InitXPostionOutOfBound)
 {
   std::vector<std::vector<unsigned>> src_pos_g = {{10, 2}};
   std::vector<double> src_strength_g = {1.0};
   std::vector<std::vector<unsigned>> src_pos_f = {{10, 2}};
   std::vector<std::vector<double>> src_strength_f = {{1, 2}};
   Lattice lattice(g_lattice);
-  CHECK_THROW(lattice.InitSrc(lattice.src_g, src_pos_g, src_strength_g),
+  CHECK_THROW(lattice.Init(lattice.src_g, src_pos_g, src_strength_g),
       std::runtime_error);
-  CHECK_THROW(lattice.InitSrc(lattice.src_f, src_pos_f, src_strength_f),
+  CHECK_THROW(lattice.Init(lattice.src_f, src_pos_f, src_strength_f),
       std::runtime_error);
 }
 
-TEST(InitSrcYPostionOutOfBound)
+TEST(InitYPostionOutOfBound)
 {
   std::vector<std::vector<unsigned>> src_pos_g = {{1, 20}};
   std::vector<double> src_strength_g = {1.0};
   std::vector<std::vector<unsigned>> src_pos_f = {{1, 20}};
   std::vector<std::vector<double>> src_strength_f = {{1, 2}};
   Lattice lattice(g_lattice);
-  CHECK_THROW(lattice.InitSrc(lattice.src_g, src_pos_g, src_strength_g),
+  CHECK_THROW(lattice.Init(lattice.src_g, src_pos_g, src_strength_g),
       std::runtime_error);
-  CHECK_THROW(lattice.InitSrc(lattice.src_f, src_pos_f, src_strength_f),
+  CHECK_THROW(lattice.Init(lattice.src_f, src_pos_f, src_strength_f),
       std::runtime_error);
 }
 

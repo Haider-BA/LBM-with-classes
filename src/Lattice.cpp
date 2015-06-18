@@ -31,78 +31,11 @@ Lattice::Lattice(std::size_t num_dimensions
   , const std::vector<std::vector<unsigned>> &src_pos_g
   , const std::vector<std::vector<double>> &src_strength_f
   , const std::vector<double> &src_strength_g
-  , bool is_cd
-  , bool is_ns
-  , bool is_instant)
-  : number_of_dimensions_ {num_dimensions},
-    number_of_discrete_velocities_ {num_discrete_velocities},
-    number_of_rows_ {num_rows},
-    number_of_columns_ {num_cols},
-    space_step_ {dx},
-    time_step_ {dt},
-    total_time_ {t_total},
-    diffusion_coefficient_ {diffusion_coefficient},
-    kinematic_viscosity_ {kinematic_viscosity},
-    initial_density_f_ {density_f},
-    initial_density_g_ {density_g},
-    initial_velocity_ {u0},
-    source_position_f_ {src_pos_f},
-    source_position_g_ {src_pos_g},
-    source_strength_f_ {src_strength_f},
-    source_strength_g_ {src_strength_g},
-    is_cd_ {is_cd},
-    is_ns_ {is_ns},
-    is_instant_ {is_instant}
-{
-  if (input_parameter_check_value_ < 1e-20) {
-    throw std::runtime_error("Zero value in input parameters");
-  }
-  else {
-    c_ = space_step_ / time_step_;
-    cs_sqr_ = c_ * c_ / 3.0;
-    std::size_t lattice_size = (num_rows) * (num_cols);
-    std::vector<double> length_d(num_dimensions, 0.0);
-    std::vector<double> length_q(num_discrete_velocities, 0.0);
-    f.assign(lattice_size, length_q);
-    g.assign(lattice_size, length_q);
-    f_eq.assign(lattice_size, length_q);
-    g_eq.assign(lattice_size, length_q);
-    src_f.assign(lattice_size, length_d);
-    src_g.assign(lattice_size, 0.0);
-    rho_f.assign(lattice_size, 0.0);
-    rho_g.assign(lattice_size, 0.0);
-    boundary_f.assign(2 * num_rows + 2 * num_cols + 4, length_q);
-    boundary_g.assign(2 * num_rows + 2 * num_cols + 4, length_q);
-    u.assign(lattice_size, length_d);
-    // tau_cd_ formula from "A new scheme for source term in LBGK model for
-    // convection–diffusion equation"
-    if (is_cd) tau_cd_ = 0.5 + diffusion_coefficient / cs_sqr_ / dt;
-    // tau_ns_ formula from "Discrete lattice effects on the forcing term in the
-    // lattice Boltzmann method" Guo2002
-    if (is_ns) tau_ns_ = 0.5 + kinematic_viscosity / cs_sqr_ / dt;
-  }
-}
-// temp implementation
-Lattice::Lattice(std::size_t num_dimensions
-  , std::size_t num_discrete_velocities
-  , std::size_t num_rows
-  , std::size_t num_cols
-  , double dx
-  , double dt
-  , double t_total
-  , double diffusion_coefficient
-  , double kinematic_viscosity
-  , double density_f
-  , double density_g
-  , const std::vector<double> &u0
-  , const std::vector<std::vector<unsigned>> &src_pos_f
-  , const std::vector<std::vector<unsigned>> &src_pos_g
-  , const std::vector<std::vector<double>> &src_strength_f
-  , const std::vector<double> &src_strength_g
   , const std::vector<std::vector<unsigned>> &obstacles_pos
   , bool is_cd
   , bool is_ns
-  , bool is_instant)
+  , bool is_instant
+  , bool has_obstacles)
   : number_of_dimensions_ {num_dimensions},
     number_of_discrete_velocities_ {num_discrete_velocities},
     number_of_rows_ {num_rows},
@@ -122,14 +55,14 @@ Lattice::Lattice(std::size_t num_dimensions
     obstacles_position_ {obstacles_pos},
     is_cd_ {is_cd},
     is_ns_ {is_ns},
-    is_instant_ {is_instant}
+    is_instant_ {is_instant},
+    has_obstacles_ {has_obstacles}
 {
   if (input_parameter_check_value_ < 1e-20) {
     throw std::runtime_error("Zero value in input parameters");
   }
   else {
-    c_ = space_step_ / time_step_;
-    cs_sqr_ = c_ * c_ / 3.0;
+    // Initializing all variables with zero values
     std::size_t lattice_size = (num_rows) * (num_cols);
     std::vector<double> length_d(num_dimensions, 0.0);
     std::vector<double> length_q(num_discrete_velocities, 0.0);
@@ -139,12 +72,15 @@ Lattice::Lattice(std::size_t num_dimensions
     g_eq.assign(lattice_size, length_q);
     src_f.assign(lattice_size, length_d);
     src_g.assign(lattice_size, 0.0);
-    obstacles.assign(lattice_size, false);
     rho_f.assign(lattice_size, 0.0);
     rho_g.assign(lattice_size, 0.0);
+    obstacles.assign(lattice_size, false);
     boundary_f.assign(2 * num_rows + 2 * num_cols + 4, length_q);
     boundary_g.assign(2 * num_rows + 2 * num_cols + 4, length_q);
     u.assign(lattice_size, length_d);
+    // Initializing variables with initial values
+    c_ = space_step_ / time_step_;
+    cs_sqr_ = c_ * c_ / 3.0;
     // tau_cd_ formula from "A new scheme for source term in LBGK model for
     // convection–diffusion equation"
     if (is_cd) tau_cd_ = 0.5 + diffusion_coefficient / cs_sqr_ / dt;
@@ -190,7 +126,7 @@ void Lattice::Init(std::vector<std::vector<double>> &lattice
     else {
       node = initial_values;
     }
-  }  // lat
+  }  // node
 }
 
 void Lattice::Init(std::vector<std::vector<double>> &lattice
@@ -199,78 +135,78 @@ void Lattice::Init(std::vector<std::vector<double>> &lattice
   if (initial_lattice.size() != lattice.size())
       throw std::runtime_error("Size mismatch");
   auto nc = GetNumberOfDiscreteVelocities();
-  for (auto init_node : initial_lattice) {
-    if (init_node.size() != nc) throw std::runtime_error("Depth mismatch");
-  }  // init_node
+  for (auto initial_node : initial_lattice) {
+    if (initial_node.size() != nc) throw std::runtime_error("Depth mismatch");
+  }  // initial_node
   lattice = initial_lattice;
 }
 
-void Lattice::Init(std::vector<bool> &obstacles
-  , const std::vector<std::vector<unsigned>> &obstacles_position)
+void Lattice::Init(std::vector<bool> &lattice
+  , const std::vector<std::vector<unsigned>> &position)
 {
   auto nx = GetNumberOfColumns();
   auto ny = GetNumberOfRows();
   auto nd = GetNumberOfDimensions();
-  for (auto obstacle_pos : obstacles_position) {
-    if(obstacle_pos.size() != nd) {
+  for (auto pos : position) {
+    if(pos.size() != nd) {
       throw std::runtime_error("Insufficient position information");
     }
-    else if (obstacle_pos[0] > nx - 1) {
+    else if (pos[0] > nx - 1) {
       throw std::runtime_error("x value out of range");
     }
-    else if (obstacle_pos[1] > ny - 1) {
+    else if (pos[1] > ny - 1) {
       throw std::runtime_error("y value out of range");
     }
-    obstacles[obstacle_pos[1] * nx + obstacle_pos[0]] = true;
-  }  // obstacle_pos
+    lattice[pos[1] * nx + pos[0]] = true;
+  }  // pos
 }
 
-void Lattice::InitSrc(std::vector<double> &lattice_src
-  , const std::vector<std::vector<unsigned>> &src_position
-  , const std::vector<double> &src_strength)
+void Lattice::Init(std::vector<double> &lattice
+  , const std::vector<std::vector<unsigned>> &position
+  , const std::vector<double> &strength)
 {
-  if (src_position.size() != src_strength.size())
+  if (position.size() != strength.size())
       throw std::runtime_error("Insufficient source information");
   auto nx = GetNumberOfColumns();
   auto ny = GetNumberOfRows();
   auto nd = GetNumberOfDimensions();
-  auto it_strength = begin(src_strength);
-  for (auto src_pos : src_position) {
-    if(src_pos.size() != nd) {
+  auto it_strength = begin(strength);
+  for (auto pos : position) {
+    if(pos.size() != nd) {
       throw std::runtime_error("Insufficient position information");
     }
-    else if (src_pos[0] > nx - 1) {
+    else if (pos[0] > nx - 1) {
       throw std::runtime_error("x value out of range");
     }
-    else if (src_pos[1] > ny - 1) {
+    else if (pos[1] > ny - 1) {
       throw std::runtime_error("y value out of range");
     }
-    lattice_src[src_pos[1] * nx + src_pos[0]] = *it_strength++;
-  }  // src_pos
+    lattice[pos[1] * nx + pos[0]] = *it_strength++;
+  }  // pos
 }
 
-void Lattice::InitSrc(std::vector<std::vector<double>> &lattice_src
-  , const std::vector<std::vector<unsigned>> &src_position
-  , const std::vector<std::vector<double>> &src_strength)
+void Lattice::Init(std::vector<std::vector<double>> &lattice
+  , const std::vector<std::vector<unsigned>> &position
+  , const std::vector<std::vector<double>> &strength)
 {
-  if (src_position.size() != src_strength.size())
+  if (position.size() != strength.size())
       throw std::runtime_error("Insufficient source information");
   auto nx = GetNumberOfColumns();
   auto ny = GetNumberOfRows();
   auto nd = GetNumberOfDimensions();
-  auto it_strength = begin(src_strength);
-  for (auto src_pos : src_position) {
-    if(src_pos.size() != nd) {
+  auto it_strength = begin(strength);
+  for (auto pos : position) {
+    if(pos.size() != nd) {
       throw std::runtime_error("Insufficient position information");
     }
-    else if (src_pos[0] > nx - 1) {
+    else if (pos[0] > nx - 1) {
       throw std::runtime_error("x value out of range");
     }
-    else if (src_pos[1] > ny - 1) {
+    else if (pos[1] > ny - 1) {
       throw std::runtime_error("y value out of range");
     }
-    lattice_src[src_pos[1] * nx + src_pos[0]] = *it_strength++;
-  }  // src_pos
+    lattice[pos[1] * nx + pos[0]] = *it_strength++;
+  }  // pos
 }
 
 void Lattice::ComputeEq(std::vector<std::vector<double>> &lattice_eq
@@ -536,18 +472,18 @@ void Lattice::ComputeU(const std::vector<std::vector<double>> &lattice
 void Lattice::InitAll()
 {
   Lattice::Init(u, initial_velocity_);
-  Lattice::Init(obstacles, obstacles_position_);
+  if (has_obstacles_) Lattice::Init(obstacles, obstacles_position_);
   if (is_ns_) {
     Lattice::Init(rho_f, initial_density_f_);
     Lattice::ComputeEq(f_eq, rho_f);
     Lattice::Init(f, f_eq);
-    Lattice::InitSrc(src_f, source_position_f_, source_strength_f_);
+    Lattice::Init(src_f, source_position_f_, source_strength_f_);
   }
   if (is_cd_) {
     Lattice::Init(rho_g, initial_density_g_);
     Lattice::ComputeEq(g_eq, rho_g);
     Lattice::Init(g, g_eq);
-    Lattice::InitSrc(src_g, source_position_g_, source_strength_g_);
+    Lattice::Init(src_g, source_position_g_, source_strength_g_);
   }
 }
 
@@ -555,6 +491,7 @@ void Lattice::TakeStep()
 {
   if(is_ns_) {
     Lattice::Collide(f, f_eq, src_f, rho_f);
+    if (has_obstacles_) Lattice::Obstacles(f, obstacles);
     boundary_f = Lattice::BoundaryCondition(f);
     f = Lattice::Stream(f, boundary_f);
     rho_f = Lattice::ComputeRho(f);
@@ -563,7 +500,7 @@ void Lattice::TakeStep()
   }
   if(is_cd_) {
     Lattice::Collide(g, g_eq, src_g);
-    Lattice::Obstacles(g, obstacles);
+    if (has_obstacles_) Lattice::Obstacles(g, obstacles);
     boundary_g = Lattice::BoundaryCondition(g);
     g = Lattice::Stream(g, boundary_g);
     rho_g = Lattice::ComputeRho(g);

@@ -19,12 +19,15 @@ static const std::vector<std::vector<unsigned>> g_src_pos_f = {{0, 0}};
 static const std::vector<std::vector<unsigned>> g_src_pos_g = {{15, 10}};
 static const std::vector<std::vector<double>> g_src_strength_f = {{1, 1}};
 static const std::vector<double> g_src_strength_g = {500};
+static const std::vector<std::vector<unsigned>> g_obstacles_pos = {{0, 0}};
 static const bool g_is_cd = true;
 static const bool g_is_ns = true;
 static const bool g_is_instant = true;
+static const bool g_has_obstacles = true;
 static const bool g_is_not_cd = false;
 static const bool g_is_not_ns = false;
 static const bool g_is_not_instant = false;
+static const bool g_no_obstacles = false;
 static const double g_density_g = 1.0;
 static const double g_density_f = 1.0;
 
@@ -33,8 +36,8 @@ TEST(DiffusionEquation)
   Lattice lattice(g_num_dimensions, g_num_discrete_velocities,
       g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
       g_kinematic_viscosity, g_density_f, g_density_g, g_u0_zero, g_src_pos_f,
-      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_is_cd, g_is_not_ns,
-      g_is_not_instant);
+      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_obstacles_pos, g_is_cd,
+      g_is_not_ns, g_is_not_instant, g_no_obstacles);
   lattice.RunSim(lattice.g);
 }
 
@@ -54,8 +57,8 @@ TEST(CoupledNSCDE)
   Lattice lattice(g_num_dimensions, g_num_discrete_velocities,
       g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
       g_kinematic_viscosity, g_density_f, g_density_g, g_u0_zero, src_pos_f,
-      g_src_pos_g, src_strength_f, g_src_strength_g, g_is_cd, g_is_ns,
-      g_is_not_instant);
+      g_src_pos_g, src_strength_f, g_src_strength_g, g_obstacles_pos, g_is_cd,
+      g_is_ns, g_is_not_instant, g_no_obstacles);
   lattice.RunSim(lattice.g);
 }
 TEST(NavierStokesEquation)
@@ -74,27 +77,27 @@ TEST(NavierStokesEquation)
   Lattice lattice(g_num_dimensions, g_num_discrete_velocities,
       g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
       g_kinematic_viscosity, g_density_f, g_density_g, g_u0_zero, src_pos_f,
-      g_src_pos_g, src_strength_f, g_src_strength_g, g_is_not_cd, g_is_ns,
-      g_is_not_instant);
+      g_src_pos_g, src_strength_f, g_src_strength_g, g_obstacles_pos,
+      g_is_not_cd, g_is_ns, g_is_not_instant, g_no_obstacles);
   lattice.RunSim(lattice.u);
 }
 
 TEST(DiffusionEquationWithDiffusion)
 {
   std::vector<std::vector<unsigned>> obs_pos;
-  for (auto y = 0u; y < g_num_rows; ++y) {
+  for (auto y = 5u; y < g_num_rows - 5; ++y) {
     obs_pos.push_back({10, y});
     obs_pos.push_back({20, y});
   }
-  for (auto x = 0u; x < g_num_cols; ++x) {
-    obs_pos.push_back({x, 5});
-  }
-  double t_total = 0.002;
+//  for (auto x = 0u; x < g_num_cols; ++x) {
+//    obs_pos.push_back({x, 5});
+//  }
+  std::vector<double> u0 = {-0.1, 0.1};
   Lattice lattice(g_num_dimensions, g_num_discrete_velocities,
       g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
-      g_kinematic_viscosity, g_density_f, g_density_g, g_u0_zero, g_src_pos_f,
+      g_kinematic_viscosity, g_density_f, g_density_g, u0, g_src_pos_f,
       g_src_pos_g, g_src_strength_f, g_src_strength_g, obs_pos, g_is_cd,
-      g_is_not_ns, g_is_not_instant);
+      g_is_not_ns, g_is_not_instant, g_has_obstacles);
 
   lattice.RunSim(lattice.g);
 //  lattice.RunSim();

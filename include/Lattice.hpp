@@ -46,31 +46,11 @@ class Lattice {
     , const std::vector<std::vector<unsigned>> &src_pos_g
     , const std::vector<std::vector<double>> &src_strength_f
     , const std::vector<double> &src_strength_g
-    , bool is_cd
-    , bool is_ns
-    , bool is_instant);
-
-  // temporary to test obstacles functions
-  Lattice(std::size_t num_dimensions
-    , std::size_t num_discrete_velocities
-    , std::size_t num_rows
-    , std::size_t num_cols
-    , double dx
-    , double dt
-    , double t_total
-    , double diffusion_coefficient
-    , double kinematic_viscosity
-    , double density_f
-    , double density_g
-    , const std::vector<double> &u0
-    , const std::vector<std::vector<unsigned>> &src_pos_f
-    , const std::vector<std::vector<unsigned>> &src_pos_g
-    , const std::vector<std::vector<double>> &src_strength_f
-    , const std::vector<double> &src_strength_g
     , const std::vector<std::vector<unsigned>> &obstacles_pos
     , bool is_cd
     , bool is_ns
-    , bool is_instant);
+    , bool is_instant
+    , bool has_obstacles);
 
   Lattice(const Lattice&) = default;
 
@@ -144,8 +124,8 @@ class Lattice {
    * \param
    * \param
    */
-  void Init(std::vector<bool> &obstacles
-  , const std::vector<std::vector<unsigned>> &obstacles_position);
+  void Init(std::vector<bool> &lattice
+  , const std::vector<std::vector<unsigned>> &position);
 
   /**
    * Initialize a depth 1 2D source lattice by reading from the source position
@@ -162,9 +142,9 @@ class Lattice {
    * \throw runtime_error if component in vector in src_position exceeds number
    *        of columns or rows of lattice
    */
-  void InitSrc(std::vector<double> &lattice_src
-    , const std::vector<std::vector<unsigned>> &src_position
-    , const std::vector<double> &src_strength);
+  void Init(std::vector<double> &lattice
+    , const std::vector<std::vector<unsigned>> &position
+    , const std::vector<double> &strength);
 
   /**
    * Initialize a depth 2 2D source lattice by reading from the source position
@@ -181,9 +161,9 @@ class Lattice {
    * \throw runtime_error if component in vector in src_position exceeds number
    *        of columns or rows of lattice
    */
-  void InitSrc(std::vector<std::vector<double>> &lattice_src
-    , const std::vector<std::vector<unsigned>> &src_position
-    , const std::vector<std::vector<double>> &src_strength);
+  void Init(std::vector<std::vector<double>> &lattice
+    , const std::vector<std::vector<unsigned>> &position
+    , const std::vector<std::vector<double>> &strength);
 
   /**
    * Calculates the equilibrium distribution function values at each node and
@@ -436,6 +416,7 @@ class Lattice {
   bool is_cd_;
   bool is_ns_;
   bool is_instant_;
+  bool has_obstacles_;
   double input_parameter_check_value_ = space_step_ * time_step_ * total_time_ *
       number_of_dimensions_ * number_of_discrete_velocities_ * number_of_rows_ *
       initial_density_f_ * initial_density_g_ * initial_velocity_.size() *
