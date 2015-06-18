@@ -10,8 +10,9 @@ int main()
 //  return Unfit::RunOneTest("DiffusionEquation");
 //  return Unfit::RunOneTest("CoupledNSCDE");
 //  return Unfit::RunOneTest("NavierStokesEquation");
-//  return Unfit::RunOneTest("PoiseiuilleFlow");
-//  return Unfit::RunOneTest("DiffusionEquationWithDiffusion");
+//  return Unfit::RunOneTest("PoiseuilleFlow");
+//  return Unfit::RunOneTest("DiffusionEquationWithObstacles");
+//  return Unfit::RunOneTest("ObstacleNormalReflect");
 
   // to run only one suite, uncomment the following line
   // and specify the name of the suite. Also, comment out the RunAllTheTests()

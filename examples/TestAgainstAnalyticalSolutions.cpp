@@ -1,5 +1,6 @@
 #include <cmath>  // exp
 #include <iostream>
+#include <vector>
 #include "Lattice.hpp"
 #include "UnitTest++.h"
 
@@ -19,7 +20,7 @@ enum DiscreteDirections {
 };
 static const std::size_t g_num_dimensions = 2;
 static const std::size_t g_num_discrete_velocities = 9;
-static const std::size_t g_num_rows = 18  ;
+static const std::size_t g_num_rows = 18;
 static const std::size_t g_num_cols = 34;
 static const double g_dx = 0.0316;
 static const double g_dt = 0.001;
@@ -72,7 +73,7 @@ TEST(DiffusionEquation)
           double rho_an = 1.0 + exp(-1.0 * (y_an * y_an + x_an * x_an) / 4.0 /
                g_diffusion_coefficient / t) / (4.0 * 3.1415926 * t *
                g_diffusion_coefficient);
-          if(!(y == 100 && x == 100) && t > 3) {
+          if (!(y == 100 && x == 100) && t > 3) {
             CHECK_CLOSE(rho_an, lattice.rho_g[n], 0.007);
           }
         }  // x
@@ -81,9 +82,9 @@ TEST(DiffusionEquation)
   }  // t
 }
 
-TEST(PoiseiuilleFlow)
+TEST(PoiseuilleFlow)
 {
-  double body_force = 1.0;
+  double body_force = 10.0;
   std::vector<std::vector<unsigned>> src_pos_f((g_num_cols * g_num_rows),
       {0, 0});
   std::vector<std::vector<double>> src_strength_f((g_num_cols * g_num_rows),
@@ -105,13 +106,13 @@ TEST(PoiseiuilleFlow)
   double u_max = body_force / 1000 * (g_num_rows / 2) * (g_num_rows / 2) / 2 /
       g_kinematic_viscosity;
   for (auto x = 0u; x < g_num_cols; ++x) {
-    unsigned y_an = 1;
+    double y_an = 0.5;
     for (auto y = 0u; y < g_num_rows; ++y) {
       auto n = y * g_num_cols + x;
-      double u_an = u_max * (1.0 - (y_an - 10.0) * (y_an - 10.0) / 100.0);
+      double u_an = u_max * (1.0 - (y_an - 9.0) * (y_an - 9.0) / 81.0);
       double u_sim = lattice.u[n][0] + lattice.u[n][1];
-      // accuracy of answer?
-      CHECK_CLOSE(u_an, u_sim, 0.02);
+      // simulation value is within 2.5% of analytical value
+      CHECK_CLOSE(u_an, u_sim, u_an * 0.025);
       if (y < 8) ++y_an;
       if (y > 8) --y_an;
     }  // y

@@ -24,9 +24,18 @@ class Lattice {
    * \param dt
    * \param diffusion_coefficient
    * \param kinematic_viscosity
+   * \param density_f
+   * \param density_g
+   * \param u0
+   * \param src_pos_f
+   * \param src_pos_g
+   * \param src_strength_f
+   * \param src_strength_g
+   * \param obstacles_pos
    * \param is_cd
    * \param is_ns
    * \param is_instant
+   * \param has_obstacles
    * \throw std::runtime_error if there is incorrect values in the input
    *        parameters
    */
@@ -121,8 +130,8 @@ class Lattice {
 
   /**
    * Initialize obstacles lattice
-   * \param
-   * \param
+   * \param lattice 2D lattice containing the obstacle information at each node
+   * \param position 2D vector containing position of the obstacles
    */
   void Init(std::vector<bool> &lattice
   , const std::vector<std::vector<unsigned>> &position);
@@ -201,6 +210,11 @@ class Lattice {
     , std::vector<std::vector<double>> &src
     , const std::vector<double> &rho);
 
+  /**
+   * Reflects discrete velocities based on presence of obstacle at the node
+   * \param lattice 2D lattice containing the distribution function values
+   * \param obstacles lattice containing the obstacle information at each node
+   */
   void Obstacles(std::vector<std::vector<double>> &lattice
     , const std::vector<bool> &obstacles);
 
@@ -249,10 +263,8 @@ class Lattice {
   , const std::vector<double> &rho
   , const std::vector<std::vector<double>> &src);
 
-  /** \brief
-   *
-   * \return void
-   *
+  /**
+   * Initializes all the lattices
    */
   void InitAll();
 

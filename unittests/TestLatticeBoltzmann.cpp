@@ -29,6 +29,7 @@ static const double g_t_total = 1.0;
 static const double g_diffusion_coefficient = 0.2;
 static const double g_kinematic_viscosity = 0.2;
 static const std::vector<double> g_u0 = {123, 321};
+static const std::vector<double> g_u0_zero = {0, 0};
 static const std::vector<std::vector<unsigned>> g_src_pos_f = {{0, 0}};
 static const std::vector<std::vector<unsigned>> g_src_pos_g = {{0, 0}};
 static const std::vector<std::vector<double>> g_src_strength_f = {{1, 1}};
@@ -41,6 +42,7 @@ static const bool g_has_obstacles = true;
 static const bool g_is_not_cd = false;
 static const bool g_is_not_ns = false;
 static const bool g_is_not_instant = false;
+static const bool g_obstacles = true;
 static const bool g_no_obstacles = false;
 static const double g_density_g = 2.0;
 static const double g_density_f = 2.0;
@@ -839,6 +841,251 @@ TEST(ToggleNS)
   }  // n
 }
 
+TEST(ToggleObstacles)
+{
+  std::vector<double> u0 = {1, 2};
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities,
+      g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
+      g_kinematic_viscosity, g_density_f, g_density_g, u0, g_src_pos_f,
+      g_src_pos_g, g_src_strength_f, g_src_strength_g, g_obstacles_pos,
+      g_is_cd, g_is_ns, g_is_not_instant, g_has_obstacles);
+  Lattice lattice2(lattice);
+  auto nx = lattice.GetNumberOfColumns();
+  auto ny = lattice.GetNumberOfRows();
+  auto nc = lattice.GetNumberOfDiscreteVelocities();
+  auto nd = lattice.GetNumberOfDimensions();
+  lattice.RunSim();
+  lattice2.Init(lattice2.u, u0);
+  lattice2.Init(lattice2.obstacles, g_obstacles_pos);
+  lattice2.Init(lattice2.rho_f, g_density_f);
+  lattice2.ComputeEq(lattice2.f_eq, lattice2.rho_f);
+  lattice2.Init(lattice2.f, lattice2.f_eq);
+  lattice2.Init(lattice2.src_f, g_src_pos_f, g_src_strength_f);
+  lattice2.Init(lattice2.rho_g, g_density_g);
+  lattice2.ComputeEq(lattice2.g_eq, lattice2.rho_g);
+  lattice2.Init(lattice2.g, lattice2.g_eq);
+  lattice2.Init(lattice2.src_g, g_src_pos_g, g_src_strength_g);
+  for (auto t = 0.0; t < g_t_total; t += g_dt) {
+    lattice2.Collide(lattice2.f, lattice2.f_eq, lattice2.src_f, lattice2.rho_f);
+    lattice2.Obstacles(lattice2.f, lattice2.obstacles);
+    lattice2.boundary_f = lattice2.BoundaryCondition(lattice2.f);
+    lattice2.f = lattice2.Stream(lattice2.f, lattice2.boundary_f);
+    lattice2.rho_f = lattice2.ComputeRho(lattice2.f);
+    lattice2.ComputeU(lattice2.f, lattice2.rho_f, lattice2.src_f);
+    lattice2.ComputeEq(lattice2.f_eq, lattice2.rho_f);
+    lattice2.Collide(lattice2.g, lattice2.g_eq, lattice2.src_g);
+    lattice2.Obstacles(lattice2.g, lattice2.obstacles);
+    lattice2.boundary_g = lattice2.BoundaryCondition(lattice2.g);
+    lattice2.g = lattice2.Stream(lattice2.g, lattice2.boundary_g);
+    lattice2.rho_g = lattice2.ComputeRho(lattice2.g);
+    lattice2.ComputeEq(lattice2.g_eq, lattice2.rho_g);
+  }
+  for (auto n = 0u; n < nx * ny; ++n) {
+    CHECK_CLOSE(lattice.rho_f[n], lattice2.rho_f[n], zero_tol);
+    CHECK_CLOSE(lattice.rho_g[n], lattice2.rho_g[n], zero_tol);
+    CHECK_CLOSE(lattice.src_g[n], lattice2.src_g[n], zero_tol);
+    for (auto i = 0u; i < nc; ++i) {
+      CHECK_CLOSE(lattice.g[n][i], lattice2.g[n][i], zero_tol);
+      CHECK_CLOSE(lattice.g_eq[n][i], lattice2.g_eq[n][i], zero_tol);
+      CHECK_CLOSE(lattice.f[n][i], lattice2.f[n][i], zero_tol);
+      CHECK_CLOSE(lattice.f_eq[n][i], lattice2.f_eq[n][i], zero_tol);
+      for (auto j = 0u; j < lattice.boundary_f.size(); ++j) {
+        CHECK_CLOSE(lattice.boundary_f[j][i], lattice2.boundary_f[j][i],
+            zero_tol);
+        CHECK_CLOSE(lattice.boundary_g[j][i], lattice2.boundary_g[j][i],
+            zero_tol);
+      }  // j
+    }  // i
+    for (auto d = 0u; d < nd; ++d) {
+      CHECK_CLOSE(lattice.u[n][d], lattice2.u[n][d], zero_tol);
+      CHECK_CLOSE(lattice.src_f[n][d], lattice2.src_f[n][d], zero_tol);
+    }  // d
+  }  // n
+}
+
+TEST(ObstaclesDoNotReflectIntoObstacles)
+{
+  std::vector<std::vector<unsigned>> obstacles_pos;
+  std::vector<double> u0 = {0, 0};
+  for (auto y = 1u; y < 4u; ++y) {
+    obstacles_pos.push_back({1, y});
+    obstacles_pos.push_back({2, y});
+    obstacles_pos.push_back({3, y});
+  }
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities,
+      g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
+      g_kinematic_viscosity, g_density_f, g_density_g, u0, g_src_pos_f,
+      g_src_pos_g, g_src_strength_f, g_src_strength_g, obstacles_pos,
+      g_is_cd, g_is_ns, g_is_not_instant, g_has_obstacles);
+  lattice.InitAll();
+  for (auto y = 1u; y < 4u; ++y) {
+    auto n = y * g_num_cols;
+    CHECK_EQUAL(true, lattice.obstacles[n + 1]);
+    CHECK_EQUAL(true, lattice.obstacles[n + 2]);
+    CHECK_EQUAL(true, lattice.obstacles[n + 3]);
+  }
+  unsigned obs_center = 2 * g_num_cols + 2;
+  for (auto t = 0; t < 1000; ++t) {
+    lattice.Collide(lattice.f, lattice.f_eq, lattice.src_f, lattice.rho_f);
+    auto node_f = lattice.f[obs_center];
+    lattice.Obstacles(lattice.f, lattice.obstacles);
+    for (auto i = 1u; i < g_num_discrete_velocities; ++i) {
+      CHECK_CLOSE(node_f[i], lattice.f[obs_center][i], zero_tol);
+    }
+    lattice.boundary_f = lattice.BoundaryCondition(lattice.f);
+    lattice.f = lattice.Stream(lattice.f, lattice.boundary_f);
+    lattice.rho_f = lattice.ComputeRho(lattice.f);
+    lattice.ComputeU(lattice.f, lattice.rho_f, lattice.src_f);
+    lattice.ComputeEq(lattice.f_eq, lattice.rho_f);
+    lattice.Collide(lattice.g, lattice.g_eq, lattice.src_g);
+    auto node_g = lattice.g[obs_center];
+    lattice.Obstacles(lattice.g, lattice.obstacles);
+    for (auto i = 1u; i < g_num_discrete_velocities; ++i) {
+      CHECK_CLOSE(node_g[i], lattice.g[obs_center][i], zero_tol);
+    }
+    lattice.boundary_g = lattice.BoundaryCondition(lattice.g);
+    lattice.g = lattice.Stream(lattice.g, lattice.boundary_g);
+    lattice.rho_g = lattice.ComputeRho(lattice.g);
+    lattice.ComputeEq(lattice.g_eq, lattice.rho_g);
+  }
+}
+
+TEST(ObstaclesDoNotReflectLeftRightEdges)
+{
+  std::vector<std::vector<unsigned>> obstacles_pos;
+  std::vector<double> u0 = {0, 0};
+  std::vector<std::vector<unsigned>> src_pos_g = {{2, 2}};
+  for (auto y = 0u; y < g_num_rows; ++y) {
+    obstacles_pos.push_back({0, y});
+    obstacles_pos.push_back({g_num_cols - 1, y});
+  }
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities,
+      g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
+      g_kinematic_viscosity, g_density_f, g_density_g, u0, g_src_pos_f,
+      src_pos_g, g_src_strength_f, g_src_strength_g, obstacles_pos,
+      g_is_cd, g_is_ns, g_is_not_instant, g_has_obstacles);
+  lattice.InitAll();
+  for (auto y = 0u; y < g_num_rows; ++y) {
+    auto n = y * g_num_cols;
+    CHECK_EQUAL(true, lattice.obstacles[n]);
+    CHECK_EQUAL(true, lattice.obstacles[n + g_num_cols - 1]);
+  }
+  for (auto t = 0; t < 1000; ++t) {
+    lattice.Collide(lattice.f, lattice.f_eq, lattice.src_f, lattice.rho_f);
+
+    std::vector<std::vector<double>> left_edge_unchanged_f;
+    std::vector<std::vector<double>> right_edge_unchanged_f;
+    for (auto y = 0u; y < g_num_rows; ++y) {
+      auto n = y * g_num_cols;
+      left_edge_unchanged_f.push_back(lattice.f[n]);
+      right_edge_unchanged_f.push_back(lattice.f[n + g_num_cols - 1]);
+    }
+    lattice.Obstacles(lattice.f, lattice.obstacles);
+
+    for (auto y = 0u; y < g_num_rows; ++y) {
+      auto n = y * g_num_cols;
+      CHECK_CLOSE(left_edge_unchanged_f[y][W], lattice.f[n][W], zero_tol);
+      CHECK_CLOSE(left_edge_unchanged_f[y][NW], lattice.f[n][NW], zero_tol);
+      CHECK_CLOSE(left_edge_unchanged_f[y][SW], lattice.f[n][SW], zero_tol);
+      CHECK_CLOSE(right_edge_unchanged_f[y][E],
+          lattice.f[n + g_num_cols - 1][E], zero_tol);
+      CHECK_CLOSE(right_edge_unchanged_f[y][NE],
+          lattice.f[n + g_num_cols - 1][NE], zero_tol);
+      CHECK_CLOSE(right_edge_unchanged_f[y][SE],
+          lattice.f[n + g_num_cols - 1][SE], zero_tol);
+    }
+    lattice.boundary_f = lattice.BoundaryCondition(lattice.f);
+    lattice.f = lattice.Stream(lattice.f, lattice.boundary_f);
+    lattice.rho_f = lattice.ComputeRho(lattice.f);
+    lattice.ComputeU(lattice.f, lattice.rho_f, lattice.src_f);
+    lattice.ComputeEq(lattice.f_eq, lattice.rho_f);
+    lattice.Collide(lattice.g, lattice.g_eq, lattice.src_g);
+
+    std::vector<std::vector<double>> left_edge_unchanged_g;
+    std::vector<std::vector<double>> right_edge_unchanged_g;
+    for (auto y = 0u; y < g_num_rows; ++y) {
+      auto n = y * g_num_cols;
+      left_edge_unchanged_g.push_back(lattice.g[n]);
+      right_edge_unchanged_g.push_back(lattice.g[n + g_num_cols - 1]);
+    }
+    lattice.Obstacles(lattice.g, lattice.obstacles);
+
+    for (auto y = 0u; y < g_num_rows; ++y) {
+      auto n = y * g_num_cols;
+      CHECK_CLOSE(left_edge_unchanged_g[y][W], lattice.g[n][W], zero_tol);
+      CHECK_CLOSE(left_edge_unchanged_g[y][NW], lattice.g[n][NW], zero_tol);
+      CHECK_CLOSE(left_edge_unchanged_g[y][SW], lattice.g[n][SW], zero_tol);
+      CHECK_CLOSE(right_edge_unchanged_g[y][E],
+          lattice.g[n + g_num_cols - 1][E], zero_tol);
+      CHECK_CLOSE(right_edge_unchanged_g[y][NE],
+          lattice.g[n + g_num_cols - 1][NE], zero_tol);
+      CHECK_CLOSE(right_edge_unchanged_g[y][SE],
+          lattice.g[n + g_num_cols - 1][SE], zero_tol);
+    }
+    lattice.boundary_g = lattice.BoundaryCondition(lattice.g);
+    lattice.g = lattice.Stream(lattice.g, lattice.boundary_g);
+    lattice.rho_g = lattice.ComputeRho(lattice.g);
+    lattice.ComputeEq(lattice.g_eq, lattice.rho_g);
+  }
+}
+
+TEST(ObstaclesDoNotReflectCorners)
+{
+  std::vector<std::vector<unsigned>> obstacles_pos = {{0, 0},
+      {0, g_num_rows - 1}, {g_num_cols - 1, 0},
+      {g_num_cols - 1, g_num_rows - 1}};
+  std::vector<double> u0 = {0, 0};
+  std::vector<std::vector<unsigned>> src_pos_g = {{2, 2}};
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities,
+      g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
+      g_kinematic_viscosity, g_density_f, g_density_g, u0, g_src_pos_f,
+      src_pos_g, g_src_strength_f, g_src_strength_g, obstacles_pos,
+      g_is_cd, g_is_ns, g_is_not_instant, g_has_obstacles);
+  lattice.InitAll();
+  unsigned bottom_right = g_num_cols - 1;
+  unsigned top_left = (g_num_rows - 1) * g_num_cols;
+  unsigned top_right = (g_num_rows - 1) * g_num_cols + g_num_cols - 1;
+  CHECK_EQUAL(true, lattice.obstacles[0]);
+  CHECK_EQUAL(true, lattice.obstacles[bottom_right]);
+  CHECK_EQUAL(true, lattice.obstacles[top_left]);
+  CHECK_EQUAL(true, lattice.obstacles[top_right]);
+  for (auto t = 0; t < 1000; ++t) {
+    lattice.Collide(lattice.f, lattice.f_eq, lattice.src_f, lattice.rho_f);
+
+    std::vector<std::vector<double>> corners_unchanged_f = {lattice.f[0],
+        lattice.f[bottom_right], lattice.f[top_left], lattice.f[top_right]};
+    lattice.Obstacles(lattice.f, lattice.obstacles);
+
+    CHECK_CLOSE(corners_unchanged_f[0][SW], lattice.f[0][SW], zero_tol);
+    CHECK_CLOSE(corners_unchanged_f[1][SE], lattice.f[bottom_right][SE],
+        zero_tol);
+    CHECK_CLOSE(corners_unchanged_f[2][NW], lattice.f[top_left][NW], zero_tol);
+    CHECK_CLOSE(corners_unchanged_f[3][NE], lattice.f[top_right][NE], zero_tol);
+
+    lattice.boundary_f = lattice.BoundaryCondition(lattice.f);
+    lattice.f = lattice.Stream(lattice.f, lattice.boundary_f);
+    lattice.rho_f = lattice.ComputeRho(lattice.f);
+    lattice.ComputeU(lattice.f, lattice.rho_f, lattice.src_f);
+    lattice.ComputeEq(lattice.f_eq, lattice.rho_f);
+    lattice.Collide(lattice.g, lattice.g_eq, lattice.src_g);
+
+    std::vector<std::vector<double>> corners_unchanged_g = {lattice.g[0],
+        lattice.g[bottom_right], lattice.g[top_left], lattice.g[top_right]};
+    lattice.Obstacles(lattice.g, lattice.obstacles);
+
+    CHECK_CLOSE(corners_unchanged_g[0][SW], lattice.g[0][SW], zero_tol);
+    CHECK_CLOSE(corners_unchanged_g[1][SE], lattice.g[bottom_right][SE],
+        zero_tol);
+    CHECK_CLOSE(corners_unchanged_g[2][NW], lattice.g[top_left][NW], zero_tol);
+    CHECK_CLOSE(corners_unchanged_g[3][NE], lattice.g[top_right][NE], zero_tol);
+
+    lattice.boundary_g = lattice.BoundaryCondition(lattice.g);
+    lattice.g = lattice.Stream(lattice.g, lattice.boundary_g);
+    lattice.rho_g = lattice.ComputeRho(lattice.g);
+    lattice.ComputeEq(lattice.g_eq, lattice.rho_g);
+  }
+}
+
 // Exception Tests
 TEST(ZeroValuesInLatticeDeclaration)
 {
@@ -928,43 +1175,51 @@ TEST(InitPosStrengthMismatch)
       std::runtime_error);
 }
 
-TEST(InitWrongPosition)
+TEST(InitWrongPositionLength)
 {
-  std::vector<std::vector<unsigned>> src_pos_g = {{1, 2, 3}};
+  std::vector<std::vector<unsigned>> src_pos_long = {{1, 2, 3}};
   std::vector<double> src_strength_g = {1.0};
-  std::vector<std::vector<unsigned>> src_pos_f = {{1}};
+  std::vector<std::vector<unsigned>> src_pos_short = {{1}};
   std::vector<std::vector<double>> src_strength_f = {{1, 2}};
   Lattice lattice(g_lattice);
-  CHECK_THROW(lattice.Init(lattice.src_g, src_pos_g, src_strength_g),
+  CHECK_THROW(lattice.Init(lattice.src_g, src_pos_long, src_strength_g),
       std::runtime_error);
-  CHECK_THROW(lattice.Init(lattice.src_f, src_pos_f, src_strength_f),
+  CHECK_THROW(lattice.Init(lattice.src_g, src_pos_short, src_strength_g),
+      std::runtime_error);
+  CHECK_THROW(lattice.Init(lattice.src_f, src_pos_long, src_strength_f),
+      std::runtime_error);
+  CHECK_THROW(lattice.Init(lattice.src_f, src_pos_short, src_strength_f),
+      std::runtime_error);
+  CHECK_THROW(lattice.Init(lattice.obstacles, src_pos_long),
+      std::runtime_error);
+  CHECK_THROW(lattice.Init(lattice.obstacles, src_pos_short),
       std::runtime_error);
 }
 
 TEST(InitXPostionOutOfBound)
 {
-  std::vector<std::vector<unsigned>> src_pos_g = {{10, 2}};
+  std::vector<std::vector<unsigned>> src_pos = {{10, 2}};
   std::vector<double> src_strength_g = {1.0};
-  std::vector<std::vector<unsigned>> src_pos_f = {{10, 2}};
   std::vector<std::vector<double>> src_strength_f = {{1, 2}};
   Lattice lattice(g_lattice);
-  CHECK_THROW(lattice.Init(lattice.src_g, src_pos_g, src_strength_g),
+  CHECK_THROW(lattice.Init(lattice.src_g, src_pos, src_strength_g),
       std::runtime_error);
-  CHECK_THROW(lattice.Init(lattice.src_f, src_pos_f, src_strength_f),
+  CHECK_THROW(lattice.Init(lattice.src_f, src_pos, src_strength_f),
       std::runtime_error);
+  CHECK_THROW(lattice.Init(lattice.obstacles, src_pos), std::runtime_error);
 }
 
 TEST(InitYPostionOutOfBound)
 {
-  std::vector<std::vector<unsigned>> src_pos_g = {{1, 20}};
+  std::vector<std::vector<unsigned>> src_pos = {{1, 20}};
   std::vector<double> src_strength_g = {1.0};
-  std::vector<std::vector<unsigned>> src_pos_f = {{1, 20}};
   std::vector<std::vector<double>> src_strength_f = {{1, 2}};
   Lattice lattice(g_lattice);
-  CHECK_THROW(lattice.Init(lattice.src_g, src_pos_g, src_strength_g),
+  CHECK_THROW(lattice.Init(lattice.src_g, src_pos, src_strength_g),
       std::runtime_error);
-  CHECK_THROW(lattice.Init(lattice.src_f, src_pos_f, src_strength_f),
+  CHECK_THROW(lattice.Init(lattice.src_f, src_pos, src_strength_f),
       std::runtime_error);
+  CHECK_THROW(lattice.Init(lattice.obstacles, src_pos), std::runtime_error);
 }
 
 TEST(CollideWrongLatticeSize)
@@ -995,5 +1250,108 @@ TEST(PrintWrongDepth)
   CHECK_THROW(lattice.Print(1, lattice.g), std::runtime_error);
   CHECK_THROW(lattice.Print(2, shallow_boundary), std::runtime_error);
   CHECK_THROW(lattice.Print(4, lattice.g), std::runtime_error);
+}
+
+TEST(ObstacleNormalReflect)
+{
+  auto m = 2u;
+  auto n = 2u;
+  std::vector<std::vector<unsigned>> obs_pos(g_num_rows * g_num_cols, {m, n});
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities,
+      g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
+      g_kinematic_viscosity, g_density_f, g_density_g, g_u0_zero, g_src_pos_f,
+      g_src_pos_g, g_src_strength_f, g_src_strength_g, obs_pos,
+      g_is_not_cd, g_is_ns, g_is_not_instant, g_obstacles);
+  auto ny = lattice.GetNumberOfRows();
+  lattice.InitAll();
+  lattice.TakeStep();
+  lattice.Obstacles(lattice.g, lattice.obstacles);
+  CHECK_CLOSE(lattice.g[m + ny * n][N], lattice.g[m + ny * (n + 1)][S],
+      zero_tol);
+  CHECK_CLOSE(lattice.g[m + ny * n][S], lattice.g[m + ny * (n - 1)][N],
+      zero_tol);
+  CHECK_CLOSE(lattice.g[m + ny * n][E], lattice.g[(m + 1) + ny * n][W],
+      zero_tol);
+  CHECK_CLOSE(lattice.g[m + ny * n][W], lattice.g[(m - 1) + ny * n][E],
+      zero_tol);
+  CHECK_CLOSE(lattice.g[m + ny * n][NE], lattice.g[(m + 1) + ny * (n + 1)][SW],
+      zero_tol);
+  CHECK_CLOSE(lattice.g[m + ny * n][NW], lattice.g[(m - 1) + ny * (n + 1)][SE],
+      zero_tol);
+  CHECK_CLOSE(lattice.g[m + ny * n][SE], lattice.g[(m + 1) + ny * (n - 1)][NW],
+      zero_tol);
+  CHECK_CLOSE(lattice.g[m + ny * n][SW], lattice.g[(m - 1) + ny * (n - 1)][NE],
+      zero_tol);
+}
+
+TEST(TopBottomNoReflect)
+{
+  std::vector<std::vector<unsigned>> obstacles_pos;
+  std::vector<double> u0 = {0, 0};
+  std::vector<std::vector<unsigned>> src_pos_g = {{2, 2}};
+  for (auto x = 0u; x < g_num_cols; ++x) {
+    obstacles_pos.push_back({x, 0});
+    obstacles_pos.push_back({x, g_num_rows - 1});
+  }
+  Lattice lattice(g_num_dimensions, g_num_discrete_velocities,
+      g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
+      g_kinematic_viscosity, g_density_f, g_density_g, u0, g_src_pos_f,
+      src_pos_g, g_src_strength_f, g_src_strength_g, obstacles_pos,
+      g_is_cd, g_is_ns, g_is_not_instant, g_has_obstacles);
+  lattice.InitAll();
+  unsigned top_row = g_num_cols * (g_num_rows - 1);
+  for (auto x = 0u; x < g_num_cols; ++x) {
+    CHECK_EQUAL(true, lattice.obstacles[x]);
+    CHECK_EQUAL(true, lattice.obstacles[x + top_row]);
+  }
+  for (auto t = 0; t < 1000; ++t) {
+    lattice.Collide(lattice.f, lattice.f_eq, lattice.src_f, lattice.rho_f);
+    std::vector<std::vector<double>> top_edge_unchanged_f;
+    std::vector<std::vector<double>> bottom_edge_unchanged_f;
+    for (auto x = 0u; x < g_num_cols; ++x) {
+      bottom_edge_unchanged_f.push_back(lattice.f[x]);
+      top_edge_unchanged_f.push_back(lattice.f[x + top_row]);
+    }
+    lattice.Obstacles(lattice.f, lattice.obstacles);
+    for (auto x = 0u; x < g_num_cols; ++x) {
+      CHECK_CLOSE(top_edge_unchanged_f[x][N],
+          lattice.f[x + top_row][N], zero_tol);
+      CHECK_CLOSE(top_edge_unchanged_f[x][NW],
+          lattice.f[x + top_row][NW], zero_tol);
+      CHECK_CLOSE(top_edge_unchanged_f[x][NE],
+          lattice.f[x + top_row][NE], zero_tol);
+      CHECK_CLOSE(bottom_edge_unchanged_f[x][S], lattice.f[x][S], zero_tol);
+      CHECK_CLOSE(bottom_edge_unchanged_f[x][SW], lattice.f[x][SW], zero_tol);
+      CHECK_CLOSE(bottom_edge_unchanged_f[x][SE], lattice.f[x][SE], zero_tol);
+    }
+    lattice.boundary_f = lattice.BoundaryCondition(lattice.f);
+    lattice.f = lattice.Stream(lattice.f, lattice.boundary_f);
+    lattice.rho_f = lattice.ComputeRho(lattice.f);
+    lattice.ComputeU(lattice.f, lattice.rho_f, lattice.src_f);
+    lattice.ComputeEq(lattice.f_eq, lattice.rho_f);
+    lattice.Collide(lattice.g, lattice.g_eq, lattice.src_g);
+    std::vector<std::vector<double>> top_edge_unchanged_g;
+    std::vector<std::vector<double>> bottom_edge_unchanged_g;
+    for (auto x = 0u; x < g_num_cols; ++x) {
+      bottom_edge_unchanged_g.push_back(lattice.g[x]);
+      top_edge_unchanged_g.push_back(lattice.g[x + top_row]);
+    }
+    lattice.Obstacles(lattice.g, lattice.obstacles);
+    for (auto x = 0u; x < g_num_cols; ++x) {
+      CHECK_CLOSE(top_edge_unchanged_g[x][N],
+          lattice.g[x + top_row][N], zero_tol);
+      CHECK_CLOSE(top_edge_unchanged_g[x][NW],
+          lattice.g[x + top_row][NW], zero_tol);
+      CHECK_CLOSE(top_edge_unchanged_g[x][NE],
+          lattice.g[x + top_row][NE], zero_tol);
+      CHECK_CLOSE(bottom_edge_unchanged_g[x][S], lattice.g[x][S], zero_tol);
+      CHECK_CLOSE(bottom_edge_unchanged_g[x][SW], lattice.g[x][SW], zero_tol);
+      CHECK_CLOSE(bottom_edge_unchanged_g[x][SE], lattice.g[x][SE], zero_tol);
+    }
+    lattice.boundary_g = lattice.BoundaryCondition(lattice.g);
+    lattice.g = lattice.Stream(lattice.g, lattice.boundary_g);
+    lattice.rho_g = lattice.ComputeRho(lattice.g);
+    lattice.ComputeEq(lattice.g_eq, lattice.rho_g);
+  }
 }
 }  // suite FunctionalityAndExceptionsTests

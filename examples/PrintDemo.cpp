@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include "Lattice.hpp"
 #include "UnitTest++.h"
 

@@ -1,6 +1,6 @@
 #include "Lattice.hpp"
 #include <cmath>
-#include <iomanip> // std::setprecision
+#include <iomanip>  // std::setprecision
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -148,7 +148,7 @@ void Lattice::Init(std::vector<bool> &lattice
   auto ny = GetNumberOfRows();
   auto nd = GetNumberOfDimensions();
   for (auto pos : position) {
-    if(pos.size() != nd) {
+    if (pos.size() != nd) {
       throw std::runtime_error("Insufficient position information");
     }
     else if (pos[0] > nx - 1) {
@@ -172,7 +172,7 @@ void Lattice::Init(std::vector<double> &lattice
   auto nd = GetNumberOfDimensions();
   auto it_strength = begin(strength);
   for (auto pos : position) {
-    if(pos.size() != nd) {
+    if (pos.size() != nd) {
       throw std::runtime_error("Insufficient position information");
     }
     else if (pos[0] > nx - 1) {
@@ -196,7 +196,7 @@ void Lattice::Init(std::vector<std::vector<double>> &lattice
   auto nd = GetNumberOfDimensions();
   auto it_strength = begin(strength);
   for (auto pos : position) {
-    if(pos.size() != nd) {
+    if (pos.size() != nd) {
       throw std::runtime_error("Insufficient position information");
     }
     else if (pos[0] > nx - 1) {
@@ -489,7 +489,7 @@ void Lattice::InitAll()
 
 void Lattice::TakeStep()
 {
-  if(is_ns_) {
+  if (is_ns_) {
     Lattice::Collide(f, f_eq, src_f, rho_f);
     if (has_obstacles_) Lattice::Obstacles(f, obstacles);
     boundary_f = Lattice::BoundaryCondition(f);
@@ -498,7 +498,7 @@ void Lattice::TakeStep()
     Lattice::ComputeU(f, rho_f, src_f);
     Lattice::ComputeEq(f_eq, rho_f);
   }
-  if(is_cd_) {
+  if (is_cd_) {
     Lattice::Collide(g, g_eq, src_g);
     if (has_obstacles_) Lattice::Obstacles(g, obstacles);
     boundary_g = Lattice::BoundaryCondition(g);
@@ -621,30 +621,30 @@ void Lattice::Print(int which_to_print
             int n = y * nx + x;
             if (lattice[n].size() != nc)
                 throw std::runtime_error("Wrong depth");
-            if (i == 0){
+            if (i == 0) {
             std::cout << std::fixed << std::setprecision(2)
                       << lattice[n][6] << " "
                       << lattice[n][2] << " "
                       << lattice[n][5] << " ";
             }
-            else if (i == 1){
+            else if (i == 1) {
             std::cout << std::fixed << std::setprecision(2)
                       << lattice[n][3] << " "
                       << lattice[n][0] << " "
                       << lattice[n][1] << " ";
             }
-            else if (i == 2){
+            else if (i == 2) {
             std::cout << std::fixed << std::setprecision(2)
                       << lattice[n][7] << " "
                       << lattice[n][4] << " "
                       << lattice[n][8] << " ";
             }
             std::cout << "  ";
-          } // x
+          }  // x
           std::cout << std::endl;
-        } // i
+        }  // i
         std::cout << std::endl;
-      } // y
+      }  // y
       std::cout << std::endl;
       break;
     }
@@ -685,30 +685,30 @@ void Lattice::Print(int which_to_print
             }
             if (lattice[n].size() != nc)
                 throw std::runtime_error("Wrong depth");
-            if (i == 0){
+            if (i == 0) {
             std::cout << std::fixed << std::setprecision(2)
                       << lattice[n][6] << " "
                       << lattice[n][2] << " "
                       << lattice[n][5] << " ";
             }
-            else if (i == 1){
+            else if (i == 1) {
             std::cout << std::fixed << std::setprecision(2)
                       << lattice[n][3] << " "
                       << lattice[n][0] << " "
                       << lattice[n][1] << " ";
             }
-            else if (i == 2){
+            else if (i == 2) {
             std::cout << std::fixed << std::setprecision(2)
                       << lattice[n][7] << " "
                       << lattice[n][4] << " "
                       << lattice[n][8] << " ";
             }
             std::cout << "  ";
-          } // x
+          }  // x
           std::cout << std::endl;
-        } // i
+        }  // i
         std::cout << std::endl;
-      } // y
+      }  // y
       std::cout << std::endl;
       break;
     }
@@ -723,30 +723,30 @@ void Lattice::Print(int which_to_print
             int n = y * (nx + 2) + x;
             if (lattice[n].size() != nc)
                 throw std::runtime_error("Wrong depth");
-            if (i == 0){
+            if (i == 0) {
             std::cout << std::fixed << std::setprecision(2)
                       << lattice[n][6] << " "
                       << lattice[n][2] << " "
                       << lattice[n][5] << " ";
             }
-            else if (i == 1){
+            else if (i == 1) {
             std::cout << std::fixed << std::setprecision(2)
                       << lattice[n][3] << " "
                       << lattice[n][0] << " "
                       << lattice[n][1] << " ";
             }
-            else if (i == 2){
+            else if (i == 2) {
             std::cout << std::fixed << std::setprecision(2)
                       << lattice[n][7] << " "
                       << lattice[n][4] << " "
                       << lattice[n][8] << " ";
             }
             std::cout << "  ";
-          } // x
+          }  // x
           std::cout << std::endl;
-        } // i
+        }  // i
         std::cout << std::endl;
-      } // y
+      }  // y
       std::cout << std::endl;
       break;
     }

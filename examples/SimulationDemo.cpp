@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include "Lattice.hpp"
 #include "UnitTest++.h"
 
@@ -44,7 +45,7 @@ TEST(DiffusionEquation)
 TEST(CoupledNSCDE)
 {
   std::vector<std::vector<unsigned>> src_pos_f((g_num_cols * g_num_rows),
-      {0, 0}) ;
+      {0, 0});
   std::vector<std::vector<double>> src_strength_f((g_num_cols * g_num_rows),
       {10., -10.});
   for (auto y = 0u; y < g_num_rows; ++y) {
@@ -64,7 +65,7 @@ TEST(CoupledNSCDE)
 TEST(NavierStokesEquation)
 {
   std::vector<std::vector<unsigned>> src_pos_f((g_num_cols * g_num_rows),
-      {0, 0}) ;
+      {0, 0});
   std::vector<std::vector<double>> src_strength_f((g_num_cols * g_num_rows),
       {10., 0.});
   for (auto y = 0u; y < g_num_rows; ++y) {
@@ -82,17 +83,18 @@ TEST(NavierStokesEquation)
   lattice.RunSim(lattice.u);
 }
 
-TEST(DiffusionEquationWithDiffusion)
+TEST(DiffusionEquationWithObstacles)
 {
   std::vector<std::vector<unsigned>> obs_pos;
-  for (auto y = 5u; y < g_num_rows - 5; ++y) {
+  for (auto y = 9u; y < 12u; ++y) {
     obs_pos.push_back({10, y});
-    obs_pos.push_back({20, y});
+    obs_pos.push_back({9, y});
+    obs_pos.push_back({8, y});
   }
 //  for (auto x = 0u; x < g_num_cols; ++x) {
 //    obs_pos.push_back({x, 5});
 //  }
-  std::vector<double> u0 = {-0.1, 0.1};
+  std::vector<double> u0 = {-10, 0};
   Lattice lattice(g_num_dimensions, g_num_discrete_velocities,
       g_num_rows, g_num_cols, g_dx, g_dt, g_t_total, g_diffusion_coefficient,
       g_kinematic_viscosity, g_density_f, g_density_g, u0, g_src_pos_f,
