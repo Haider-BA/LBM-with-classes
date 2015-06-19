@@ -45,7 +45,6 @@
 			<Add directory="UnitTest++/lib/Debug" />
 		</Linker>
 		<Unit filename="include/LatticeBoltzmann.hpp" />
-		<Unit filename="include/LatticeModel.hpp" />
 		<Unit filename="include/WriteResultsCmgui.hpp" />
 		<Unit filename="src/LatticeBoltzmann.cpp" />
 		<Unit filename="src/WriteResultsCmgui.cpp" />
