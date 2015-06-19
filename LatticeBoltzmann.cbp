@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="LatticeBoltzmann" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/LatticeBoltzmann" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/LatticeBoltzmann" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-pedantic" />
+			<Add option="-std=c++11" />
+			<Add option="-Wextra" />
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+			<Add option="--coverage" />
+			<Add directory="UnitTest++/src" />
+			<Add directory="unittests" />
+			<Add directory="include" />
+		</Compiler>
+		<Linker>
+			<Add option="--coverage" />
+			<Add library="UnitTest++/lib/Debug/libUnitTest++.a" />
+			<Add directory="UnitTest++/lib/Debug" />
+		</Linker>
+		<Unit filename="include/LatticeBoltzmann.hpp" />
+		<Unit filename="include/LatticeModel.hpp" />
+		<Unit filename="include/WriteResultsCmgui.hpp" />
+		<Unit filename="src/LatticeBoltzmann.cpp" />
+		<Unit filename="src/WriteResultsCmgui.cpp" />
+		<Unit filename="src/main-devel.cpp" />
+		<Unit filename="unittests/TestLatticeBoltzmann.cpp" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<lib_finder disable_auto="1" />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
