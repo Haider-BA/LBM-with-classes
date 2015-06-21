@@ -41,12 +41,22 @@
 		</Compiler>
 		<Linker>
 			<Add option="--coverage" />
-			<Add library="UnitTest++/lib/Debug/libUnitTest++.a" />
+			<Add library="UnitTest++\lib\Debug\libUnitTest++.a" />
 			<Add directory="UnitTest++/lib/Debug" />
 		</Linker>
+		<Unit filename="include/Collision.hpp" />
+		<Unit filename="include/CollisionCD.hpp" />
+		<Unit filename="include/CollisionNS.hpp" />
 		<Unit filename="include/LatticeBoltzmann.hpp" />
+		<Unit filename="include/LatticeD2Q9.hpp" />
+		<Unit filename="include/LatticeModel.hpp" />
 		<Unit filename="include/WriteResultsCmgui.hpp" />
+		<Unit filename="src/Collision.cpp" />
+		<Unit filename="src/CollisionCD.cpp" />
+		<Unit filename="src/CollisionNS.cpp" />
 		<Unit filename="src/LatticeBoltzmann.cpp" />
+		<Unit filename="src/LatticeD2Q9.cpp" />
+		<Unit filename="src/LatticeModel.cpp" />
 		<Unit filename="src/WriteResultsCmgui.cpp" />
 		<Unit filename="src/main-devel.cpp" />
 		<Unit filename="unittests/TestLatticeBoltzmann.cpp" />

@@ -1,22 +1,25 @@
 #ifndef LATTICEBOLTZMANN_HPP_
 #define LATTICEBOLTZMANN_HPP_
 #include <vector>
+#include "LatticeModel.hpp"
 
 class LatticeBoltzmann {
  public:
   /**
-   * Constructor: (default) Override default constructor to set lattice to
-   * zero
+   * Constructor: (default) Override default constructor to throw exception to
+   * to forbid declaring uninitialized
+   * Does not work because of uninitialized reference member error (lm_)
    */
-  LatticeBoltzmann();
+//  LatticeBoltzmann();
 
-  LatticeBoltzmann(std::size_t num_dims
-    , std::size_t num_dirs
-    , std::size_t num_rows
-    , std::size_t num_cols
-    , double dx
-    , double dt
-    , double t_total
+  /**
+   * Constructor: Creates lattice
+   * \param
+   * \param
+   * \return
+   *
+   */
+  LatticeBoltzmann(double t_total
     , double diffusion_coefficient
     , double kinematic_viscosity
     , double initial_density_f
@@ -30,7 +33,8 @@ class LatticeBoltzmann {
     , bool is_ns
     , bool is_cd
     , bool is_instant
-    , bool has_obstacles);
+    , bool has_obstacles
+    , LatticeModel &lm);
 
    /**
    * Get the number of dimensions of the lattice. 2 for 2D and 3 for 3D.
@@ -66,6 +70,13 @@ class LatticeBoltzmann {
   void Init(std::vector<bool> &lattice
   , const std::vector<std::vector<std::size_t>> &position);
 
+  std::vector<double> Flip(const std::vector<double> &lattice);
+  std::vector<std::vector<double>> Flip(
+    const std::vector<std::vector<double>> &lattice);
+  void Print(const std::vector<double> &lattice);
+  void Print(int which_to_print
+  , const std::vector<std::vector<double>> &lattice);
+
   /**
    * Lattice velocity stored row-wise in a 2D vector.
    */
@@ -75,11 +86,6 @@ class LatticeBoltzmann {
    * NS distribution function stored row-wise in a 2D vector.
    */
   std::vector<std::vector<double>> f;
-
-  /**
-   * NS equilibrium distribution function stored row-wise in a 2D vector.
-   */
-  std::vector<std::vector<double>> f_eq;
 
   /**
    * Density for NS stored row-wise in a 1D vector.
@@ -92,19 +98,9 @@ class LatticeBoltzmann {
   std::vector<std::vector<double>> boundary_f;
 
   /**
-   * Body force values for NS stored row-wise in a 2D vector.
-   */
-  std::vector<std::vector<double>> src_f;
-
-  /**
    * CDE distribution function stored row-wise in a 2D vector.
    */
   std::vector<std::vector<double>> g;
-
-  /**
-   * CDE equilibrium distribution function stored row-wise in a 2D vector.
-   */
-  std::vector<std::vector<double>> g_eq;
 
   /**
    * Density for CDE stored row-wise in a 1D vector.
@@ -116,10 +112,6 @@ class LatticeBoltzmann {
    */
   std::vector<std::vector<double>> boundary_g;
 
-  /**
-   * Source term for CDE stored row-wise in a 1D vector.
-   */
-  std::vector<double> src_g;
 
   /**
    * Lattice containing obstacles
@@ -127,23 +119,23 @@ class LatticeBoltzmann {
   std::vector<bool> obstacles;
 
  private:
+  /**
+   * Checks input parameters to ensure there's not invalid values
+   * \return true if there is invalid: 0 in any values, both is_ns_ and is_cd_
+   *         are false
+   *         false if all input values are valid
+   */
   bool CheckParameters();
   // input parameters
-  std::size_t number_of_dimensions_;
-  std::size_t number_of_directions_;
-  std::size_t number_of_rows_;
-  std::size_t number_of_columns_;
-  double dx_;
-  double dt_;
   double total_time_;
   bool is_ns_;
   bool is_cd_;
   bool is_instant_;
   bool has_obstacles_;
-  // calculated parameters
-  double c_;
-  double cs_sqr_;
-  double tau_ns_;
-  double tau_cd_;
+  // LatticeModel to take care of dims, dirs, rows, cols and discrete e vectors
+  // by reference, similar to by pointer
+  // https://stackoverflow.com/questions/9285627/is-it-possible-to-pass-derived-
+  // classes-by-reference-to-a-function-taking-base-cl
+  LatticeModel &lm_;
 };
 #endif // LATTICEBOLTZMANN_HPP_
