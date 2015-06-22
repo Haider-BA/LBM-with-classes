@@ -49,9 +49,16 @@ void Collision::ComputeEq()
   }  // n
 }
 
-void Collision::Collide()
+void Collision::Collide(std::vector<std::vector<double>> &lattice)
 {
-//  std::cout << lattice_eq_[0][0] << std::endl;
+  auto nc = lm_.GetNumberOfDirections();
+  auto nx = lm_.GetNumberOfColumns();
+  auto ny = lm_.GetNumberOfRows();
+  for (auto n = 0u; n < nx * ny; ++n) {
+    for (auto i = 0u; i < nc; ++i) {
+      lattice[n][i] += (lattice_eq[n][i] - lattice[n][i]) / tau_;
+    }  // i
+  }  // n
 }
 
 double Collision::InnerProduct(const std::vector<double> &a

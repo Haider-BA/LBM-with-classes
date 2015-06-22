@@ -37,7 +37,7 @@ class Collision {
    * \return void
    *
    */
-  void Collide();
+  void Collide(std::vector<std::vector<double>> &lattice);
 
   double InnerProduct(const std::vector<double> &a
     , const std::vector<double> &b);
@@ -47,7 +47,7 @@ class Collision {
    * \return virtual void
    *
    */
-  virtual void ApplyForce() = 0;
+  virtual void ApplyForce(std::vector<std::vector<double>> &lattice) = 0;
 
   /**
    * Equilibrium distribution function stored row-wise in a 2D vector

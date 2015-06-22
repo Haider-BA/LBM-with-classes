@@ -21,6 +21,11 @@ CollisionCD::CollisionCD(LatticeModel &lm
   InitSource(position, strength);
 }
 
+std::vector<double> CollisionCD::GetSource() const
+{
+  return source_;
+}
+
 void CollisionCD::InitSource(
     const std::vector<std::vector<std::size_t>> &position
   , const std::vector<double> &strength)
@@ -41,8 +46,20 @@ void CollisionCD::InitSource(
   }  // pos
 }
 
-void CollisionCD::ApplyForce()
+void CollisionCD::ApplyForce(std::vector<std::vector<double>> &lattice)
 {
-//  std::cout << source_[0] <<std::endl;
-  std::cout << lm_.GetNumberOfColumns() << std::endl;
+  auto nc = lm_.GetNumberOfDirections();
+  auto nx = lm_.GetNumberOfColumns();
+  auto ny = lm_.GetNumberOfRows();
+  auto dt = lm_.GetTimeStep();
+  for (auto n = 0u; n < nx * ny; ++n) {
+    for (auto i = 0u; i < nc; ++i) {
+      double c_dot_u = Collision::InnerProduct(lm_.e[i], u_[n]);
+      c_dot_u /= cs_sqr_ / c_;
+      // source term using forward scheme, theta = 0
+      auto src_i = lm_.omega[i] * source_[n] * (1.0 + (1.0 - 0.5 / tau_) *
+          c_dot_u);
+      lattice[n][i] += dt * src_i;
+    }  // i
+  }  // n
 }

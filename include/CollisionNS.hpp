@@ -18,12 +18,13 @@ class CollisionNS: public Collision {
     , double initial_density_f
     , const std::vector<double> &initial_velocity);
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+  // maybe use friend class to access private variables easier for testing?
+  std::vector<std::vector<double>> GetSource() const;
+
+  /**
+   * Initializes the source lattice
+   * \param position source position information
+   * \param strength source magnitude at the position in the various dimensions
    */
   void InitSource(
       const std::vector<std::vector<std::size_t>> &position
@@ -34,10 +35,9 @@ class CollisionNS: public Collision {
    * \return void
    *
    */
-  void ApplyForce();
-  // only public for ease of debugging with Print() function
-  std::vector<std::vector<double>> source_;
+  void ApplyForce(std::vector<std::vector<double>> &lattice);
+
  private:
-//  std::vector<std::vector<double>> source_;
+  std::vector<std::vector<double>> source_;
 };
 #endif  // COLLISIONNS_HPP_

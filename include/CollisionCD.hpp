@@ -18,12 +18,12 @@ class CollisionCD: public Collision {
     , double initial_density_g
     , const std::vector<double> &initial_velocity);
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+  std::vector<double> GetSource() const;
+
+  /**
+   * Initializes the source lattice
+   * \param position source position information
+   * \param strength source magnitude at the position
    */
   void InitSource(
       const std::vector<std::vector<std::size_t>> &position
@@ -34,10 +34,9 @@ class CollisionCD: public Collision {
    * \return void
    *
    */
-  void ApplyForce();
-  // only public for ease of debugging with Print() function
-  std::vector<double> source_;
+  void ApplyForce(std::vector<std::vector<double>> &lattice);
+
  private:
-//  std::vector<double> source_;
+  std::vector<double> source_;
 };
 #endif  // COLLISIONCD_HPP_

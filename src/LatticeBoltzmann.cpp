@@ -46,11 +46,11 @@ LatticeBoltzmann::LatticeBoltzmann(double t_total
     std::vector<double> length_q(nc, 0.0);
     // Initializing variables with initial values
     if (is_ns_) {
-      f.assign(lattice_size, length_q);
+      f = ns_.lattice_eq;
       boundary_f.assign(2 * ny + 2 * nx + 4, length_q);
     }
     if (is_cd_) {
-      g.assign(lattice_size, length_q);
+      g = cd_.lattice_eq;
       boundary_g.assign(2 * ny + 2 * nx + 4, length_q);
 //      std::cout << lm.test_value << std::endl;
     }
