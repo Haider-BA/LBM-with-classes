@@ -18,6 +18,8 @@ class CollisionCD: public Collision {
     , double initial_density_g
     , const std::vector<double> &initial_velocity);
 
+  ~CollisionCD() = default;
+
   std::vector<double> GetSource() const;
 
   /**

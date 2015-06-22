@@ -49,6 +49,7 @@ void CollisionNS::InitSource(
 void CollisionNS::ApplyForce(std::vector<std::vector<double>> &lattice)
 {
   auto nc = lm_.GetNumberOfDirections();
+  auto nd = lm_.GetNumberOfDimensions();
   auto nx = lm_.GetNumberOfColumns();
   auto ny = lm_.GetNumberOfRows();
   auto dt = lm_.GetTimeStep();
@@ -58,7 +59,7 @@ void CollisionNS::ApplyForce(std::vector<std::vector<double>> &lattice)
       c_dot_u /= cs_sqr_ / c_;
       // Guo2002 Eq20
       double src_dot_product = 0.0;
-      for (auto d = 0u; d < nc; ++d) {
+      for (auto d = 0u; d < nd; ++d) {
         src_dot_product += (lm_.e[i][d] * c_ - u_[n][d] + c_dot_u *
             lm_.e[i][d] * c_) * source_[n][d];
       }  // d

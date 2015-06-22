@@ -32,6 +32,8 @@ class LatticeBoltzmann {
     , CollisionNS &ns
     , CollisionCD &cd);
 
+  ~LatticeBoltzmann() = default;
+
   LatticeBoltzmann(const LatticeBoltzmann&) = default;
 
    /**

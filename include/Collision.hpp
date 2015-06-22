@@ -13,6 +13,8 @@ class Collision {
     , double initial_density
     , const std::vector<double> &initial_velocity);
 
+  ~Collision() = default;
+
   /**
    * Returns density lattice
    * \return density lattice

@@ -8,5 +8,7 @@ class LatticeD2Q9: public LatticeModel {
     , std::size_t num_cols
     , double dx
     , double dt);
+
+  ~LatticeD2Q9() = default;
 };
 #endif  // LATTICED2Q9_HPP_

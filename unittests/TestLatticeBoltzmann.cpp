@@ -407,7 +407,10 @@ TEST(CollideWithMixedSource)
         0.04730, 0.03882, 0.03175, 0.03824},
        {0.49052,
         0.14482, 0.14612, 0.11488, 0.11388,
-        0.04730, 0.03882, 0.03175, 0.03824}};
+        0.04730, 0.03882, 0.03175, 0.03824},
+       {0.49052,
+        0.14481, 0.14611, 0.11489, 0.11389,
+        0.04729, 0.03882, 0.03176, 0.03824}};
   // Set distribution function to have different value from equilibrium
   // distribution function so Collide can produce changed result
   lbm.g.assign(g_nx * g_ny, std::vector<double>(9, 1.0));
@@ -417,55 +420,51 @@ TEST(CollideWithMixedSource)
   cd.ApplyForce(lbm.g);
   ns.Collide(lbm.f);
   ns.ApplyForce(lbm.f);
-  std::size_t i_ns = 0;
-  std::size_t i_cd = 0;
-  for (auto n = 0u; n < g_nx * g_ny; ++n) {
-    if (n == g_src_pos_f[i_ns][1] * g_nx + g_src_pos_f[i_ns][0]) {
-      for (auto i = 0u; i < 9; ++i)
-          CHECK_CLOSE(expected_ns1[i_ns][i], lbm.f[n][i], loose_tol);
-      if (i_ns < g_src_pos_f.size() - 1) ++i_ns;
-    }
-    else {
-      for (auto i = 0u; i < 9; ++i)
-          CHECK_CLOSE(expected_ns1[2][i], lbm.f[n][i], loose_tol);
-    }
-    if (n == g_src_pos_g[i_cd][1] * g_nx + g_src_pos_g[i_cd][0]) {
-//      std::cout << n << std::endl;
-      for (auto i = 0u; i < 9; ++i)
-          CHECK_CLOSE(expected_cd1[i_cd][i], lbm.g[n][i], loose_tol);
-      if (i_cd < g_src_pos_g.size() - 1) ++i_cd;
-    }
-    else {
-      std::cout << n << std::endl;
-      for (auto i = 0u; i < 9; ++i)
-          CHECK_CLOSE(expected_cd1[2][i], lbm.g[n][i], loose_tol);
-    }
-  }  // n
+
+  for (auto i = 0; i < 9; ++i) {
+    std::size_t i_ns = 0;
+    std::size_t i_cd = 0;
+    for (auto n = 0u; n < g_nx * g_ny; ++n) {
+      if (n == g_src_pos_f[i_ns][1] * g_nx + g_src_pos_f[i_ns][0]) {
+        CHECK_CLOSE(expected_ns1[i_ns][i], lbm.f[n][i], loose_tol);
+        if (i_ns < g_src_pos_f.size() - 1) ++i_ns;
+      }
+      else {
+        CHECK_CLOSE(expected_ns1[2][i], lbm.f[n][i], loose_tol);
+      }
+      if (n == g_src_pos_g[i_cd][1] * g_nx + g_src_pos_g[i_cd][0]) {
+        CHECK_CLOSE(expected_cd1[i_cd][i], lbm.g[n][i], loose_tol);
+        if (i_cd < g_src_pos_g.size() - 1) ++i_cd;
+      }
+      else {
+        CHECK_CLOSE(expected_cd1[2][i], lbm.g[n][i], loose_tol);
+      }
+    }  // n
+  }  // i
   // Second collision
   cd.Collide(lbm.g);
   cd.ApplyForce(lbm.g);
   ns.Collide(lbm.f);
   ns.ApplyForce(lbm.f);
-  i_ns = 0;
-  i_cd = 0;
-  for (auto n = 0u; n < g_nx * g_ny; ++n) {
-    if (n == g_src_pos_f[i_ns][1] * g_nx + g_src_pos_f[i_ns][0]) {
-      for (auto i = 0u; i < 9; ++i)
-          CHECK_CLOSE(expected_ns2[i_ns][i], lbm.f[n][i], loose_tol);
-      if (i_ns < g_src_pos_f.size() - 1) ++i_ns;
-    }
-    else {
-      ;
-    }
-    if (n == g_src_pos_g[i_cd][1] * g_nx + g_src_pos_g[i_cd][0]) {
-      for (auto i = 0u; i < 9; ++i)
-          CHECK_CLOSE(expected_cd2[i_cd][i], lbm.g[n][i], loose_tol);
-      if (i_cd < g_src_pos_g.size() - 1) ++i_cd;
-    }
-    else {
-      for (auto i = 0u; i < 9; ++i)
-          CHECK_CLOSE(expected_cd2[2][i], lbm.g[n][i], loose_tol);
-    }
-  }  // n
+  for (auto i = 0; i < 9; ++i) {
+    std::size_t i_ns = 0;
+    std::size_t i_cd = 0;
+    for (auto n = 0u; n < g_nx * g_ny; ++n) {
+      if (n == g_src_pos_f[i_ns][1] * g_nx + g_src_pos_f[i_ns][0]) {
+        CHECK_CLOSE(expected_ns2[i_ns][i], lbm.f[n][i], loose_tol);
+        if (i_ns < g_src_pos_f.size() - 1) ++i_ns;
+      }
+      else {
+        CHECK_CLOSE(expected_ns2[2][i], lbm.f[n][i], loose_tol);
+      }
+      if (n == g_src_pos_g[i_cd][1] * g_nx + g_src_pos_g[i_cd][0]) {
+        CHECK_CLOSE(expected_cd2[i_cd][i], lbm.g[n][i], loose_tol);
+        if (i_cd < g_src_pos_g.size() - 1) ++i_cd;
+      }
+      else {
+        CHECK_CLOSE(expected_cd2[2][i], lbm.g[n][i], loose_tol);
+      }
+    }  // n
+  }  // i
 }
 }

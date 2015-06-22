@@ -4,6 +4,8 @@
 
 class LatticeModel {
  public:
+   ~LatticeModel() = default;
+
    /**
    * Get the number of dimensions of the lattice. 2 for 2D and 3 for 3D.
    * \return number of dimensions of the lattice

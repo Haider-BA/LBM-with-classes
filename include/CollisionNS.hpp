@@ -18,6 +18,8 @@ class CollisionNS: public Collision {
     , double initial_density_f
     , const std::vector<double> &initial_velocity);
 
+  ~CollisionNS() = default;
+
   // maybe use friend class to access private variables easier for testing?
   std::vector<std::vector<double>> GetSource() const;
 
