@@ -7,13 +7,13 @@
 // https://stackoverflow.com/questions/10282787/calling-the-base-class-
 // constructor-in-the-derived-class-constructor
 CollisionNS::CollisionNS(LatticeModel &lm
-  , std::vector<std::vector<double>> &lat
   , const std::vector<std::vector<std::size_t>> &position
   , const std::vector<std::vector<double>> &strength
-  , double kinematic_viscosity)
-  : Collision(lm)
+  , double kinematic_viscosity
+  , double initial_density_f
+  , const std::vector<double> &initial_velocity)
+  : Collision(lm, initial_density_f, initial_velocity)
 {
-  lattice_eq_ = lat;
   auto dt = lm.GetTimeStep();
   // tau_ formula from "Discrete lattice effects on the forcing term in
   // the lattice Boltzmann method" Guo2002

@@ -1,6 +1,8 @@
 #ifndef LATTICEBOLTZMANN_HPP_
 #define LATTICEBOLTZMANN_HPP_
 #include <vector>
+#include "CollisionCD.hpp"
+#include "CollisionNS.hpp"
 #include "LatticeModel.hpp"
 
 class LatticeBoltzmann {
@@ -9,6 +11,7 @@ class LatticeBoltzmann {
    * Constructor: (default) Override default constructor to throw exception to
    * to forbid declaring uninitialized
    * Does not work because of uninitialized reference member error (lm_)
+   * Can try calling intializing lm with 0's
    */
 //  LatticeBoltzmann();
 
@@ -20,21 +23,16 @@ class LatticeBoltzmann {
    *
    */
   LatticeBoltzmann(double t_total
-    , double diffusion_coefficient
-    , double kinematic_viscosity
-    , double initial_density_f
-    , double initial_density_g
-    , const std::vector<double> &u0
-    , const std::vector<std::vector<std::size_t>> &src_position_f
-    , const std::vector<std::vector<double>> &src_strength_f
-    , const std::vector<std::vector<std::size_t>> &src_position_g
-    , const std::vector<double> &src_strength_g
     , const std::vector<std::vector<std::size_t>> &obstacles_pos
     , bool is_ns
     , bool is_cd
     , bool is_instant
     , bool has_obstacles
-    , LatticeModel &lm);
+    , LatticeModel &lm
+    , CollisionNS &ns
+    , CollisionCD &cd);
+
+  LatticeBoltzmann(const LatticeBoltzmann&) = default;
 
    /**
    * Get the number of dimensions of the lattice. 2 for 2D and 3 for 3D.
@@ -67,30 +65,36 @@ class LatticeBoltzmann {
    */
   std::size_t GetNumberOfColumns() const;
 
+  /**
+   * Return density lattice for NS
+   * \return density lattice for NS
+   */
+  std::vector<double> GetRhoF() const;
+
+  /**
+   * Return density lattice for CD
+   * \return density lattice for CD
+   */
+  std::vector<double> GetRhoG() const;
+
+  std::vector<std::vector<double>> GetVelocity() const;
+
   void Init(std::vector<bool> &lattice
   , const std::vector<std::vector<std::size_t>> &position);
 
   std::vector<double> Flip(const std::vector<double> &lattice);
+  std::vector<bool> Flip(const std::vector<bool> &lattice);
   std::vector<std::vector<double>> Flip(
-    const std::vector<std::vector<double>> &lattice);
+      const std::vector<std::vector<double>> &lattice);
   void Print(const std::vector<double> &lattice);
+  void Print(const std::vector<bool> &lattice);
   void Print(int which_to_print
   , const std::vector<std::vector<double>> &lattice);
-
-  /**
-   * Lattice velocity stored row-wise in a 2D vector.
-   */
-  std::vector<std::vector<double>> u;
 
   /**
    * NS distribution function stored row-wise in a 2D vector.
    */
   std::vector<std::vector<double>> f;
-
-  /**
-   * Density for NS stored row-wise in a 1D vector.
-   */
-  std::vector<double> rho_f;
 
   /**
    * Boundary nodes for NS lattice
@@ -103,15 +107,9 @@ class LatticeBoltzmann {
   std::vector<std::vector<double>> g;
 
   /**
-   * Density for CDE stored row-wise in a 1D vector.
-   */
-  std::vector<double> rho_g;
-
-  /**
    * Boundary nodes for CDE lattice
    */
   std::vector<std::vector<double>> boundary_g;
-
 
   /**
    * Lattice containing obstacles
@@ -137,5 +135,8 @@ class LatticeBoltzmann {
   // https://stackoverflow.com/questions/9285627/is-it-possible-to-pass-derived-
   // classes-by-reference-to-a-function-taking-base-cl
   LatticeModel &lm_;
+  // Collision models to take care of eq, rho, source
+  CollisionNS &ns_;
+  CollisionCD &cd_;
 };
 #endif // LATTICEBOLTZMANN_HPP_

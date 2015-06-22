@@ -33,6 +33,9 @@ class LatticeModel {
   double GetSpaceStep() const;
   double GetTimeStep() const;
 
+  std::vector<std::vector<double>> e;
+  std::vector<double> omega;
+
  protected:
   bool CheckInput();
   std::size_t number_of_dimensions_;

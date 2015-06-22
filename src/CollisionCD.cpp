@@ -7,13 +7,13 @@
 // https://stackoverflow.com/questions/10282787/calling-the-base-class-
 // constructor-in-the-derived-class-constructor
 CollisionCD::CollisionCD(LatticeModel &lm
-  , std::vector<std::vector<double>> &lat
   , const std::vector<std::vector<std::size_t>> &position
   , const std::vector<double> &strength
-  , double diffusion_coefficient)
-  : Collision(lm)
+  , double diffusion_coefficient
+  , double initial_density_g
+  , const std::vector<double> &initial_velocity)
+  : Collision(lm, initial_density_g, initial_velocity)
 {
-  lattice_eq_ = lat;
   auto dt = lm.GetTimeStep();
   // tau_ formula from "A new scheme for source term in LBGK model for
   // convection diffusion equation"

@@ -12,10 +12,11 @@ class CollisionNS: public Collision {
    *
    */
   CollisionNS(LatticeModel &lm
-    , std::vector<std::vector<double>> &lat
     , const std::vector<std::vector<std::size_t>> &position
     , const std::vector<std::vector<double>> &strength
-    , double kinematic_viscosity);
+    , double kinematic_viscosity
+    , double initial_density_f
+    , const std::vector<double> &initial_velocity);
 
   /** \brief
    *

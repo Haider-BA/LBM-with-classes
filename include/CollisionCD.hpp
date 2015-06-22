@@ -12,10 +12,11 @@ class CollisionCD: public Collision {
    *
    */
   CollisionCD(LatticeModel &lm
-    , std::vector<std::vector<double>> &lat
     , const std::vector<std::vector<std::size_t>> &position
     , const std::vector<double> &strength
-    , double diffusion_coefficient);
+    , double diffusion_coefficient
+    , double initial_density_g
+    , const std::vector<double> &initial_velocity);
 
   /** \brief
    *

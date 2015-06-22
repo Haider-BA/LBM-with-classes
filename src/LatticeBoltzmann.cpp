@@ -2,6 +2,8 @@
 #include <iomanip> // std::setprecision
 #include <iostream>
 #include <stdexcept>  // std::runtime_error
+#include "CollisionCD.hpp"
+#include "CollisionNS.hpp"
 #include "LatticeModel.hpp"
 
 //LatticeBoltzmann::LatticeBoltzmann()
@@ -9,30 +11,26 @@
 //  throw std::runtime_error("Declaring uninitialized LBM is not allowed");
 //}
 
+// cant use braces to initialize reference cuz gcc bug
+// https://stackoverflow.com/questions/10509603/why-cant-i-initialize-a-
+// reference-in-an-initializer-list-with-uniform-initializ
 LatticeBoltzmann::LatticeBoltzmann(double t_total
-  , double diffusion_coefficient
-  , double kinematic_viscosity
-  , double initial_density_f
-  , double initial_density_g
-  , const std::vector<double> &u0
-  , const std::vector<std::vector<std::size_t>> &src_position_f
-  , const std::vector<std::vector<double>> &src_strength_f
-  , const std::vector<std::vector<std::size_t>> &src_position_g
-  , const std::vector<double> &src_strength_g
   , const std::vector<std::vector<std::size_t>> &obstacles_position
   , bool is_ns
   , bool is_cd
   , bool is_instant
   , bool has_obstacles
-  , LatticeModel &lm)
+  , LatticeModel &lm
+  , CollisionNS &ns
+  , CollisionCD &cd)
   : total_time_ {t_total},
     is_ns_ {is_ns},
     is_cd_ {is_cd},
     is_instant_ {is_instant},
     has_obstacles_ {has_obstacles},
-    lm_ (lm)  // cant use braces cuz gcc bug
-    // https://stackoverflow.com/questions/10509603/why-cant-i-initialize-a-
-    // reference-in-an-initializer-list-with-uniform-initializ
+    lm_ (lm),
+    ns_ (ns),
+    cd_ (cd)
 {
   if (CheckParameters()) {
     throw std::runtime_error("Zero value in input parameters");
@@ -47,15 +45,12 @@ LatticeBoltzmann::LatticeBoltzmann(double t_total
     std::vector<double> length_d(nd, 0.0);
     std::vector<double> length_q(nc, 0.0);
     // Initializing variables with initial values
-    u.assign(lattice_size, u0);
     if (is_ns_) {
       f.assign(lattice_size, length_q);
-      rho_f.assign(lattice_size, initial_density_f);
       boundary_f.assign(2 * ny + 2 * nx + 4, length_q);
     }
     if (is_cd_) {
       g.assign(lattice_size, length_q);
-      rho_g.assign(lattice_size, initial_density_g);
       boundary_g.assign(2 * ny + 2 * nx + 4, length_q);
 //      std::cout << lm.test_value << std::endl;
     }
@@ -64,6 +59,21 @@ LatticeBoltzmann::LatticeBoltzmann(double t_total
       LatticeBoltzmann::Init(obstacles, obstacles_position);
     }
   }
+}
+
+std::vector<double> LatticeBoltzmann::GetRhoF() const
+{
+  return ns_.GetRho();
+}
+
+std::vector<double> LatticeBoltzmann::GetRhoG() const
+{
+  return cd_.GetRho();
+}
+
+std::vector<std::vector<double>> LatticeBoltzmann::GetVelocity() const
+{
+  return (is_ns_) ? ns_.GetVelocity() : cd_.GetVelocity();
 }
 
 void LatticeBoltzmann::Init(std::vector<bool> &lattice
@@ -96,8 +106,23 @@ std::vector<double> LatticeBoltzmann::Flip(const std::vector<double> &lattice)
       auto n = y * nx + x;
       auto n_flipped = y_flipped * nx + x;
       flipped_lattice[n_flipped] = lattice[n];
-    }
-  }
+    }  // x
+  }  // y
+  return flipped_lattice;
+}
+
+std::vector<bool> LatticeBoltzmann::Flip(const std::vector<bool> &lattice)
+{
+  auto flipped_lattice(lattice);
+  auto nx = lm_.GetNumberOfColumns();
+  auto ny = lm_.GetNumberOfRows();
+  for (int y = ny - 1, y_flipped = 0; y > -1; --y, ++y_flipped) {
+    for (auto x = 0u; x < nx; ++x) {
+      auto n = y * nx + x;
+      auto n_flipped = y_flipped * nx + x;
+      flipped_lattice[n_flipped] = lattice[n];
+    }  // x
+  }  // y
   return flipped_lattice;
 }
 
@@ -112,12 +137,27 @@ std::vector<std::vector<double>> LatticeBoltzmann::Flip(
       auto n = y * nx + x;
       auto n_flipped = y_flipped * nx + x;
       flipped_lattice[n_flipped] = lattice[n];
-    }
-  }
+    }  // x
+  }  // y
   return flipped_lattice;
 }
 
 void LatticeBoltzmann::Print(const std::vector<double> &lattice)
+{
+  auto nx = lm_.GetNumberOfColumns();
+  int counter = 0;
+  auto flipped_lattice = LatticeBoltzmann::Flip(lattice);
+  for (auto node : flipped_lattice) {
+    std::cout << std::fixed << std::setprecision(2) << node << " ";
+    if (++counter % nx == 0) {
+      std::cout << std::endl;
+      counter = 0;
+    }
+  }  // lat
+  std::cout << std::endl;
+}
+
+void LatticeBoltzmann::Print(const std::vector<bool> &lattice)
 {
   auto nx = lm_.GetNumberOfColumns();
   int counter = 0;
