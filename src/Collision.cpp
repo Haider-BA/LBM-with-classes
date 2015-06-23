@@ -16,20 +16,10 @@ Collision::Collision(LatticeModel &lm
   auto lat_size = nx * ny;
   c_ = dx / dt;
   cs_sqr_ = c_ * c_ / 3.0;
-  rho_.assign(lat_size, initial_density);
-  u_.assign(lat_size, initial_velocity);
+  rho.assign(lat_size, initial_density);
+  u.assign(lat_size, initial_velocity);
   lattice_eq.assign(lat_size, std::vector<double>(nc, 0.0));
   ComputeEq();
-}
-
-std::vector<double> Collision::GetRho() const
-{
-  return rho_;
-}
-
-std::vector<std::vector<double>> Collision::GetVelocity() const
-{
-  return u_;
 }
 
 void Collision::ComputeEq()
@@ -38,12 +28,12 @@ void Collision::ComputeEq()
   auto nx = lm_.GetNumberOfColumns();
   auto ny = lm_.GetNumberOfRows();
   for (auto n = 0u; n < nx * ny; ++n) {
-    double u_sqr = Collision::InnerProduct(u_[n], u_[n]);
+    double u_sqr = Collision::InnerProduct(u[n], u[n]);
     u_sqr /= 2.0 * cs_sqr_;
     for (auto i = 0u; i < nc; ++i) {
-      double c_dot_u = Collision::InnerProduct(lm_.e[i], u_[n]);
+      double c_dot_u = Collision::InnerProduct(lm_.e[i], u[n]);
       c_dot_u /= cs_sqr_ / c_;
-      lattice_eq[n][i] = lm_.omega[i] * rho_[n] * (1.0 + c_dot_u *
+      lattice_eq[n][i] = lm_.omega[i] * rho[n] * (1.0 + c_dot_u *
           (1.0 + c_dot_u / 2.0) - u_sqr);
     }  // i
   }  // n

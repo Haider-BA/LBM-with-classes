@@ -68,19 +68,10 @@ class LatticeBoltzmann {
   std::size_t GetNumberOfColumns() const;
 
   /**
-   * Return density lattice for NS
-   * \return density lattice for NS
+   * Initializes obstacle lattice
+   * \param lattice obstacles at each node stored row-wise
+   * \param position 2D vector containing position information of the obstacles
    */
-  std::vector<double> GetRhoF() const;
-
-  /**
-   * Return density lattice for CD
-   * \return density lattice for CD
-   */
-  std::vector<double> GetRhoG() const;
-
-  std::vector<std::vector<double>> GetVelocity() const;
-
   void Init(std::vector<bool> &lattice
   , const std::vector<std::vector<std::size_t>> &position);
 

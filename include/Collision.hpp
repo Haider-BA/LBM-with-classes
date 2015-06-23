@@ -16,57 +16,48 @@ class Collision {
   ~Collision() = default;
 
   /**
-   * Returns density lattice
-   * \return density lattice
-   */
-  std::vector<double> GetRho() const;
-
-  /**
-   * Returns velocity lattice
-   * \return velocity lattice
-   */
-  std::vector<std::vector<double>> GetVelocity() const;
-
-  /** \brief
-   *
-   * \return void
-   *
+   * Calculates equilibrium distribution function according to LBIntro
    */
   void ComputeEq();
 
-  /** \brief
-   *
-   * \return void
-   *
+  /**
+   * Computes collision step according to LBIntro
+   * \param lattice 2D vector containing distribution functions
    */
   void Collide(std::vector<std::vector<double>> &lattice);
 
-  double InnerProduct(const std::vector<double> &a
-    , const std::vector<double> &b);
-
-  /** \brief
-   *
-   * \return virtual void
-   *
+  /**
+   * Pure virtual function for forcing term
+   * \param lattice 2D vector containing distribution functions
    */
   virtual void ApplyForce(std::vector<std::vector<double>> &lattice) = 0;
+
+  /**
+   * Does dot product between 2 vectors of equal length
+   * \param a first vector
+   * \param b second vector
+   * \return dot product of a and b
+   */
+  double InnerProduct(const std::vector<double> &a
+  , const std::vector<double> &b);
 
   /**
    * Equilibrium distribution function stored row-wise in a 2D vector
    */
   std::vector<std::vector<double>> lattice_eq;
- protected:
-  LatticeModel &lm_;
 
   /**
    * Lattice velocity stored row-wise in a 2D vector
    */
-  std::vector<std::vector<double>> u_;
+  std::vector<std::vector<double>> u;
 
   /**
    * Density stored row-wise in a 1D vector.
    */
-  std::vector<double> rho_;
+  std::vector<double> rho;
+
+ protected:
+  LatticeModel &lm_;
   double tau_;
   double c_;
   double cs_sqr_;

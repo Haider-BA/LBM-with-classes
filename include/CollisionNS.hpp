@@ -2,12 +2,13 @@
 #define COLLISIONNS_HPP_
 #include <vector>
 #include "Collision.hpp"
+#include "LatticeD2Q9.hpp"
 #include "LatticeModel.hpp"
 
 class CollisionNS: public Collision {
  public:
-  /** \brief
-   *
+  /**
+   * Constructor:
    * \param lat std::vector<std::vector<double>>&
    *
    */
@@ -20,9 +21,6 @@ class CollisionNS: public Collision {
 
   ~CollisionNS() = default;
 
-  // maybe use friend class to access private variables easier for testing?
-  std::vector<std::vector<double>> GetSource() const;
-
   /**
    * Initializes the source lattice
    * \param position source position information
@@ -32,14 +30,15 @@ class CollisionNS: public Collision {
       const std::vector<std::vector<std::size_t>> &position
     , const std::vector<std::vector<double>> &strength);
 
-  /** \brief
-   *
-   * \return void
-   *
+  /**
+   * Applies force according to Guo2002
+   * \param lattice 2D vector containing distribution functions
    */
   void ApplyForce(std::vector<std::vector<double>> &lattice);
 
- private:
-  std::vector<std::vector<double>> source_;
+  /**
+   * Source term for NS equation stored row-wise
+   */
+  std::vector<std::vector<double>> source;
 };
 #endif  // COLLISIONNS_HPP_

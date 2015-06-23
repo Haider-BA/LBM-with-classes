@@ -20,22 +20,37 @@ class LatticeModel {
   std::size_t GetNumberOfDirections() const;
 
   /**
-   * Get the number of rows of the lattice, will be 2 smaller than the
-   * actual number of rows created due to additional boundary layer.
+   * Get the number of rows of the lattice
    * \return number of rows of the lattice
    */
   std::size_t GetNumberOfRows() const;
 
   /**
-   * Get the number of columns of the lattice, will be 2 smaller than
-   * the actual number of columns created due to additional boundary layer.
+   * Get the number of columns of the lattice
    * \return number of columns of the lattice
    */
   std::size_t GetNumberOfColumns() const;
+
+  /**
+   * Get the space step (dx) of the model
+   * \return space step of the model
+   */
   double GetSpaceStep() const;
+
+  /**
+   * Get the time step (dt) of the model
+   * \return time step of the model
+   */
   double GetTimeStep() const;
 
+  /**
+   * Unit vector for each discrete velocity direction
+   */
   std::vector<std::vector<double>> e;
+
+  /**
+   * Weights each discrete velocity according to LBIntro
+   */
   std::vector<double> omega;
 
  protected:
@@ -46,5 +61,6 @@ class LatticeModel {
   std::size_t number_of_columns_;
   double space_step_;
   double time_step_;
+  double c_;
 };
 #endif  // LATTICEMODEL_HPP_

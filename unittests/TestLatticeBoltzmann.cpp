@@ -29,13 +29,13 @@ SUITE(TestFunctionality)
   static const double g_rho0_f = 1.1;
   static const double g_rho0_g = 1.2;
   static const std::vector<double> g_u0{1.3, 1.4};
-  static const std::vector<std::vector<std::size_t>> g_src_pos_f = {{1, 1},
+  static const std::vector<std::vector<std::size_t>> g_src_pos_f{{1, 1},
       {2, 3}};
-  static const std::vector<std::vector<double>> g_src_str_f = {{1.5, 1.6},
+  static const std::vector<std::vector<double>> g_src_str_f{{1.5, 1.6},
       {1.7, 1.8}};
-  static const std::vector<std::vector<std::size_t>> g_src_pos_g = {{2, 2},
+  static const std::vector<std::vector<std::size_t>> g_src_pos_g{{2, 2},
       {3, 4}};
-  static const std::vector<double> g_src_str_g = {1.9, 2.0};
+  static const std::vector<double> g_src_str_g{1.9, 2.0};
   static const std::vector<std::vector<std::size_t>> g_obs_pos;
   static const bool g_is_ns = true;
   static const bool g_is_cd = true;
@@ -73,10 +73,8 @@ TEST(Constructor)
     , cd);
 //  cd.Collide();
 //  cd.ApplyForce();
-  auto src_cd = cd.GetSource();
-  auto src_ns = ns.GetSource();
-  lbm.Print(src_cd);
-  lbm.Print(1, src_ns);
+  lbm.Print(cd.source);
+  lbm.Print(1, ns.source);
 }
 
 TEST(InitObstacles)
@@ -149,11 +147,9 @@ TEST(InitDensity)
     , lm
     , ns
     , cd);
-  auto rho_f = lbm.GetRhoF();
-  auto rho_g = lbm.GetRhoG();
-  for (auto n = 0u; n < rho_f.size(); ++n) {
-    CHECK_CLOSE(g_rho0_f, rho_f[n], zero_tol);
-    CHECK_CLOSE(g_rho0_g, rho_g[n], zero_tol);
+  for (auto n = 0u; n < ns.rho.size(); ++n) {
+    CHECK_CLOSE(g_rho0_f, ns.rho[n], zero_tol);
+    CHECK_CLOSE(g_rho0_g, cd.rho[n], zero_tol);
   }  // n
 }
 
@@ -193,13 +189,11 @@ TEST(InitVelocity)
     , lm
     , ns
     , cd);
-  auto u = lbm.GetVelocity();
-  auto u2 = lbm2.GetVelocity();
-  for (auto n = 0u; n < u.size(); ++n) {
-    CHECK_CLOSE(g_u0[0], u[n][0], zero_tol);
-    CHECK_CLOSE(g_u0[1], u[n][1], zero_tol);
-    CHECK_CLOSE(g_u0[0], u2[n][0], zero_tol);
-    CHECK_CLOSE(g_u0[1], u2[n][1], zero_tol);
+  for (auto n = 0u; n < ns.u.size(); ++n) {
+    CHECK_CLOSE(g_u0[0], ns.u[n][0], zero_tol);
+    CHECK_CLOSE(g_u0[1], ns.u[n][1], zero_tol);
+    CHECK_CLOSE(g_u0[0], cd.u[n][0], zero_tol);
+    CHECK_CLOSE(g_u0[1], cd.u[n][1], zero_tol);
   }  // n
 }
 
@@ -314,26 +308,24 @@ TEST(InitSourceMultiplePosition)
     , lm
     , ns
     , cd);
-  auto src_cd = cd.GetSource();
-  auto src_ns = ns.GetSource();
   std::size_t i_ns = 0;
   std::size_t i_cd = 0;
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     if (n == g_src_pos_f[i_ns][1] * g_nx + g_src_pos_f[i_ns][0]) {
-      CHECK_CLOSE(g_src_str_f[i_ns][0], src_ns[n][0], zero_tol);
-      CHECK_CLOSE(g_src_str_f[i_ns][1], src_ns[n][1], zero_tol);
+      CHECK_CLOSE(g_src_str_f[i_ns][0], ns.source[n][0], zero_tol);
+      CHECK_CLOSE(g_src_str_f[i_ns][1], ns.source[n][1], zero_tol);
       if (i_ns < g_src_pos_f.size() - 1) ++i_ns;
     }
     else {
-      CHECK_CLOSE(0.0, src_ns[n][0], zero_tol);
-      CHECK_CLOSE(0.0, src_ns[n][1], zero_tol);
+      CHECK_CLOSE(0.0, ns.source[n][0], zero_tol);
+      CHECK_CLOSE(0.0, ns.source[n][1], zero_tol);
     }
     if (n == g_src_pos_g[i_cd][1] * g_nx + g_src_pos_g[i_cd][0]) {
-      CHECK_CLOSE(g_src_str_g[i_cd], src_cd[n], zero_tol);
+      CHECK_CLOSE(g_src_str_g[i_cd], cd.source[n], zero_tol);
       if (i_cd < g_src_pos_g.size() - 1) ++i_cd;
     }
     else {
-      CHECK_CLOSE(0.0, src_cd[n], zero_tol);
+      CHECK_CLOSE(0.0, cd.source[n], zero_tol);
     }
   }  // n
 }
@@ -370,7 +362,8 @@ TEST(CollideWithMixedSource)
     , cd);
   // checks collision result for both cd and ns
   // in expected, index 0 for first source strength, 1 for second source
-  // strength, 2 for no source (so that it matches source index)
+  // strength (since global pos has 2 positions), 2 for no source (so that it
+  // matches source index)
   std::vector<std::vector<double>> expected_cd1 =
       {{0.57428,
         0.22817, 0.22947, 0.19825, 0.19724,
@@ -466,5 +459,53 @@ TEST(CollideWithMixedSource)
       }
     }  // n
   }  // i
+}
+
+TEST(ComputeU)
+{
+  // uses global source lattice, get different values at different nodes due to
+  // presence of source at that node, nodes without source covers case for
+  // ComputeUNoSource as well
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f
+    , g_u0);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , g_u0);
+  LatticeBoltzmann lbm(g_t_total
+    , g_obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_instant
+    , g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  lbm.f.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
+  ns.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
+  std::size_t i_ns = 0;
+  std::vector<std::vector<double>> expected{{-57.45380, -172.36284},
+      {-57.45370, -172.36274}, {-57.45455, -172.36364}};
+  for (auto n = 0u; n < g_nx * g_ny; ++n) {
+    if (n == g_src_pos_f[i_ns][1] * g_nx + g_src_pos_f[i_ns][0]) {
+      CHECK_CLOSE(expected[i_ns][0], ns.u[n][0], loose_tol);
+      CHECK_CLOSE(expected[i_ns][1], ns.u[n][1], loose_tol);
+      if (i_ns < g_src_pos_f.size() - 1) ++i_ns;
+    }
+    else {
+      CHECK_CLOSE(expected[2][0], ns.u[n][0], loose_tol);
+      CHECK_CLOSE(expected[2][1], ns.u[n][1], loose_tol);
+    }
+  }  // n
 }
 }

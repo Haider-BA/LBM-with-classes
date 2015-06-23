@@ -61,21 +61,6 @@ LatticeBoltzmann::LatticeBoltzmann(double t_total
   }
 }
 
-std::vector<double> LatticeBoltzmann::GetRhoF() const
-{
-  return ns_.GetRho();
-}
-
-std::vector<double> LatticeBoltzmann::GetRhoG() const
-{
-  return cd_.GetRho();
-}
-
-std::vector<std::vector<double>> LatticeBoltzmann::GetVelocity() const
-{
-  return (is_ns_) ? ns_.GetVelocity() : cd_.GetVelocity();
-}
-
 void LatticeBoltzmann::Init(std::vector<bool> &lattice
   , const std::vector<std::vector<std::size_t>> &position)
 {
@@ -148,7 +133,7 @@ void LatticeBoltzmann::Print(const std::vector<double> &lattice)
   int counter = 0;
   auto flipped_lattice = LatticeBoltzmann::Flip(lattice);
   for (auto node : flipped_lattice) {
-    std::cout << std::fixed << std::setprecision(2) << node << " ";
+    std::cout << std::fixed << std::setprecision(5) << node << " ";
     if (++counter % nx == 0) {
       std::cout << std::endl;
       counter = 0;
@@ -163,7 +148,7 @@ void LatticeBoltzmann::Print(const std::vector<bool> &lattice)
   int counter = 0;
   auto flipped_lattice = LatticeBoltzmann::Flip(lattice);
   for (auto node : flipped_lattice) {
-    std::cout << std::fixed << std::setprecision(2) << node << " ";
+    std::cout << std::fixed << std::setprecision(5) << node << " ";
     if (++counter % nx == 0) {
       std::cout << std::endl;
       counter = 0;
@@ -191,19 +176,19 @@ void LatticeBoltzmann::Print(int which_to_print
             if (lattice[n].size() != nc)
                 throw std::runtime_error("Wrong depth");
             if (i == 0) {
-            std::cout << std::fixed << std::setprecision(2)
+            std::cout << std::fixed << std::setprecision(5)
                       << lattice[n][6] << " "
                       << lattice[n][2] << " "
                       << lattice[n][5] << " ";
             }
             else if (i == 1) {
-            std::cout << std::fixed << std::setprecision(2)
+            std::cout << std::fixed << std::setprecision(5)
                       << lattice[n][3] << " "
                       << lattice[n][0] << " "
                       << lattice[n][1] << " ";
             }
             else if (i == 2) {
-            std::cout << std::fixed << std::setprecision(2)
+            std::cout << std::fixed << std::setprecision(5)
                       << lattice[n][7] << " "
                       << lattice[n][4] << " "
                       << lattice[n][8] << " ";
@@ -223,7 +208,7 @@ void LatticeBoltzmann::Print(int which_to_print
       auto flipped_lattice = LatticeBoltzmann::Flip(lattice);
       for (auto node : flipped_lattice) {
         if (node.size() != nd) throw std::runtime_error("Wrong depth");
-        std::cout << std::fixed << std::setprecision(2)
+        std::cout << std::fixed << std::setprecision(5)
                   << node[0] << " " << node[1] << "  ";
         if (++counter % nx == 0) {
           std::cout << std::endl;
@@ -255,19 +240,19 @@ void LatticeBoltzmann::Print(int which_to_print
             if (lattice[n].size() != nc)
                 throw std::runtime_error("Wrong depth");
             if (i == 0) {
-            std::cout << std::fixed << std::setprecision(2)
+            std::cout << std::fixed << std::setprecision(5)
                       << lattice[n][6] << " "
                       << lattice[n][2] << " "
                       << lattice[n][5] << " ";
             }
             else if (i == 1) {
-            std::cout << std::fixed << std::setprecision(2)
+            std::cout << std::fixed << std::setprecision(5)
                       << lattice[n][3] << " "
                       << lattice[n][0] << " "
                       << lattice[n][1] << " ";
             }
             else if (i == 2) {
-            std::cout << std::fixed << std::setprecision(2)
+            std::cout << std::fixed << std::setprecision(5)
                       << lattice[n][7] << " "
                       << lattice[n][4] << " "
                       << lattice[n][8] << " ";
@@ -293,19 +278,19 @@ void LatticeBoltzmann::Print(int which_to_print
             if (lattice[n].size() != nc)
                 throw std::runtime_error("Wrong depth");
             if (i == 0) {
-            std::cout << std::fixed << std::setprecision(2)
+            std::cout << std::fixed << std::setprecision(5)
                       << lattice[n][6] << " "
                       << lattice[n][2] << " "
                       << lattice[n][5] << " ";
             }
             else if (i == 1) {
-            std::cout << std::fixed << std::setprecision(2)
+            std::cout << std::fixed << std::setprecision(5)
                       << lattice[n][3] << " "
                       << lattice[n][0] << " "
                       << lattice[n][1] << " ";
             }
             else if (i == 2) {
-            std::cout << std::fixed << std::setprecision(2)
+            std::cout << std::fixed << std::setprecision(5)
                       << lattice[n][7] << " "
                       << lattice[n][4] << " "
                       << lattice[n][8] << " ";

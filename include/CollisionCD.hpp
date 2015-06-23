@@ -6,8 +6,8 @@
 
 class CollisionCD: public Collision {
  public:
-  /** \brief
-   *
+  /**
+   * Constructor:
    * \param lat std::vector<std::vector<double>>&
    *
    */
@@ -20,8 +20,6 @@ class CollisionCD: public Collision {
 
   ~CollisionCD() = default;
 
-  std::vector<double> GetSource() const;
-
   /**
    * Initializes the source lattice
    * \param position source position information
@@ -31,14 +29,16 @@ class CollisionCD: public Collision {
       const std::vector<std::vector<std::size_t>> &position
     , const std::vector<double> &strength);
 
-  /** \brief
-   *
-   * \return void
-   *
+  /**
+   * Applies force/source term according to "A new scheme for source term in
+   * LBGK model for convection-diffusion equation"
+   * \param lattice 2D vector containing distribution functions
    */
   void ApplyForce(std::vector<std::vector<double>> &lattice);
 
- private:
-  std::vector<double> source_;
+  /**
+   * Source term for CD equation stored row-wise
+   */
+  std::vector<double> source;
 };
 #endif  // COLLISIONCD_HPP_

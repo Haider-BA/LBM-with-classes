@@ -21,11 +21,6 @@ CollisionCD::CollisionCD(LatticeModel &lm
   InitSource(position, strength);
 }
 
-std::vector<double> CollisionCD::GetSource() const
-{
-  return source_;
-}
-
 void CollisionCD::InitSource(
     const std::vector<std::vector<std::size_t>> &position
   , const std::vector<double> &strength)
@@ -35,14 +30,14 @@ void CollisionCD::InitSource(
   auto nx = lm_.GetNumberOfColumns();
   auto ny = lm_.GetNumberOfRows();
   auto nd = lm_.GetNumberOfDimensions();
-  source_.assign(nx * ny, 0.0);
+  source.assign(nx * ny, 0.0);
   auto it_strength = begin(strength);
   for (auto pos : position) {
     if (pos.size() != nd)
         throw std::runtime_error("Position doesn't match dimensions");
     if (pos[0] > nx - 1) throw std::runtime_error("x value out of range");
     if (pos[1] > ny - 1) throw std::runtime_error("y value out of range");
-    source_[pos[1] * nx + pos[0]] = *it_strength++;
+    source[pos[1] * nx + pos[0]] = *it_strength++;
   }  // pos
 }
 
@@ -54,10 +49,10 @@ void CollisionCD::ApplyForce(std::vector<std::vector<double>> &lattice)
   auto dt = lm_.GetTimeStep();
   for (auto n = 0u; n < nx * ny; ++n) {
     for (auto i = 0u; i < nc; ++i) {
-      double c_dot_u = Collision::InnerProduct(lm_.e[i], u_[n]);
+      double c_dot_u = Collision::InnerProduct(lm_.e[i], u[n]);
       c_dot_u /= cs_sqr_ / c_;
       // source term using forward scheme, theta = 0
-      auto src_i = lm_.omega[i] * source_[n] * (1.0 + (1.0 - 0.5 / tau_) *
+      auto src_i = lm_.omega[i] * source[n] * (1.0 + (1.0 - 0.5 / tau_) *
           c_dot_u);
       lattice[n][i] += dt * src_i;
     }  // i
