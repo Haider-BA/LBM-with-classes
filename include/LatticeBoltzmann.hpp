@@ -73,7 +73,28 @@ class LatticeBoltzmann {
    * \param position 2D vector containing position information of the obstacles
    */
   void Init(std::vector<bool> &lattice
-  , const std::vector<std::vector<std::size_t>> &position);
+    , const std::vector<std::vector<std::size_t>> &position);
+
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
+  std::vector<std::vector<double>> BoundaryCondition(
+      const std::vector<std::vector<double>> &lattice);
+
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
+  std::vector<std::vector<double>> Stream(
+      const std::vector<std::vector<double>> &lattice
+    , const std::vector<std::vector<double>> &boundary);
 
   std::vector<double> Flip(const std::vector<double> &lattice);
   std::vector<bool> Flip(const std::vector<bool> &lattice);
@@ -110,6 +131,21 @@ class LatticeBoltzmann {
   std::vector<bool> obstacles;
 
  private:
+  // 6  2  5  ^
+  //  \ | /   |
+  // 3--0--1  |
+  //  / | \   |
+  // 7  4  8  +------->
+  enum Directions {
+    E = 1,
+    N,
+    W,
+    S,
+    NE,
+    NW,
+    SW,
+    SE
+  };
   /**
    * Checks input parameters to ensure there's not invalid values
    * \return true if there is invalid: 0 in any values, both is_ns_ and is_cd_

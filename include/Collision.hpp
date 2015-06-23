@@ -13,7 +13,10 @@ class Collision {
     , double initial_density
     , const std::vector<double> &initial_velocity);
 
-  ~Collision() = default;
+  // Since we are deriving from this class, need virtual destructor
+  // https://stackoverflow.com/questions/353817/should-every-class-have-a-
+  // virtual-destructor
+  virtual ~Collision() = default;
 
   /**
    * Calculates equilibrium distribution function according to LBIntro

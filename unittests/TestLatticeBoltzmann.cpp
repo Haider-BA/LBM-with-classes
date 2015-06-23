@@ -17,6 +17,16 @@ TEST(ConstructorException)
 
 SUITE(TestFunctionality)
 {
+  enum Directions {
+    E = 1,
+    N,
+    W,
+    S,
+    NE,
+    NW,
+    SW,
+    SE
+  };
   static const double zero_tol = 1e-20;
   static const double loose_tol = 1e-5;
   static const std::size_t g_ny = 6;
@@ -73,8 +83,8 @@ TEST(Constructor)
     , cd);
 //  cd.Collide();
 //  cd.ApplyForce();
-  lbm.Print(cd.source);
-  lbm.Print(1, ns.source);
+//  lbm.Print(cd.source);
+//  lbm.Print(1, ns.source);
 }
 
 TEST(InitObstacles)
@@ -507,5 +517,392 @@ TEST(ComputeU)
       CHECK_CLOSE(expected[2][1], ns.u[n][1], loose_tol);
     }
   }  // n
+}
+
+TEST(BoundaryPeriodic)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f
+    , g_u0);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , g_u0);
+  LatticeBoltzmann lbm(g_t_total
+    , g_obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_instant
+    , g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  lbm.f.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
+  lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
+  for (auto y = 0u; y < g_ny; ++y) {
+    auto n = y * (g_nx);
+    CHECK_CLOSE(lbm.f[n + g_nx - 1][E], lbm.boundary_f[y][E], zero_tol);
+    CHECK_CLOSE(lbm.f[n + g_nx - 1][NE], lbm.boundary_f[y][NE],
+        zero_tol);
+    CHECK_CLOSE(lbm.f[n + g_nx - 1][SE], lbm.boundary_f[y][SE],
+        zero_tol);
+    CHECK_CLOSE(lbm.f[n][W], lbm.boundary_f[y + g_ny][W], zero_tol);
+    CHECK_CLOSE(lbm.f[n][NW], lbm.boundary_f[y + g_ny][NW], zero_tol);
+    CHECK_CLOSE(lbm.f[n][SW], lbm.boundary_f[y + g_ny][SW], zero_tol);
+  }  // y
+}
+
+TEST(BoundaryBounceback)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f
+    , g_u0);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , g_u0);
+  LatticeBoltzmann lbm(g_t_total
+    , g_obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_instant
+    , g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  double value = 0;
+  for (auto &node : lbm.f) node = std::vector<double>(9, value++);
+  lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
+  auto top = 2 * g_ny;
+  auto bottom = 2 * g_ny + g_nx;
+  for (auto x = 0u; x < g_nx; ++x) {
+    auto n = (g_ny - 1) * g_nx;
+    CHECK_CLOSE(lbm.f[x + n][N], lbm.boundary_f[top + x][S], zero_tol);
+    CHECK_CLOSE(lbm.f[x][S], lbm.boundary_f[bottom + x][N], zero_tol);
+    if (x == 0) {
+      CHECK_CLOSE(lbm.f[n + g_nx - 1][NE], lbm.boundary_f[top + x][SW],
+          zero_tol);
+      CHECK_CLOSE(lbm.f[g_nx - 1][SE], lbm.boundary_f[bottom + x][NW],
+          zero_tol);
+    }
+    else {
+      CHECK_CLOSE(lbm.f[x + n - 1][NE], lbm.boundary_f[top + x][SW], zero_tol);
+      CHECK_CLOSE(lbm.f[x - 1][SE], lbm.boundary_f[bottom + x][NW], zero_tol);
+    }
+    if (x == g_nx - 1) {
+      CHECK_CLOSE(lbm.f[n][NW], lbm.boundary_f[top + x][SE], zero_tol);
+      CHECK_CLOSE(lbm.f[0][SW], lbm.boundary_f[bottom + x][NE], zero_tol);
+    }
+    else {
+      CHECK_CLOSE(lbm.f[x + n + 1][NW], lbm.boundary_f[top + x][SE], zero_tol);
+      CHECK_CLOSE(lbm.f[x + 1][SW], lbm.boundary_f[bottom + x][NE], zero_tol);
+    }
+  }  // x
+}
+
+TEST(BoundaryCorner)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f
+    , g_u0);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , g_u0);
+  LatticeBoltzmann lbm(g_t_total
+    , g_obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_instant
+    , g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  lbm.f.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
+  lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
+  auto corner = 2 * g_nx + 2 * g_ny;
+  CHECK_CLOSE(lbm.f[0][SW], lbm.boundary_f[corner][NE], zero_tol);
+  CHECK_CLOSE(lbm.f[g_nx - 1][SE], lbm.boundary_f[corner + 1][NW], zero_tol);
+  CHECK_CLOSE(lbm.f[(g_ny - 1) * g_nx][NW], lbm.boundary_f[corner + 2][SE],
+      zero_tol);
+  CHECK_CLOSE(lbm.f[g_ny * g_nx - 1][NE], lbm.boundary_f[corner + 3][SW],
+      zero_tol);
+}
+
+TEST(StreamHorizontal)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f
+    , g_u0);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , g_u0);
+  LatticeBoltzmann lbm(g_t_total
+    , g_obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_instant
+    , g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  std::vector<double> first_three = {1, 2, 1, 0, 1, 2, 0, 0, 2};
+  std::vector<double> second_three = {4, 5, 4, 3, 4, 5, 3, 3, 5};
+  std::vector<std::vector<double>> nodes = {first_three, second_three};
+  std::vector<double> first_result = {1, 5, 1, 3, 1, 5, 3, 3, 5};
+  std::vector<double> second_result = {4, 2, 4, 0, 4, 2, 0, 0, 2};
+  int counter = 0;
+  for (auto &node : lbm.f) {
+    node = nodes[(counter / g_nx + counter) % 2];
+    ++counter;
+  }  // node
+  lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
+  // assign boundary values in opposition direction as appending them as
+  // conditional is "less than" so it will overwrite previous conditional
+  // if satisfied
+  for (auto n = 0u; n < lbm.boundary_f.size(); ++n) {
+    // corner boundary
+    lbm.boundary_f[n] = nodes[1];
+    // bottom boundary
+    if (n < 2 * g_ny + 2 * g_nx) lbm.boundary_f[n] = nodes[(n + 1) % 2];
+    // top boundary
+    if (n < 2 * g_ny + g_nx) lbm.boundary_f[n] = nodes[n % 2];
+    // right boundary
+    if (n < 2 * g_ny) lbm.boundary_f[n] = nodes[(g_ny + 1) % 2];
+    // left boundary
+    if (n < g_ny) lbm.boundary_f[n] = nodes[1];
+  }  // n
+  lbm.f = lbm.Stream(lbm.f, lbm.boundary_f);
+  for (auto node : lbm.f) {
+    for (auto i = 0u; i < 9; ++i) {
+      if ((node[0] - 1) < zero_tol) {
+      CHECK_CLOSE(first_result[i], node[i], zero_tol);
+      }
+      else {
+        CHECK_CLOSE(second_result[i], node[i], zero_tol);
+      }
+    }  // i
+  }  // lat
+}
+
+TEST(StreamVertical)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f
+    , g_u0);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , g_u0);
+  LatticeBoltzmann lbm(g_t_total
+    , g_obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_instant
+    , g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  std::vector<double> first_three = {1, 1, 0, 1, 2, 0, 0, 2, 2};
+  std::vector<double> second_three = {4, 4, 3, 4, 5, 3, 3, 5, 5};
+  std::vector<std::vector<double>> nodes = {first_three, second_three};
+  std::vector<double> first_result = {1, 1, 3, 1, 5, 3, 3, 5, 5};
+  std::vector<double> second_result = {4, 4, 0, 4, 2, 0, 0, 2, 2};
+  int counter = 0;
+  for (auto &node : lbm.f) node = nodes[(counter++ / g_nx) % 2];
+  lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
+  for (auto n = 0u; n < lbm.boundary_f.size(); ++n) {
+    // corner boundary
+    lbm.boundary_f[n] = nodes[0];
+    if (n < 2 * g_ny + 2 * g_nx + 2) lbm.boundary_f[n] = nodes[1];
+    // bottom boundary
+    if (n < 2 * g_ny + 2 * g_nx) lbm.boundary_f[n] = nodes[1];
+    // top boundary
+    if (n < 2 * g_ny + g_nx) lbm.boundary_f[n] = nodes[0];
+    // right boundary
+    if (n < 2 * g_ny) lbm.boundary_f[n] = nodes[n % 2];
+    // left boundary
+    if (n < g_ny) lbm.boundary_f[n] = nodes[n % 2];
+  }  // n
+  lbm.f = lbm.Stream(lbm.f, lbm.boundary_f);
+  for (auto node : lbm.f) {
+    for (auto i = 0u; i < 9; ++i) {
+      if ((node[0] - 1) < zero_tol) {
+      CHECK_CLOSE(first_result[i], node[i], zero_tol);
+      }
+      else {
+        CHECK_CLOSE(second_result[i], node[i], zero_tol);
+      }
+    }  // i
+  }  // lat
+}
+
+TEST(StreamDiagonalNESW)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f
+    , g_u0);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , g_u0);
+  LatticeBoltzmann lbm(g_t_total
+    , g_obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_instant
+    , g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  std::vector<double> ones(9, 1);
+  std::vector<double> twos(9, 2);
+  std::vector<double> threes(9, 3);
+  std::vector<std::vector<double>> nodes = {ones, twos, threes};
+  std::vector<double> result = {1, 2, 3};
+  for (auto y = 0u; y < g_ny; ++y) {
+    for (auto x = 0u; x < g_nx; ++x) {
+      auto n = y * g_nx + x;
+      lbm.f[n] = nodes[(x % 3 + (y + 2) % 3) % 3];
+    }  // x
+  }  // y
+  lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
+  for (auto n = 0u; n < lbm.boundary_f.size(); ++n) {
+    // corner boundary
+    lbm.boundary_f[n] = nodes[(2 - n % 3) % 3];
+    // bottom boundary
+    if (n < 2 * g_ny + 2 * g_nx) lbm.boundary_f[n] = nodes[n % 3];
+    // top boundary
+    if (n < 2 * g_ny + g_nx) lbm.boundary_f[n] = nodes[(n - 1) % 3];
+    // right boundary
+    if (n < 2 * g_ny) lbm.boundary_f[n] = nodes[n % 3];
+    // left boundary
+    if (n < g_ny) lbm.boundary_f[n] = nodes[(n + 1) % 3];
+  }  // n
+  lbm.f = lbm.Stream(lbm.f, lbm.boundary_f);
+  for (auto y = 0u; y < g_ny; ++y) {
+    for (auto x = 0u; x < g_nx; ++x) {
+      auto n = y * g_nx + x;
+      CHECK_CLOSE(result[(x % 3 + y % 3) % 3], lbm.f[n][NE], zero_tol);
+      CHECK_CLOSE(result[(x % 3 + y % 3 + 1) % 3], lbm.f[n][SW], zero_tol);
+    }  // x
+  }  // y
+}
+
+TEST(StreamDiagonalNWSE)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f
+    , g_u0);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , g_u0);
+  LatticeBoltzmann lbm(g_t_total
+    , g_obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_instant
+    , g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  std::vector<double> ones(9, 1);
+  std::vector<double> twos(9, 2);
+  std::vector<double> threes(9, 3);
+  std::vector<std::vector<double>> nodes = {ones, twos, threes};
+  std::vector<double> result = {1, 2, 3};
+  for (auto y = 0u; y < g_ny; ++y) {
+    for (auto x = 0u; x < g_nx; ++x) {
+      auto n = y * g_nx + x;
+      lbm.f[n] = nodes[(2 - x % 3 + (y + 2) % 3) % 3];
+    }  // x
+  }  // y
+  lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
+  for (auto n = 0u; n < lbm.boundary_f.size(); ++n) {
+    // corner boundary
+    lbm.boundary_f[n] = nodes[(n + 1) % 3];
+    if (n < 2 * g_ny + 2 * g_nx + 2) lbm.boundary_f[n] = nodes[(n - 1) % 3];
+    // bottom boundary
+    if (n < 2 * g_ny + 2 * g_nx) lbm.boundary_f[n] = nodes[(4 - n % 3) % 3];
+    // top boundary
+    if (n < 2 * g_ny + g_nx) lbm.boundary_f[n] = nodes[(4 - n % 3) % 3];
+    // right boundary
+    if (n < 2 * g_ny) lbm.boundary_f[n] = nodes[n % 3];
+    // left boundary
+    if (n < g_ny) lbm.boundary_f[n] = nodes[(n + 2) % 3];
+  }  // n
+  lbm.f = lbm.Stream(lbm.f, lbm.boundary_f);
+  for (auto y = 0u; y < g_ny; ++y) {
+    for (auto x = 0u; x < g_nx; ++x) {
+      auto n = y * g_nx + x;
+      CHECK_CLOSE(result[(2 - x % 3 + y % 3) % 3], lbm.f[n][NW], zero_tol);
+      CHECK_CLOSE(result[(3 - x % 3 + y % 3) % 3], lbm.f[n][SE], zero_tol);
+    }  // x
+  }  // y
 }
 }
