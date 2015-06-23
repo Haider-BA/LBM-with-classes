@@ -28,6 +28,16 @@ class LatticeD2Q9: public LatticeModel {
    */
   std::vector<double> GetFirstMoment(const std::vector<double> &node);
 
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
+  std::vector<double> ComputeRho(
+      const std::vector<std::vector<double>> &lattice);
+
   /**
    * Calculated velocity for NS equation based on formula in Guo2002
    * \param lattice 2D vector containing distribution functions of the NS

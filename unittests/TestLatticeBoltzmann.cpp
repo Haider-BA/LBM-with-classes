@@ -519,6 +519,39 @@ TEST(ComputeU)
   }  // n
 }
 
+TEST(ComputeRho)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f
+    , g_u0);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , g_u0);
+  LatticeBoltzmann lbm(g_t_total
+    , g_obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_instant
+    , g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  lbm.f.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
+  ns.rho = lm.ComputeRho(lbm.f);
+  auto expected = 36.0;
+  for (auto rho : ns.rho) CHECK_CLOSE(expected, rho, loose_tol);
+}
+
 TEST(BoundaryPeriodic)
 {
   LatticeD2Q9 lm(g_ny

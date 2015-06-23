@@ -44,6 +44,15 @@ std::vector<double> LatticeD2Q9::GetFirstMoment(const std::vector<double> &node)
   return result;
 }
 
+std::vector<double> LatticeD2Q9::ComputeRho(
+    const std::vector<std::vector<double>> &lattice)
+{
+  std::vector<double> result(lattice.size(), 0.0);
+  auto it_result = begin(result);
+  for (auto node : lattice) (*it_result++) = LatticeD2Q9::GetZerothMoment(node);
+  return result;
+}
+
 std::vector<std::vector<double>> LatticeD2Q9::ComputeU(
       const std::vector<std::vector<double>> &lattice
     , const std::vector<double> &rho
