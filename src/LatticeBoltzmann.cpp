@@ -143,48 +143,52 @@ std::vector<std::vector<double>> LatticeBoltzmann::Stream(
   auto nx = lm_.GetNumberOfColumns();
   auto ny = lm_.GetNumberOfRows();
   auto nc = lm_.GetNumberOfDirections();
-  auto temp_lattice(lattice);
-  std::vector<std::vector<double>> lattice_with_boundary((nx + 2) * (ny + 2),
+  // boundary indexes (left and right omitted)
+  auto top = 2 * ny;
+  auto bottom = 2 * ny + nx;
+  auto corner = 2 * ny + 2 * nx;
+  auto nx_big = nx + 2;  // number of columns in lattice with boundary
+  auto ny_big = ny + 2;  // number of rows in lattice with boundary
+  std::vector<std::vector<double>> lattice_with_bdr(nx_big * ny_big,
       std::vector<double>(nc, 0.0));
   // assemble lattice and boundary into a lattice with boundary
   // surrounding it
-  for (auto y = 1u; y < ny + 1; ++y) {
+  for (auto y = 1u; y < ny_big - 1; ++y) {
     // left and right boundary
-    lattice_with_boundary[y * (nx + 2)] = boundary[y - 1];
-    lattice_with_boundary[y * (nx + 2) + nx + 1] = boundary[ny + y - 1];
+    lattice_with_bdr[y * nx_big] = boundary[y - 1];
+    lattice_with_bdr[y * nx_big + nx + 1] = boundary[ny + y - 1];
     // main lattice
-    for (auto x = 1u; x < nx + 1; ++x) {
-      auto n = y * (nx + 2) + x;
+    for (auto x = 1u; x < nx_big - 1; ++x) {
+      auto n = y * nx_big + x;
       auto m = (y - 1) * nx + x - 1;
-      lattice_with_boundary[n] = lattice[m];
+      lattice_with_bdr[n] = lattice[m];
+      // only fill in top and bottom boundary once, does it on the first
+      // iteration of y loop
       if (y == 1) {
         // top and bottom boundary
-        lattice_with_boundary[(ny + 1) * (nx + 2) + x] =
-            boundary[2 * ny + x - 1];
-        lattice_with_boundary[x] = boundary[2 * ny + nx + x - 1];
+        lattice_with_bdr[(ny_big - 1) * nx_big + x] = boundary[top + x - 1];
+        lattice_with_bdr[x] = boundary[bottom + x - 1];
       }
     }  // x
   }  // y
   // corner boundary
-  auto corner_index = 2 * ny + 2 * nx;
-  lattice_with_boundary[0] = boundary[corner_index];
-  lattice_with_boundary[nx + 1] = boundary[corner_index + 1];
-  lattice_with_boundary[(ny + 1) * (nx + 2)] = boundary[corner_index + 2];
-  lattice_with_boundary[(ny + 2) * (nx + 2) - 1] = boundary[corner_index + 3];
-  for (auto y = 1u; y < ny + 1; ++y) {
-    for (auto x = 1u; x < nx + 1; ++x) {
-      auto n = y * (nx + 2) + x;
-      auto m = (y - 1) * nx + x - 1;
-      temp_lattice[m][E] = lattice_with_boundary[n - 1][E];
-      temp_lattice[m][N] = lattice_with_boundary[n - (nx + 2)][N];
-      temp_lattice[m][W] = lattice_with_boundary[n + 1][W];
-      temp_lattice[m][S] = lattice_with_boundary[n + (nx + 2)][S];
-      temp_lattice[m][NE] = lattice_with_boundary[n - (nx + 2) - 1][NE];
-      temp_lattice[m][NW] = lattice_with_boundary[n - (nx + 2) + 1][NW];
-      temp_lattice[m][SW] = lattice_with_boundary[n + (nx + 2) + 1][SW];
-      temp_lattice[m][SE] = lattice_with_boundary[n + (nx + 2) - 1][SE];
-    }  // x
-  }  // y
+  lattice_with_bdr[0] = boundary[corner];
+  lattice_with_bdr[nx + 1] = boundary[corner + 1];
+  lattice_with_bdr[(ny_big - 1) * nx_big] = boundary[corner + 2];
+  lattice_with_bdr[ny_big * nx_big - 1] = boundary[corner + 3];
+  // streams into temp lattice
+  auto temp_lattice(lattice);
+  for (auto n = 0u; n < nx * ny; ++n) {
+    auto m = nx_big + 1 + static_cast<int>(n / nx) * nx_big + n % nx;
+    temp_lattice[n][E] = lattice_with_bdr[m - 1][E];
+    temp_lattice[n][N] = lattice_with_bdr[m - nx_big][N];
+    temp_lattice[n][W] = lattice_with_bdr[m + 1][W];
+    temp_lattice[n][S] = lattice_with_bdr[m + nx_big][S];
+    temp_lattice[n][NE] = lattice_with_bdr[m - nx_big - 1][NE];
+    temp_lattice[n][NW] = lattice_with_bdr[m - nx_big + 1][NW];
+    temp_lattice[n][SW] = lattice_with_bdr[m + nx_big + 1][SW];
+    temp_lattice[n][SE] = lattice_with_bdr[m + nx_big - 1][SE];
+  }  // n
   return temp_lattice;
 }
 
