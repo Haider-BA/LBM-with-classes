@@ -75,6 +75,14 @@ class LatticeBoltzmann {
   void Init(std::vector<bool> &lattice
     , const std::vector<std::vector<std::size_t>> &position);
 
+  /**
+   * Reflects distribution functions on obstacle nodes, checks if node is not at
+   * edges of the reflecting direction and if node in the reflecting direction
+   * is not an obstacle node before reflecting
+   * \param lattice 2D vector containing distribution functions
+   */
+  void Obstacles(std::vector<std::vector<double>> &lattice);
+
   /** \brief
    *
    * \param
@@ -95,6 +103,28 @@ class LatticeBoltzmann {
   std::vector<std::vector<double>> Stream(
       const std::vector<std::vector<double>> &lattice
     , const std::vector<std::vector<double>> &boundary);
+
+  /** \brief
+   *
+   * \return void
+   *
+   */
+  void TakeStep();
+
+  /** \brief
+   *
+   * \return void
+   *
+   */
+  void RunSim();
+
+  /** \brief
+   *
+   * \param lattice std::vector<std::vector<double>>&
+   * \return void
+   *
+   */
+  void RunSim(std::vector<std::vector<double>> &lattice);
 
   std::vector<double> Flip(const std::vector<double> &lattice);
   std::vector<bool> Flip(const std::vector<bool> &lattice);

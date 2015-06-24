@@ -17,40 +17,40 @@ TEST(ConstructorException)
 
 SUITE(TestFunctionality)
 {
-  enum Directions {
-    E = 1,
-    N,
-    W,
-    S,
-    NE,
-    NW,
-    SW,
-    SE
-  };
-  static const double zero_tol = 1e-20;
-  static const double loose_tol = 1e-5;
-  static const std::size_t g_ny = 6;
-  static const std::size_t g_nx = 7;
-  static const double g_dx = 0.0316;
-  static const double g_dt = 0.001;
-  static const double g_t_total = 1.0;
-  static const double g_d_coeff = 0.2;
-  static const double g_k_visco = 0.2;
-  static const double g_rho0_f = 1.1;
-  static const double g_rho0_g = 1.2;
-  static const std::vector<double> g_u0{1.3, 1.4};
-  static const std::vector<std::vector<std::size_t>> g_src_pos_f{{1, 1},
-      {2, 3}};
-  static const std::vector<std::vector<double>> g_src_str_f{{1.5, 1.6},
-      {1.7, 1.8}};
-  static const std::vector<std::vector<std::size_t>> g_src_pos_g{{2, 2},
-      {3, 4}};
-  static const std::vector<double> g_src_str_g{1.9, 2.0};
-  static const std::vector<std::vector<std::size_t>> g_obs_pos;
-  static const bool g_is_ns = true;
-  static const bool g_is_cd = true;
-  static const bool g_is_instant = true;
-  static const bool g_no_obstacles = false;
+enum Directions {
+  E = 1,
+  N,
+  W,
+  S,
+  NE,
+  NW,
+  SW,
+  SE
+};
+static const double zero_tol = 1e-20;
+static const double loose_tol = 1e-5;
+static const std::size_t g_ny = 6;
+static const std::size_t g_nx = 7;
+static const double g_dx = 0.0316;
+static const double g_dt = 0.001;
+static const double g_t_total = 1.0;
+static const double g_d_coeff = 0.2;
+static const double g_k_visco = 0.2;
+static const double g_rho0_f = 1.1;
+static const double g_rho0_g = 1.2;
+static const std::vector<double> g_u0{1.3, 1.4};
+static const std::vector<std::vector<std::size_t>> g_src_pos_f{{1, 1},
+    {2, 3}};
+static const std::vector<std::vector<double>> g_src_str_f{{1.5, 1.6},
+    {1.7, 1.8}};
+static const std::vector<std::vector<std::size_t>> g_src_pos_g{{2, 2},
+    {3, 4}};
+static const std::vector<double> g_src_str_g{1.9, 2.0};
+static const std::vector<std::vector<std::size_t>> g_obs_pos;
+static const bool g_is_ns = true;
+static const bool g_is_cd = true;
+static const bool g_is_instant = true;
+static const bool g_no_obstacles = false;
 
 TEST(Constructor)
 {
@@ -946,5 +946,390 @@ TEST(StreamDiagonalNWSE)
 //    }
 //    std::cout << std::endl;
 //  }
+}
+
+TEST(ObstaclesDoNotReflectIntoObstacles)
+{
+  std::vector<std::vector<std::size_t>> obs_pos;
+  std::vector<double> u0{0, 0};
+  for (auto y = 1u; y < 4u; ++y) {
+    obs_pos.push_back({1, y});
+    obs_pos.push_back({2, y});
+    obs_pos.push_back({3, y});
+  }
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f
+    , g_u0);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , g_u0);
+  LatticeBoltzmann lbm(g_t_total
+    , obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_instant
+    , !g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  auto obs_center = 2 * g_nx + 2;
+  for (auto t = 0; t < 1000; ++t) {
+    ns.Collide(lbm.f);
+    ns.ApplyForce(lbm.f);
+    auto node_f = lbm.f[obs_center];
+    lbm.Obstacles(lbm.f);
+    // check obstacle center in ns lattice is not changed
+    for (auto i = 1u; i < 9u; ++i)
+        CHECK_CLOSE(node_f[i], lbm.f[obs_center][i], zero_tol);
+    // runs the rest of TakeStep();
+    lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
+    lbm.f = lbm.Stream(lbm.f, lbm.boundary_f);
+    ns.rho = lm.ComputeRho(lbm.f);
+    ns.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
+    cd.u = ns.u;
+    ns.ComputeEq();
+    cd.Collide(lbm.g);
+    cd.ApplyForce(lbm.g);
+    auto node_g = lbm.g[obs_center];
+    lbm.Obstacles(lbm.g);
+    // check obstacle center in cd lattice is not changed
+    for (auto i = 1u; i < 9u; ++i)
+        CHECK_CLOSE(node_g[i], lbm.g[obs_center][i], zero_tol);
+    lbm.boundary_g = lbm.BoundaryCondition(lbm.g);
+    lbm.g = lbm.Stream(lbm.g, lbm.boundary_g);
+    cd.rho = lm.ComputeRho(lbm.g);
+    cd.ComputeEq();
+  }  // t
+}
+
+TEST(ObstaclesDoNotReflectLeftRightEdges)
+{
+  std::vector<std::vector<std::size_t>> obs_pos;
+  std::vector<double> u0{0, 0};
+  for (auto y = 0u; y < g_ny; ++y) {
+    obs_pos.push_back({0, y});
+    obs_pos.push_back({g_nx - 1, y});
+  }
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f
+    , g_u0);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , g_u0);
+  LatticeBoltzmann lbm(g_t_total
+    , obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_instant
+    , !g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  for (auto t = 0; t < 1000; ++t) {
+    ns.Collide(lbm.f);
+    ns.ApplyForce(lbm.f);
+    std::vector<std::vector<double>> left_edge_unchanged_f;
+    std::vector<std::vector<double>> right_edge_unchanged_f;
+    for (auto y = 0u; y < g_ny; ++y) {
+      auto n = y * g_nx;
+      left_edge_unchanged_f.push_back(lbm.f[n]);
+      right_edge_unchanged_f.push_back(lbm.f[n + g_nx - 1]);
+    }
+    lbm.Obstacles(lbm.f);
+    // check left right edge obstacle in ns lattice is not changed
+    for (auto y = 0u; y < g_ny; ++y) {
+      auto n = y * g_nx;
+      CHECK_CLOSE(left_edge_unchanged_f[y][W], lbm.f[n][W], zero_tol);
+      CHECK_CLOSE(left_edge_unchanged_f[y][NW], lbm.f[n][NW], zero_tol);
+      CHECK_CLOSE(left_edge_unchanged_f[y][SW], lbm.f[n][SW], zero_tol);
+      CHECK_CLOSE(right_edge_unchanged_f[y][E],
+          lbm.f[n + g_nx - 1][E], zero_tol);
+      CHECK_CLOSE(right_edge_unchanged_f[y][NE],
+          lbm.f[n + g_nx - 1][NE], zero_tol);
+      CHECK_CLOSE(right_edge_unchanged_f[y][SE],
+          lbm.f[n + g_nx - 1][SE], zero_tol);
+    }  // y
+    // runs the rest of TakeStep();
+    lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
+    lbm.f = lbm.Stream(lbm.f, lbm.boundary_f);
+    ns.rho = lm.ComputeRho(lbm.f);
+    ns.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
+    cd.u = ns.u;
+    ns.ComputeEq();
+    cd.Collide(lbm.g);
+    cd.ApplyForce(lbm.g);
+    std::vector<std::vector<double>> left_edge_unchanged_g;
+    std::vector<std::vector<double>> right_edge_unchanged_g;
+    for (auto y = 0u; y < g_ny; ++y) {
+      auto n = y * g_nx;
+      left_edge_unchanged_g.push_back(lbm.g[n]);
+      right_edge_unchanged_g.push_back(lbm.g[n + g_nx - 1]);
+    }
+    lbm.Obstacles(lbm.g);
+    // check left right edge obstacle in cd lattice is not changed
+    for (auto y = 0u; y < g_ny; ++y) {
+      auto n = y * g_nx;
+      CHECK_CLOSE(left_edge_unchanged_g[y][W], lbm.g[n][W], zero_tol);
+      CHECK_CLOSE(left_edge_unchanged_g[y][NW], lbm.g[n][NW], zero_tol);
+      CHECK_CLOSE(left_edge_unchanged_g[y][SW], lbm.g[n][SW], zero_tol);
+      CHECK_CLOSE(right_edge_unchanged_g[y][E],
+          lbm.g[n + g_nx - 1][E], zero_tol);
+      CHECK_CLOSE(right_edge_unchanged_g[y][NE],
+          lbm.g[n + g_nx - 1][NE], zero_tol);
+      CHECK_CLOSE(right_edge_unchanged_g[y][SE],
+          lbm.g[n + g_nx - 1][SE], zero_tol);
+    }
+    lbm.boundary_g = lbm.BoundaryCondition(lbm.g);
+    lbm.g = lbm.Stream(lbm.g, lbm.boundary_g);
+    cd.rho = lm.ComputeRho(lbm.g);
+    cd.ComputeEq();
+  }  // t
+}
+
+TEST(ObstaclesDoNotReflectTopBottomEdges)
+{
+  std::vector<std::vector<std::size_t>> obs_pos;
+  std::vector<double> u0{0, 0};
+  for (auto x = 0u; x < g_nx; ++x) {
+    obs_pos.push_back({x, 0});
+    obs_pos.push_back({x, g_ny - 1});
+  }
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f
+    , g_u0);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , g_u0);
+  LatticeBoltzmann lbm(g_t_total
+    , obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_instant
+    , !g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  for (auto t = 0; t < 1000; ++t) {
+    ns.Collide(lbm.f);
+    ns.ApplyForce(lbm.f);
+    std::vector<std::vector<double>> top_edge_unchanged_f;
+    std::vector<std::vector<double>> bottom_edge_unchanged_f;
+    for (auto x = 0u; x < g_nx; ++x) {
+      auto top = (g_ny - 1) * g_nx;
+      top_edge_unchanged_f.push_back(lbm.f[top]);
+      bottom_edge_unchanged_f.push_back(lbm.f[x]);
+    }
+    lbm.Obstacles(lbm.f);
+    // check top bottom edge obstacle in ns lattice is not changed
+    for (auto x = 0u; x < g_nx; ++x) {
+      auto top = (g_ny - 1) * g_nx;
+      CHECK_CLOSE(top_edge_unchanged_f[x][N], lbm.f[top][N], zero_tol);
+      CHECK_CLOSE(top_edge_unchanged_f[x][NW], lbm.f[top][NW], zero_tol);
+      CHECK_CLOSE(top_edge_unchanged_f[x][NE], lbm.f[top][NE], zero_tol);
+      CHECK_CLOSE(bottom_edge_unchanged_f[x][S], lbm.f[x][S], zero_tol);
+      CHECK_CLOSE(bottom_edge_unchanged_f[x][SW], lbm.f[x][SW], zero_tol);
+      CHECK_CLOSE(bottom_edge_unchanged_f[x][SE], lbm.f[x][SE], zero_tol);
+    }  // y
+    // runs the rest of TakeStep();
+    lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
+    lbm.f = lbm.Stream(lbm.f, lbm.boundary_f);
+    ns.rho = lm.ComputeRho(lbm.f);
+    ns.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
+    cd.u = ns.u;
+    ns.ComputeEq();
+    cd.Collide(lbm.g);
+    cd.ApplyForce(lbm.g);
+    std::vector<std::vector<double>> top_edge_unchanged_g;
+    std::vector<std::vector<double>> bottom_edge_unchanged_g;
+    for (auto x = 0u; x < g_nx; ++x) {
+      auto top = (g_ny - 1) * g_nx;
+      top_edge_unchanged_g.push_back(lbm.g[top]);
+      bottom_edge_unchanged_g.push_back(lbm.g[x]);
+    }
+    lbm.Obstacles(lbm.g);
+    // check top bottom edge obstacle in cd lattice is not changed
+    for (auto x = 0u; x < g_nx; ++x) {
+      auto top = (g_ny - 1) * g_nx;
+      CHECK_CLOSE(top_edge_unchanged_g[x][N], lbm.g[top][N], zero_tol);
+      CHECK_CLOSE(top_edge_unchanged_g[x][NW], lbm.g[top][NW], zero_tol);
+      CHECK_CLOSE(top_edge_unchanged_g[x][NE], lbm.g[top][NE], zero_tol);
+      CHECK_CLOSE(bottom_edge_unchanged_g[x][S], lbm.g[x][S], zero_tol);
+      CHECK_CLOSE(bottom_edge_unchanged_g[x][SW], lbm.g[x][SW], zero_tol);
+      CHECK_CLOSE(bottom_edge_unchanged_g[x][SE], lbm.g[x][SE], zero_tol);
+    }
+    lbm.boundary_g = lbm.BoundaryCondition(lbm.g);
+    lbm.g = lbm.Stream(lbm.g, lbm.boundary_g);
+    cd.rho = lm.ComputeRho(lbm.g);
+    cd.ComputeEq();
+  }  // t
+}
+
+TEST(ObstaclesDoNotReflectCorners)
+{
+  std::vector<std::vector<std::size_t>> obs_pos{{0, 0}, {0, g_ny - 1},
+      {g_nx - 1, 0}, {g_nx - 1, g_ny - 1}};
+  std::vector<double> u0{0, 0};
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f
+    , g_u0);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , g_u0);
+  LatticeBoltzmann lbm(g_t_total
+    , obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_instant
+    , !g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  auto bot_right = g_nx - 1;
+  auto top_left = (g_ny - 1) * g_nx;
+  auto top_right = (g_ny - 1) * g_nx + g_nx - 1;
+  for (auto t = 0; t < 1000; ++t) {
+    ns.Collide(lbm.f);
+    ns.ApplyForce(lbm.f);
+    std::vector<std::vector<double>> corners_unchanged_f{lbm.f[0],
+        lbm.f[bot_right], lbm.f[top_left], lbm.f[top_right]};
+    lbm.Obstacles(lbm.f);
+    // check corner obstacles in ns lattice is not changed
+    CHECK_CLOSE(corners_unchanged_f[0][SW], lbm.f[0][SW], zero_tol);
+    CHECK_CLOSE(corners_unchanged_f[1][SE], lbm.f[bot_right][SE], zero_tol);
+    CHECK_CLOSE(corners_unchanged_f[2][NW], lbm.f[top_left][NW], zero_tol);
+    CHECK_CLOSE(corners_unchanged_f[3][NE], lbm.f[top_right][NE], zero_tol);
+    // runs the rest of TakeStep();
+    lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
+    lbm.f = lbm.Stream(lbm.f, lbm.boundary_f);
+    ns.rho = lm.ComputeRho(lbm.f);
+    ns.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
+    cd.u = ns.u;
+    ns.ComputeEq();
+    cd.Collide(lbm.g);
+    cd.ApplyForce(lbm.g);
+    std::vector<std::vector<double>> top_edge_unchanged_g;
+    std::vector<std::vector<double>> bottom_edge_unchanged_g;
+    std::vector<std::vector<double>> corners_unchanged_g{lbm.g[0],
+        lbm.g[bot_right], lbm.g[top_left], lbm.g[top_right]};
+    lbm.Obstacles(lbm.g);
+    // check corner obstacles in cd lattice is not changed
+    CHECK_CLOSE(corners_unchanged_g[0][SW], lbm.g[0][SW], zero_tol);
+    CHECK_CLOSE(corners_unchanged_g[1][SE], lbm.g[bot_right][SE], zero_tol);
+    CHECK_CLOSE(corners_unchanged_g[2][NW], lbm.g[top_left][NW], zero_tol);
+    CHECK_CLOSE(corners_unchanged_g[3][NE], lbm.g[top_right][NE], zero_tol);
+    lbm.boundary_g = lbm.BoundaryCondition(lbm.g);
+    lbm.g = lbm.Stream(lbm.g, lbm.boundary_g);
+    cd.rho = lm.ComputeRho(lbm.g);
+    cd.ComputeEq();
+  }  // t
+}
+
+TEST(ObstaclesNormalReflect)
+{
+  std::vector<std::vector<std::size_t>> obs_pos{{2, 2}};
+  std::vector<double> u0{0, 0};
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f
+    , g_u0);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , g_u0);
+  LatticeBoltzmann lbm(g_t_total
+    , obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_instant
+    , !g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  auto n = 2 * g_nx + 2;
+  for (auto t = 0; t < 1; ++t) {
+    ns.Collide(lbm.f);
+    ns.ApplyForce(lbm.f);
+    lbm.Obstacles(lbm.f);
+    // check directions around the obstacle in ns lattice are reflected
+    CHECK_CLOSE(lbm.f[n + g_nx][S], lbm.f[n][N], zero_tol);
+    CHECK_CLOSE(lbm.f[n + 1][W], lbm.f[n][E], zero_tol);
+    CHECK_CLOSE(lbm.f[n - 1][E], lbm.f[n][W], zero_tol);
+    CHECK_CLOSE(lbm.f[n - g_nx][N], lbm.f[n][S], zero_tol);
+    CHECK_CLOSE(lbm.f[n + g_nx + 1][SW], lbm.f[n][NE], zero_tol);
+    CHECK_CLOSE(lbm.f[n + g_nx - 1][SE], lbm.f[n][NW], zero_tol);
+    CHECK_CLOSE(lbm.f[n - g_nx - 1][NE], lbm.f[n][SW], zero_tol);
+    CHECK_CLOSE(lbm.f[n - g_nx + 1][NW], lbm.f[n][SE], zero_tol);
+    // runs the rest of TakeStep();
+    lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
+    lbm.f = lbm.Stream(lbm.f, lbm.boundary_f);
+    ns.rho = lm.ComputeRho(lbm.f);
+    ns.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
+    cd.u = ns.u;
+    ns.ComputeEq();
+    cd.Collide(lbm.g);
+    cd.ApplyForce(lbm.g);
+    lbm.Obstacles(lbm.g);
+    // check directions around the obstacle in cd lattice are reflected
+    CHECK_CLOSE(lbm.g[n + g_nx][S], lbm.g[n][N], zero_tol);
+    CHECK_CLOSE(lbm.g[n + 1][W], lbm.g[n][E], zero_tol);
+    CHECK_CLOSE(lbm.g[n - 1][E], lbm.g[n][W], zero_tol);
+    CHECK_CLOSE(lbm.g[n - g_nx][N], lbm.g[n][S], zero_tol);
+    CHECK_CLOSE(lbm.g[n + g_nx + 1][SW], lbm.g[n][NE], zero_tol);
+    CHECK_CLOSE(lbm.g[n + g_nx - 1][SE], lbm.g[n][NW], zero_tol);
+    CHECK_CLOSE(lbm.g[n - g_nx - 1][NE], lbm.g[n][SW], zero_tol);
+    CHECK_CLOSE(lbm.g[n - g_nx + 1][NW], lbm.g[n][SE], zero_tol);
+    lbm.boundary_g = lbm.BoundaryCondition(lbm.g);
+    lbm.g = lbm.Stream(lbm.g, lbm.boundary_g);
+    cd.rho = lm.ComputeRho(lbm.g);
+    cd.ComputeEq();
+  }  // t
 }
 }

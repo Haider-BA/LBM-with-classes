@@ -1,10 +1,12 @@
 #include "LatticeBoltzmann.hpp"
-#include <iomanip> // std::setprecision
+#include <cmath>  // std::fmod
+#include <iomanip>  // std::setprecision
 #include <iostream>
 #include <stdexcept>  // std::runtime_error
 #include "CollisionCD.hpp"
 #include "CollisionNS.hpp"
 #include "LatticeModel.hpp"
+#include "WriteResultsCmgui.hpp"
 
 //LatticeBoltzmann::LatticeBoltzmann()
 //{
@@ -79,6 +81,42 @@ void LatticeBoltzmann::Init(std::vector<bool> &lattice
     if (pos[1] > ny - 1) throw std::runtime_error("y value out of range");
     lattice[pos[1] * nx + pos[0]] = true;
   }  // pos
+}
+
+void LatticeBoltzmann::Obstacles(
+    std::vector<std::vector<double>> &lattice)
+{
+  auto nx = lm_.GetNumberOfColumns();
+  auto ny = lm_.GetNumberOfRows();
+  for (auto y = 0u; y < ny; ++y) {
+    bool is_not_top = y != ny - 1;
+    bool is_not_bottom = y != 0;
+    for (auto x = 0u; x < nx; ++x) {
+      bool is_not_left = x != 0;
+      bool is_not_right = x != nx - 1;
+      auto n = y * nx + x;
+      if (obstacles[n]) {
+        if (is_not_top) {
+          if (!obstacles[n + nx]) lattice[n][N] = lattice[n + nx][S];
+          if (is_not_right && !obstacles[n + nx + 1])
+              lattice[n][NE] = lattice[n + nx + 1][SW];
+          if (is_not_left && !obstacles[n + nx - 1])
+              lattice[n][NW] = lattice[n + nx - 1][SE];
+        }
+        if (is_not_bottom) {
+          if (!obstacles[n - nx]) lattice[n][S] = lattice[n - nx][N];
+          if (is_not_right && !obstacles[n - nx + 1])
+              lattice[n][SE] = lattice[n - nx + 1][NW];
+          if (is_not_left && !obstacles[n - nx - 1])
+              lattice[n][SW] = lattice[n - nx - 1][NE];
+        }
+        if (is_not_right && !obstacles[n + 1])
+            lattice[n][E] = lattice[n + 1][W];
+        if (is_not_left && !obstacles[n - 1])
+            lattice[n][W] = lattice[n - 1][E];
+      }
+    }  // x
+  }  // y
 }
 
 std::vector<std::vector<double>> LatticeBoltzmann::BoundaryCondition(
@@ -195,6 +233,52 @@ std::vector<std::vector<double>> LatticeBoltzmann::Stream(
     temp_lattice[n][SE] = lattice_with_bdr[m + nx_big - 1][SE];
   }  // n
   return temp_lattice;
+}
+
+void LatticeBoltzmann::TakeStep()
+{
+  if (is_ns_) {
+    ns_.Collide(f);
+    ns_.ApplyForce(f);
+    if (has_obstacles_) {}
+    boundary_f = LatticeBoltzmann::BoundaryCondition(f);
+    f = LatticeBoltzmann::Stream(f, boundary_f);
+    ns_.rho = lm_.ComputeRho(f);
+    ns_.u = lm_.ComputeU(f, ns_.rho, ns_.source);
+    cd_.u = ns_.u;
+    ns_.ComputeEq();
+  }
+  if (is_cd_) {
+    cd_.Collide(g);
+    cd_.ApplyForce(g);
+    if (has_obstacles_) {}
+    boundary_g = LatticeBoltzmann::BoundaryCondition(g);
+    g = LatticeBoltzmann::Stream(g, boundary_g);
+    cd_.rho = lm_.ComputeRho(g);
+    cd_.ComputeEq();
+  }
+}
+
+void LatticeBoltzmann::RunSim()
+{
+  auto dt = lm_.GetTimeStep();
+  for (auto t = 0.0; t < total_time_; t += dt) LatticeBoltzmann::TakeStep();
+}
+
+void LatticeBoltzmann::RunSim(std::vector<std::vector<double>> &lattice)
+{
+  auto dt = lm_.GetTimeStep();
+  auto nx = lm_.GetNumberOfColumns();
+  auto ny = lm_.GetNumberOfRows();
+  auto t_count = 0u;
+  WriteResultsCmgui(lattice, nx, ny, t_count);
+  for (auto t = 0.0; t < total_time_; t += dt) {
+    LatticeBoltzmann::TakeStep();
+    if (std::fmod(t, 0.001) < 1e-3) {
+      WriteResultsCmgui(lattice, nx, ny, ++t_count);
+      std::cout << t_count << " " << t << std::endl;
+    }
+  }
 }
 
 bool LatticeBoltzmann::CheckParameters()

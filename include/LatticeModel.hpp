@@ -62,6 +62,28 @@ class LatticeModel {
   double GetLatticeSpeed() const;
 
   /**
+   * Pure virtual function that compute the density of the lattice, derived
+   * classes will use their own get moments function to compute density
+   * \param lattice 2D vector containing distribution functions
+   * \return density of the lattice stored row-wise
+   */
+  virtual std::vector<double> ComputeRho(
+      const std::vector<std::vector<double>> &lattice) = 0;
+
+  /**
+   * Pure virtual function that compute the velocity of the lattice, derived
+   * classes will use their own get moments function to compute velocity
+   * \param lattice 2D vector containing distribution functions
+   * \param rho density of the lattice stored row-wise
+   * \param src source term of the lattice stored row-wise
+   * \return density of the lattice stored row-wise
+   */
+  virtual std::vector<std::vector<double>> ComputeU(
+      const std::vector<std::vector<double>> &lattice
+    , const std::vector<double> &rho
+    , const std::vector<std::vector<double>> &src) = 0;
+
+  /**
    * Unit vector for each discrete velocity direction
    */
   std::vector<std::vector<double>> e;

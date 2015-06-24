@@ -58,6 +58,7 @@
 			<Add library="UnitTest++/lib/Debug/libUnitTest++.a" />
 			<Add directory="UnitTest++/lib/Debug" />
 		</Linker>
+		<Unit filename="examples/SimulationDemo.cpp" />
 		<Unit filename="include/Collision.hpp" />
 		<Unit filename="include/CollisionCD.hpp" />
 		<Unit filename="include/CollisionNS.hpp" />
