@@ -23,7 +23,12 @@ LatticeBoltzmann::LatticeBoltzmann(double t_total
   , LatticeModel &lm
   , CollisionNS &ns
   , CollisionCD &cd)
-  : total_time_ {t_total},
+  : f {},
+    boundary_f {},
+    g {},
+    boundary_g {},
+    obstacles {},
+    total_time_ {t_total},
     is_ns_ {is_ns},
     is_cd_ {is_cd},
     is_instant_ {is_instant},

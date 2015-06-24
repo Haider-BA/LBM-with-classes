@@ -12,7 +12,8 @@ CollisionCD::CollisionCD(LatticeModel &lm
   , double diffusion_coefficient
   , double initial_density_g
   , const std::vector<double> &initial_velocity)
-  : Collision(lm, initial_density_g, initial_velocity)
+  : Collision(lm, initial_density_g, initial_velocity),
+    source {}
 {
   auto dt = lm.GetTimeStep();
   // tau_ formula from "A new scheme for source term in LBGK model for

@@ -12,7 +12,8 @@ CollisionNS::CollisionNS(LatticeModel &lm
   , double kinematic_viscosity
   , double initial_density_f
   , const std::vector<double> &initial_velocity)
-  : Collision(lm, initial_density_f, initial_velocity)
+  : Collision(lm, initial_density_f, initial_velocity),
+    source {}
 {
   auto dt = lm.GetTimeStep();
   // tau_ formula from "Discrete lattice effects on the forcing term in

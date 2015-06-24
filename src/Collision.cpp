@@ -6,16 +6,17 @@
 Collision::Collision(LatticeModel &lm
   , double initial_density
   , const std::vector<double> &initial_velocity)
-  : lm_ (lm)
+  : lattice_eq {},
+    u {},
+    rho {},
+    lm_ (lm),
+    tau_ {0},
+    c_ {lm.GetSpaceStep() / lm.GetTimeStep()}
 {
-  auto dx = lm_.GetSpaceStep();
-  auto dt = lm_.GetTimeStep();
   auto nx = lm_.GetNumberOfColumns();
   auto ny = lm_.GetNumberOfRows();
   auto nc = lm_.GetNumberOfDirections();
   auto lat_size = nx * ny;
-  c_ = dx / dt;
-  cs_sqr_ = c_ * c_ / 3.0;
   rho.assign(lat_size, initial_density);
   u.assign(lat_size, initial_velocity);
   lattice_eq.assign(lat_size, std::vector<double>(nc, 0.0));
