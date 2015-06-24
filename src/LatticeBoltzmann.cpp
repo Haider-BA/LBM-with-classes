@@ -54,12 +54,9 @@ LatticeBoltzmann::LatticeBoltzmann(double t_total
     // Initializing variables with initial values
     if (is_ns_) {
       f = ns_.lattice_eq;
-//      boundary_f.assign(2 * ny + 2 * nx + 4, length_q);
     }
     if (is_cd_) {
       g = cd_.lattice_eq;
-//      boundary_g.assign(2 * ny + 2 * nx + 4, length_q);
-//      std::cout << lm.test_value << std::endl;
     }
     if (has_obstacles) {
       obstacles.assign(lattice_size, false);
@@ -240,7 +237,7 @@ void LatticeBoltzmann::TakeStep()
   if (is_ns_) {
     ns_.Collide(f);
     ns_.ApplyForce(f);
-    if (has_obstacles_) {}
+    if (has_obstacles_) LatticeBoltzmann::Obstacles(f);
     boundary_f = LatticeBoltzmann::BoundaryCondition(f);
     f = LatticeBoltzmann::Stream(f, boundary_f);
     ns_.rho = lm_.ComputeRho(f);
@@ -251,7 +248,8 @@ void LatticeBoltzmann::TakeStep()
   if (is_cd_) {
     cd_.Collide(g);
     cd_.ApplyForce(g);
-    if (has_obstacles_) {}
+    if (is_instant_) cd_.KillSource();
+    if (has_obstacles_) LatticeBoltzmann::Obstacles(f);
     boundary_g = LatticeBoltzmann::BoundaryCondition(g);
     g = LatticeBoltzmann::Stream(g, boundary_g);
     cd_.rho = lm_.ComputeRho(g);

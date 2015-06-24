@@ -1332,4 +1332,49 @@ TEST(ObstaclesNormalReflect)
     cd.ComputeEq();
   }  // t
 }
+
+TEST(InstantSourceToggle)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f
+    , g_u0);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , g_u0);
+  LatticeBoltzmann lbm(g_t_total
+    , g_obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_instant
+    , g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  lbm.RunSim();
+  // check cd source is zero
+  for (auto node : cd.source) CHECK_CLOSE(0.0, node, zero_tol);
+  // check ns source is unchanged
+  std::size_t i_ns = 0;
+  for (auto n = 0u; n < g_nx * g_ny; ++n) {
+    if (n == g_src_pos_f[i_ns][1] * g_nx + g_src_pos_f[i_ns][0]) {
+      CHECK_CLOSE(g_src_str_f[i_ns][0], ns.source[n][0], zero_tol);
+      CHECK_CLOSE(g_src_str_f[i_ns][1], ns.source[n][1], zero_tol);
+      if (i_ns < g_src_pos_f.size() - 1) ++i_ns;
+    }
+    else {
+      CHECK_CLOSE(0.0, ns.source[n][0], zero_tol);
+      CHECK_CLOSE(0.0, ns.source[n][1], zero_tol);
+    }
+  }  // n
+}
 }

@@ -36,6 +36,11 @@ class Collision {
   virtual void ApplyForce(std::vector<std::vector<double>> &lattice) = 0;
 
   /**
+   * Pure virtual function for removing source term
+   */
+  virtual void KillSource() = 0;
+
+  /**
    * Does dot product between 2 vectors of equal length
    * \param a first vector
    * \param b second vector

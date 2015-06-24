@@ -65,3 +65,10 @@ void CollisionNS::ApplyForce(std::vector<std::vector<double>> &lattice)
     }  // i
   }  // n
 }
+
+void CollisionNS::KillSource()
+{
+  auto nd = lm_.GetNumberOfDimensions();
+  std::vector<double> zeros(nd, 0.0);
+  for (auto &node : source) node = zeros;
+}

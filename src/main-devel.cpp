@@ -4,10 +4,12 @@
 int main()
 {
 //  return Unfit::RunAllTheTests();
-  return Unfit::RunOneSuite("TestFunctionality");
+//  return Unfit::RunOneSuite("TestFunctionality");
+  return Unfit::RunOneSuite("TestAnalyticalSolutions");
 //  return Unfit::RunOneTest("SimulateConvectionDiffusion");
 //  return Unfit::RunOneTest("SimulatePoiseuilleFlow");
 //  return Unfit::RunOneTest("SimulateNSCDCoupling");
+//  return Unfit::RunOneTest("SimulateNSCDCouplingWithObstacles");
 
   // to run only one suite, uncomment the following line
   // and specify the name of the suite. Also, comment out the RunAllTheTests()

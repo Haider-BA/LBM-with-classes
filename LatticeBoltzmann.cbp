@@ -74,6 +74,7 @@
 		<Unit filename="src/LatticeModel.cpp" />
 		<Unit filename="src/WriteResultsCmgui.cpp" />
 		<Unit filename="src/main-devel.cpp" />
+		<Unit filename="unittests/TestAnalyticalSolutions.cpp" />
 		<Unit filename="unittests/TestLatticeBoltzmann.cpp" />
 		<Extensions>
 			<code_completion />

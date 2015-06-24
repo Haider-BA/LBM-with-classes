@@ -37,6 +37,11 @@ class CollisionCD: public Collision {
   void ApplyForce(std::vector<std::vector<double>> &lattice);
 
   /**
+   * Sets source term to 0
+   */
+  void KillSource();
+
+  /**
    * Source term for CD equation stored row-wise
    */
   std::vector<double> source;

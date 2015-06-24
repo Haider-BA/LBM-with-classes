@@ -1,5 +1,4 @@
 #include <iostream>
-#include <stdexcept>  // runtime_error
 #include "CollisionCD.hpp"
 #include "CollisionNS.hpp"
 #include "LatticeBoltzmann.hpp"
@@ -168,6 +167,52 @@ TEST(SimulateNSCDCoupling)
     , g_is_cd
     , !g_is_instant
     , g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  lbm.RunSim(lbm.g);
+}
+
+TEST(SimulateNSCDCouplingWithObstacles)
+{
+  std::size_t ny = 21;
+  std::size_t nx = 31;
+  std::vector<std::vector<std::size_t>> src_pos_f;
+  std::vector<std::vector<double>> src_str_f(nx * ny, {50.0, -10.0});
+  std::vector<std::vector<std::size_t>> src_pos_g{{15, 10}};
+  std::vector<double> src_str_g{50};
+  std::vector<std::vector<std::size_t>> obs_pos;
+  std::vector<double> u0{-5.0, 0.0};
+  for (auto n = 0u; n < nx * ny; ++n) {
+    src_pos_f.push_back({n % nx, static_cast<std::size_t>(n / nx)});
+  }
+  for (auto y = 9u; y < 12u; ++y) {
+    obs_pos.push_back({17, y});
+    obs_pos.push_back({18, y});
+    obs_pos.push_back({19, y});
+  }
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt);
+  CollisionNS ns(lm
+    , src_pos_f
+    , src_str_f
+    , g_k_visco
+    , g_rho0_f
+    , u0);
+  CollisionCD cd(lm
+    , src_pos_g
+    , src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , u0);
+  LatticeBoltzmann lbm(g_t_total
+    , obs_pos
+    , g_is_ns
+    , g_is_cd
+    , !g_is_instant
+    , !g_no_obstacles
     , lm
     , ns
     , cd);

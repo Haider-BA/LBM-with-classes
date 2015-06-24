@@ -59,3 +59,8 @@ void CollisionCD::ApplyForce(std::vector<std::vector<double>> &lattice)
     }  // i
   }  // n
 }
+
+void CollisionCD::KillSource()
+{
+  for (auto &node : source) node = 0.0;
+}
