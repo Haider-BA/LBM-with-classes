@@ -937,5 +937,14 @@ TEST(StreamDiagonalNWSE)
       CHECK_CLOSE(result[(3 - x % 3 + y % 3) % 3], lbm.f[n][SE], zero_tol);
     }  // x
   }  // y
+//  lbm.Print(0, lbm.f);
+//  auto it_f = begin(lbm.f);
+//  for (auto node : lbm.g) {
+//    auto it_it_f = begin(*it_f++);
+//    for (auto i :  node) {
+//      std::cout << *it_it_f++ << " ";
+//    }
+//    std::cout << std::endl;
+//  }
 }
 }

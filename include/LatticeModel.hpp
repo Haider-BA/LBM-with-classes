@@ -4,6 +4,18 @@
 
 class LatticeModel {
  public:
+   LatticeModel(std::size_t num_dims
+     , std::size_t num_dirs
+     , std::size_t num_rows
+     , std::size_t num_cols
+     , double dx
+     , double dt);
+
+   /**
+    * Virtual destructor since we deriving from this class, see Collision.hpp
+    * \return virtual
+    *
+    */
    virtual ~LatticeModel() = default;
 
    /**
@@ -44,6 +56,12 @@ class LatticeModel {
   double GetTimeStep() const;
 
   /**
+   * Get the lattice speed (c) of the model
+   * \return lattice speed of the model
+   */
+  double GetLatticeSpeed() const;
+
+  /**
    * Unit vector for each discrete velocity direction
    */
   std::vector<std::vector<double>> e;
@@ -61,6 +79,6 @@ class LatticeModel {
   std::size_t number_of_columns_;
   double space_step_;
   double time_step_;
-  double c_;
+  double c_ = space_step_ / time_step_;
 };
 #endif  // LATTICEMODEL_HPP_

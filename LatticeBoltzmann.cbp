@@ -42,6 +42,7 @@
 			<Add option="-Wmissing-include-dirs" />
 			<Add option="-Wswitch-enum" />
 			<Add option="-Wswitch-default" />
+			<Add option="-Weffc++" />
 			<Add option="-pedantic" />
 			<Add option="-std=c++11" />
 			<Add option="-Wextra" />

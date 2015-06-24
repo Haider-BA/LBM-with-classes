@@ -63,6 +63,6 @@ class Collision {
   LatticeModel &lm_;
   double tau_;
   double c_;
-  double cs_sqr_;
+  double cs_sqr_ = c_ * c_ / 3.0;
 };
 #endif  // COLLISION_HPP_

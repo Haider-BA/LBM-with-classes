@@ -47,6 +47,11 @@ double LatticeModel::GetTimeStep() const
   return time_step_;
 }
 
+double LatticeModel::GetLatticeSpeed() const
+{
+  return c_;
+}
+
 bool LatticeModel::CheckInput()
 {
   return number_of_dimensions_ == 0 || number_of_directions_ == 0 ||

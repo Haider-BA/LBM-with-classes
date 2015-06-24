@@ -11,7 +11,7 @@ Collision::Collision(LatticeModel &lm
     rho {},
     lm_ (lm),
     tau_ {0},
-    c_ {lm.GetSpaceStep() / lm.GetTimeStep()}
+    c_ {lm.GetLatticeSpeed()}
 {
   auto nx = lm_.GetNumberOfColumns();
   auto ny = lm_.GetNumberOfRows();
