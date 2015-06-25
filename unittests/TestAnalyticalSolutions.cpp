@@ -35,19 +35,18 @@ TEST(AnalyticalDiffusion)
   LatticeD2Q9 lm(ny
     , nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , u0);
   CollisionNS ns(lm
     , src_pos_f
     , src_str_f
     , g_k_visco
-    , g_rho0_f
-    , u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , src_pos_g
     , src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(t_total
     , g_obs_pos
     , !g_is_ns
@@ -89,19 +88,18 @@ TEST(AnalyticalPoiseuille)
   LatticeD2Q9 lm(ny
     , nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , u0);
   CollisionNS ns(lm
     , src_pos_f
     , src_str_f
     , g_k_visco
-    , g_rho0_f
-    , u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , src_pos_g
     , src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(t_total
     , g_obs_pos
     , g_is_ns
@@ -119,7 +117,7 @@ TEST(AnalyticalPoiseuille)
     for (auto y = 0u; y < ny; ++y) {
       auto n = y * nx + x;
       double u_an = u_max * (1.0 - (y_an - 9.0) * (y_an - 9.0) / 81.0);
-      auto u_sim = ns.u[n][0] + ns.u[n][1];
+      auto u_sim = lm.u[n][0] + lm.u[n][1];
       // simulation value is within 2.35% of analytical value
       CHECK_CLOSE(u_an, u_sim, u_an * 0.0235);
       if (y < 8) ++y_an;

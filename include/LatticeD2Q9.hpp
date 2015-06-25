@@ -8,7 +8,8 @@ class LatticeD2Q9: public LatticeModel {
   LatticeD2Q9(std::size_t num_rows
     , std::size_t num_cols
     , double dx
-    , double dt);
+    , double dt
+    , const std::vector<double> &initial_velocity);
 
   ~LatticeD2Q9() = default;
 

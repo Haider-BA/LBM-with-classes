@@ -9,7 +9,8 @@ class LatticeModel {
      , std::size_t num_rows
      , std::size_t num_cols
      , double dx
-     , double dt);
+     , double dt
+     , const std::vector<double> &initial_velocity);
 
    /**
     * Virtual destructor since we deriving from this class, see Collision.hpp
@@ -82,6 +83,11 @@ class LatticeModel {
       const std::vector<std::vector<double>> &lattice
     , const std::vector<double> &rho
     , const std::vector<std::vector<double>> &src) = 0;
+
+  /**
+   * Lattice velocity stored row-wise in a 2D vector
+   */
+  std::vector<std::vector<double>> u;
 
   /**
    * Unit vector for each discrete velocity direction

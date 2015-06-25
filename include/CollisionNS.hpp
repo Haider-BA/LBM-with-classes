@@ -16,8 +16,7 @@ class CollisionNS: public Collision {
     , const std::vector<std::vector<std::size_t>> &position
     , const std::vector<std::vector<double>> &strength
     , double kinematic_viscosity
-    , double initial_density_f
-    , const std::vector<double> &initial_velocity);
+    , double initial_density_f);
 
   ~CollisionNS() = default;
 

@@ -10,9 +10,8 @@ CollisionNS::CollisionNS(LatticeModel &lm
   , const std::vector<std::vector<std::size_t>> &position
   , const std::vector<std::vector<double>> &strength
   , double kinematic_viscosity
-  , double initial_density_f
-  , const std::vector<double> &initial_velocity)
-  : Collision(lm, initial_density_f, initial_velocity),
+  , double initial_density_f)
+  : Collision(lm, initial_density_f),
     source {}
 {
   auto dt = lm.GetTimeStep();
@@ -51,12 +50,12 @@ void CollisionNS::ApplyForce(std::vector<std::vector<double>> &lattice)
   auto dt = lm_.GetTimeStep();
   for (auto n = 0u; n < nx * ny; ++n) {
     for (auto i = 0u; i < nc; ++i) {
-      double c_dot_u = Collision::InnerProduct(lm_.e[i], u[n]);
+      double c_dot_u = Collision::InnerProduct(lm_.e[i], lm_.u[n]);
       c_dot_u /= cs_sqr_ / c_;
       // Guo2002 Eq20
       double src_dot_product = 0.0;
       for (auto d = 0u; d < nd; ++d) {
-        src_dot_product += (lm_.e[i][d] * c_ - u[n][d] + c_dot_u *
+        src_dot_product += (lm_.e[i][d] * c_ - lm_.u[n][d] + c_dot_u *
             lm_.e[i][d] * c_) * source[n][d];
       }  // d
       src_dot_product /= cs_sqr_ / rho[n];

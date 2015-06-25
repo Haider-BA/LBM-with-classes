@@ -10,8 +10,7 @@ class Collision {
   // function
   //virtual void InitSource() = 0;
   Collision(LatticeModel &lm
-    , double initial_density
-    , const std::vector<double> &initial_velocity);
+    , double initial_density);
 
   // Since we are deriving from this class, need virtual destructor
   // https://stackoverflow.com/questions/353817/should-every-class-have-a-
@@ -53,11 +52,6 @@ class Collision {
    * Equilibrium distribution function stored row-wise in a 2D vector
    */
   std::vector<std::vector<double>> lattice_eq;
-
-  /**
-   * Lattice velocity stored row-wise in a 2D vector
-   */
-  std::vector<std::vector<double>> u;
 
   /**
    * Density stored row-wise in a 1D vector.

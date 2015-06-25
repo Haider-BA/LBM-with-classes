@@ -4,8 +4,9 @@
 LatticeD2Q9::LatticeD2Q9(std::size_t num_rows
   , std::size_t num_cols
   , double dx
-  , double dt)
-  : LatticeModel(2, 9, num_rows, num_cols, dx, dt)
+  , double dt
+  , const std::vector<double> &initial_velocity)
+  : LatticeModel(2, 9, num_rows, num_cols, dx, dt, initial_velocity)
 {
   // can't use initializer list because inheritance provides access but doesn't
   // create member variables in derived class, so have to call LatticeModel

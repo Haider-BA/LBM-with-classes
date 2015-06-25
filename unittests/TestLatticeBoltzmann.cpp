@@ -59,19 +59,18 @@ TEST(Constructor)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -94,19 +93,18 @@ TEST(InitObstacles)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , obs_pos
     , g_is_ns
@@ -135,19 +133,18 @@ TEST(InitDensity)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -168,19 +165,18 @@ TEST(InitVelocity)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -199,11 +195,11 @@ TEST(InitVelocity)
     , lm
     , ns
     , cd);
-  for (auto n = 0u; n < ns.u.size(); ++n) {
-    CHECK_CLOSE(g_u0[0], ns.u[n][0], zero_tol);
-    CHECK_CLOSE(g_u0[1], ns.u[n][1], zero_tol);
-    CHECK_CLOSE(g_u0[0], cd.u[n][0], zero_tol);
-    CHECK_CLOSE(g_u0[1], cd.u[n][1], zero_tol);
+  for (auto n = 0u; n < lm.u.size(); ++n) {
+    CHECK_CLOSE(g_u0[0], lm.u[n][0], zero_tol);
+    CHECK_CLOSE(g_u0[1], lm.u[n][1], zero_tol);
+//    CHECK_CLOSE(g_u0[0], cd.u[n][0], zero_tol);
+//    CHECK_CLOSE(g_u0[1], cd.u[n][1], zero_tol);
   }  // n
 }
 
@@ -212,19 +208,18 @@ TEST(ComputeEq)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -255,19 +250,18 @@ TEST(InitDistributionFunctionLattice)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -296,19 +290,18 @@ TEST(InitSourceMultiplePosition)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -348,19 +341,18 @@ TEST(CollideWithMixedSource)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -479,19 +471,18 @@ TEST(ComputeU)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -502,19 +493,19 @@ TEST(ComputeU)
     , ns
     , cd);
   lbm.f.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
-  ns.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
+  lm.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
   std::size_t i_ns = 0;
   std::vector<std::vector<double>> expected{{-57.45380, -172.36284},
       {-57.45370, -172.36274}, {-57.45455, -172.36364}};
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     if (n == g_src_pos_f[i_ns][1] * g_nx + g_src_pos_f[i_ns][0]) {
-      CHECK_CLOSE(expected[i_ns][0], ns.u[n][0], loose_tol);
-      CHECK_CLOSE(expected[i_ns][1], ns.u[n][1], loose_tol);
+      CHECK_CLOSE(expected[i_ns][0], lm.u[n][0], loose_tol);
+      CHECK_CLOSE(expected[i_ns][1], lm.u[n][1], loose_tol);
       if (i_ns < g_src_pos_f.size() - 1) ++i_ns;
     }
     else {
-      CHECK_CLOSE(expected[2][0], ns.u[n][0], loose_tol);
-      CHECK_CLOSE(expected[2][1], ns.u[n][1], loose_tol);
+      CHECK_CLOSE(expected[2][0], lm.u[n][0], loose_tol);
+      CHECK_CLOSE(expected[2][1], lm.u[n][1], loose_tol);
     }
   }  // n
 }
@@ -524,19 +515,18 @@ TEST(ComputeRho)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -557,19 +547,18 @@ TEST(BoundaryPeriodic)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -599,19 +588,18 @@ TEST(BoundaryBounceback)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -656,19 +644,18 @@ TEST(BoundaryCorner)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -694,19 +681,18 @@ TEST(StreamHorizontal)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -760,19 +746,18 @@ TEST(StreamVertical)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -821,19 +806,18 @@ TEST(StreamDiagonalNESW)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -882,19 +866,18 @@ TEST(StreamDiagonalNWSE)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -951,7 +934,6 @@ TEST(StreamDiagonalNWSE)
 TEST(ObstaclesDoNotReflectIntoObstacles)
 {
   std::vector<std::vector<std::size_t>> obs_pos;
-  std::vector<double> u0{0, 0};
   for (auto y = 1u; y < 4u; ++y) {
     obs_pos.push_back({1, y});
     obs_pos.push_back({2, y});
@@ -960,19 +942,18 @@ TEST(ObstaclesDoNotReflectIntoObstacles)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , obs_pos
     , g_is_ns
@@ -995,8 +976,7 @@ TEST(ObstaclesDoNotReflectIntoObstacles)
     lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
     lbm.f = lbm.Stream(lbm.f, lbm.boundary_f);
     ns.rho = lm.ComputeRho(lbm.f);
-    ns.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
-    cd.u = ns.u;
+    lm.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
     ns.ComputeEq();
     cd.Collide(lbm.g);
     cd.ApplyForce(lbm.g);
@@ -1015,7 +995,6 @@ TEST(ObstaclesDoNotReflectIntoObstacles)
 TEST(ObstaclesDoNotReflectLeftRightEdges)
 {
   std::vector<std::vector<std::size_t>> obs_pos;
-  std::vector<double> u0{0, 0};
   for (auto y = 0u; y < g_ny; ++y) {
     obs_pos.push_back({0, y});
     obs_pos.push_back({g_nx - 1, y});
@@ -1023,19 +1002,18 @@ TEST(ObstaclesDoNotReflectLeftRightEdges)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , obs_pos
     , g_is_ns
@@ -1073,8 +1051,7 @@ TEST(ObstaclesDoNotReflectLeftRightEdges)
     lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
     lbm.f = lbm.Stream(lbm.f, lbm.boundary_f);
     ns.rho = lm.ComputeRho(lbm.f);
-    ns.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
-    cd.u = ns.u;
+    lm.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
     ns.ComputeEq();
     cd.Collide(lbm.g);
     cd.ApplyForce(lbm.g);
@@ -1109,7 +1086,6 @@ TEST(ObstaclesDoNotReflectLeftRightEdges)
 TEST(ObstaclesDoNotReflectTopBottomEdges)
 {
   std::vector<std::vector<std::size_t>> obs_pos;
-  std::vector<double> u0{0, 0};
   for (auto x = 0u; x < g_nx; ++x) {
     obs_pos.push_back({x, 0});
     obs_pos.push_back({x, g_ny - 1});
@@ -1117,19 +1093,18 @@ TEST(ObstaclesDoNotReflectTopBottomEdges)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , obs_pos
     , g_is_ns
@@ -1164,8 +1139,7 @@ TEST(ObstaclesDoNotReflectTopBottomEdges)
     lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
     lbm.f = lbm.Stream(lbm.f, lbm.boundary_f);
     ns.rho = lm.ComputeRho(lbm.f);
-    ns.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
-    cd.u = ns.u;
+    lm.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
     ns.ComputeEq();
     cd.Collide(lbm.g);
     cd.ApplyForce(lbm.g);
@@ -1198,23 +1172,21 @@ TEST(ObstaclesDoNotReflectCorners)
 {
   std::vector<std::vector<std::size_t>> obs_pos{{0, 0}, {0, g_ny - 1},
       {g_nx - 1, 0}, {g_nx - 1, g_ny - 1}};
-  std::vector<double> u0{0, 0};
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , obs_pos
     , g_is_ns
@@ -1242,8 +1214,7 @@ TEST(ObstaclesDoNotReflectCorners)
     lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
     lbm.f = lbm.Stream(lbm.f, lbm.boundary_f);
     ns.rho = lm.ComputeRho(lbm.f);
-    ns.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
-    cd.u = ns.u;
+    lm.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
     ns.ComputeEq();
     cd.Collide(lbm.g);
     cd.ApplyForce(lbm.g);
@@ -1267,23 +1238,21 @@ TEST(ObstaclesDoNotReflectCorners)
 TEST(ObstaclesNormalReflect)
 {
   std::vector<std::vector<std::size_t>> obs_pos{{2, 2}};
-  std::vector<double> u0{0, 0};
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , obs_pos
     , g_is_ns
@@ -1311,8 +1280,7 @@ TEST(ObstaclesNormalReflect)
     lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
     lbm.f = lbm.Stream(lbm.f, lbm.boundary_f);
     ns.rho = lm.ComputeRho(lbm.f);
-    ns.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
-    cd.u = ns.u;
+    lm.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
     ns.ComputeEq();
     cd.Collide(lbm.g);
     cd.ApplyForce(lbm.g);
@@ -1338,19 +1306,18 @@ TEST(InstantSourceToggle)
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , g_u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , g_u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns

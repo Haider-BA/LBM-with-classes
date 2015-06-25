@@ -35,19 +35,18 @@ TEST(SimulateDiffusion)
   LatticeD2Q9 lm(ny
     , nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , src_pos_g
     , src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , !g_is_ns
@@ -70,19 +69,18 @@ TEST(SimulateConvectionDiffusion)
   LatticeD2Q9 lm(ny
     , nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , u0);
   CollisionNS ns(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
-    , g_rho0_f
-    , u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , src_pos_g
     , src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , !g_is_ns
@@ -108,19 +106,18 @@ TEST(SimulatePoiseuilleFlow)
   LatticeD2Q9 lm(ny
     , nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , u0);
   CollisionNS ns(lm
     , src_pos_f
     , src_str_f
     , g_k_visco
-    , g_rho0_f
-    , u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -130,7 +127,7 @@ TEST(SimulatePoiseuilleFlow)
     , lm
     , ns
     , cd);
-  lbm.RunSim(ns.u);
+  lbm.RunSim(lm.u);
 }
 
 TEST(SimulateNSCDCoupling)
@@ -148,19 +145,18 @@ TEST(SimulateNSCDCoupling)
   LatticeD2Q9 lm(ny
     , nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , u0);
   CollisionNS ns(lm
     , src_pos_f
     , src_str_f
     , g_k_visco
-    , g_rho0_f
-    , u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , src_pos_g
     , src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_obs_pos
     , g_is_ns
@@ -194,19 +190,18 @@ TEST(SimulateNSCDCouplingWithObstacles)
   LatticeD2Q9 lm(ny
     , nx
     , g_dx
-    , g_dt);
+    , g_dt
+    , u0);
   CollisionNS ns(lm
     , src_pos_f
     , src_str_f
     , g_k_visco
-    , g_rho0_f
-    , u0);
+    , g_rho0_f);
   CollisionCD cd(lm
     , src_pos_g
     , src_str_g
     , g_d_coeff
-    , g_rho0_g
-    , u0);
+    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , obs_pos
     , g_is_ns

@@ -15,8 +15,7 @@ class CollisionCD: public Collision {
     , const std::vector<std::vector<std::size_t>> &position
     , const std::vector<double> &strength
     , double diffusion_coefficient
-    , double initial_density_g
-    , const std::vector<double> &initial_velocity);
+    , double initial_density_g);
 
   ~CollisionCD() = default;
 

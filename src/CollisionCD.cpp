@@ -10,9 +10,8 @@ CollisionCD::CollisionCD(LatticeModel &lm
   , const std::vector<std::vector<std::size_t>> &position
   , const std::vector<double> &strength
   , double diffusion_coefficient
-  , double initial_density_g
-  , const std::vector<double> &initial_velocity)
-  : Collision(lm, initial_density_g, initial_velocity),
+  , double initial_density_g)
+  : Collision(lm, initial_density_g),
     source {}
 {
   auto dt = lm.GetTimeStep();
@@ -50,7 +49,7 @@ void CollisionCD::ApplyForce(std::vector<std::vector<double>> &lattice)
   auto dt = lm_.GetTimeStep();
   for (auto n = 0u; n < nx * ny; ++n) {
     for (auto i = 0u; i < nc; ++i) {
-      double c_dot_u = Collision::InnerProduct(lm_.e[i], u[n]);
+      double c_dot_u = Collision::InnerProduct(lm_.e[i], lm_.u[n]);
       c_dot_u /= cs_sqr_ / c_;
       // source term using forward scheme, theta = 0
       auto src_i = lm_.omega[i] * source[n] * (1.0 + (1.0 - 0.5 / tau_) *

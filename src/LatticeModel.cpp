@@ -6,8 +6,10 @@ LatticeModel::LatticeModel(std::size_t num_dims
   , std::size_t num_rows
   , std::size_t num_cols
   , double dx
-  , double dt)
-  : e {},  // cannot pass in LatticeD2Q9 public member e_d2q9
+  , double dt
+  , const std::vector<double> &initial_velocity)
+  : u {},
+    e {},  // cannot pass in LatticeD2Q9 public member e_d2q9
     omega {},
     number_of_dimensions_ {num_dims},
     number_of_directions_ {num_dirs},
@@ -15,7 +17,9 @@ LatticeModel::LatticeModel(std::size_t num_dims
     number_of_columns_ {num_cols},
     space_step_ {dx},
     time_step_ {dt}
-{}
+{
+  u.assign(num_rows * num_cols, initial_velocity);
+}
 
 std::size_t LatticeModel::GetNumberOfDimensions() const
 {
