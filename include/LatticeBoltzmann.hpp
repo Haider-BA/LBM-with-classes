@@ -83,46 +83,46 @@ class LatticeBoltzmann {
    */
   void Obstacles(std::vector<std::vector<double>> &lattice);
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+  /**
+   * Computes boundary condition for the lattice, bounceback for top and bottom
+   * edge, periodic for left and right edge.
+   * \param lattice 2D vector containing distribution functions
+   * \return 2D vector containing the boundary nodes in the order: left, right,
+   *         top, bottom, corners
    */
   std::vector<std::vector<double>> BoundaryCondition(
       const std::vector<std::vector<double>> &lattice);
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+  /**
+   * Assembles lattice and boundary nodes into a bigger lattice with border,
+   * then performs streaming step.
+   * \param lattice 2D vector containing distribution functions
+   * \param boundary 2D vector containing boundary nodes
+   * \return post-stream lattice (no border)
    */
   std::vector<std::vector<double>> Stream(
       const std::vector<std::vector<double>> &lattice
     , const std::vector<std::vector<double>> &boundary);
 
-  /** \brief
-   *
-   * \return void
-   *
+  /**
+   * Performs one cycle of evolution equation, computes the relevant macroscopic
+   * properties such as velocity and density
    */
   void TakeStep();
 
-  /** \brief
-   *
-   * \return void
-   *
+  /**
+   * Performs numerous cycles of the evolution equation based on total time of
+   * the simulation and time step of the simulation, does not output any files
+   * to Cmgui
    */
   void RunSim();
 
-  /** \brief
-   *
-   * \param lattice std::vector<std::vector<double>>&
-   * \return void
-   *
+  /**
+   * Performs numerous cycles of the evolution equation based on total time of
+   * the simulation and time step of the simulation, specifies a file to output
+   * using Cmgui
+   * \param lattice the be printed using Cmgui (distribution functions or
+   *       velocity)
    */
   void RunSim(std::vector<std::vector<double>> &lattice);
 
