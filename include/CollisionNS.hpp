@@ -33,7 +33,7 @@ class CollisionNS: public Collision {
    * Applies force according to Guo2002
    * \param lattice 2D vector containing distribution functions
    */
-  void ApplyForce(std::vector<std::vector<double>> &lattice);
+  void Collide(std::vector<std::vector<double>> &lattice);
 
   /**
    * Sets source term to 0

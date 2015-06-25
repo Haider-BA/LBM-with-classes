@@ -1,6 +1,7 @@
 #include "CollisionNS.hpp"
 #include <iostream>
 #include <stdexcept>
+#include "Algorithm.hpp"
 #include "LatticeModel.hpp"
 
 // specifies the base class constructor to call
@@ -41,7 +42,7 @@ void CollisionNS::InitSource(
   }  // pos
 }
 
-void CollisionNS::ApplyForce(std::vector<std::vector<double>> &lattice)
+void CollisionNS::Collide(std::vector<std::vector<double>> &lattice)
 {
   auto nc = lm_.GetNumberOfDirections();
   auto nd = lm_.GetNumberOfDimensions();
@@ -50,17 +51,16 @@ void CollisionNS::ApplyForce(std::vector<std::vector<double>> &lattice)
   auto dt = lm_.GetTimeStep();
   for (auto n = 0u; n < nx * ny; ++n) {
     for (auto i = 0u; i < nc; ++i) {
-      double c_dot_u = Collision::InnerProduct(lm_.e[i], lm_.u[n]);
-      c_dot_u /= cs_sqr_ / c_;
-      // Guo2002 Eq20
+      double c_dot_u = InnerProduct(lm_.e[i], lm_.u[n]);
+      c_dot_u /= cs_sqr_;
       double src_dot_product = 0.0;
       for (auto d = 0u; d < nd; ++d) {
-        src_dot_product += (lm_.e[i][d] * c_ - lm_.u[n][d] + c_dot_u *
-            lm_.e[i][d] * c_) * source[n][d];
+        src_dot_product += (lm_.e[i][d] - lm_.u[n][d] + c_dot_u *
+            lm_.e[i][d]) * source[n][d];
       }  // d
       src_dot_product /= cs_sqr_ / rho[n];
       auto src_i = (1.0 - 0.5 / tau_) * lm_.omega[i] * src_dot_product;
-      lattice[n][i] += dt * src_i;
+      lattice[n][i] += (lattice_eq[n][i] - lattice[n][i]) / tau_ + dt * src_i;
     }  // i
   }  // n
 }

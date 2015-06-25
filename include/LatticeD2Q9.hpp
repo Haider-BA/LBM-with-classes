@@ -14,27 +14,9 @@ class LatticeD2Q9: public LatticeModel {
   ~LatticeD2Q9() = default;
 
   /**
-   * Calculates zeroth moment of a node based on formula in LBIntro
-   * \param node distribution function node containing nine discrete velocity
-   *        vectors
-   * \return zeroth moment of node
-   */
-  double GetZerothMoment(const std::vector<double> &node);
-
-  /**
-   * Calculates first moment of a node based on formula in LBIntro
-   * \param node distribution function node containing nine discrete velocity
-   *        vectors
-   * \return first moment of node
-   */
-  std::vector<double> GetFirstMoment(const std::vector<double> &node);
-
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+   * Compute density at each node by summing up its distribution functions
+   * \param lattice 2D vector containing distribution functions
+   * \return density of lattice stored row-wise in a 1D vector
    */
   std::vector<double> ComputeRho(
       const std::vector<std::vector<double>> &lattice);

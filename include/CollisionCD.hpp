@@ -33,7 +33,7 @@ class CollisionCD: public Collision {
    * LBGK model for convection-diffusion equation"
    * \param lattice 2D vector containing distribution functions
    */
-  void ApplyForce(std::vector<std::vector<double>> &lattice);
+  void Collide(std::vector<std::vector<double>> &lattice);
 
   /**
    * Sets source term to 0

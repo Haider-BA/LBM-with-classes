@@ -198,8 +198,6 @@ TEST(InitVelocity)
   for (auto n = 0u; n < lm.u.size(); ++n) {
     CHECK_CLOSE(g_u0[0], lm.u[n][0], zero_tol);
     CHECK_CLOSE(g_u0[1], lm.u[n][1], zero_tol);
-//    CHECK_CLOSE(g_u0[0], cd.u[n][0], zero_tol);
-//    CHECK_CLOSE(g_u0[1], cd.u[n][1], zero_tol);
   }  // n
 }
 
@@ -412,9 +410,7 @@ TEST(CollideWithMixedSource)
   lbm.f.assign(g_nx * g_ny, std::vector<double>(9, 1.0));
   // First collision
   cd.Collide(lbm.g);
-  cd.ApplyForce(lbm.g);
   ns.Collide(lbm.f);
-  ns.ApplyForce(lbm.f);
 
   for (auto i = 0; i < 9; ++i) {
     std::size_t i_ns = 0;
@@ -438,9 +434,7 @@ TEST(CollideWithMixedSource)
   }  // i
   // Second collision
   cd.Collide(lbm.g);
-  cd.ApplyForce(lbm.g);
   ns.Collide(lbm.f);
-  ns.ApplyForce(lbm.f);
   for (auto i = 0; i < 9; ++i) {
     std::size_t i_ns = 0;
     std::size_t i_cd = 0;
@@ -966,7 +960,6 @@ TEST(ObstaclesDoNotReflectIntoObstacles)
   auto obs_center = 2 * g_nx + 2;
   for (auto t = 0; t < 1000; ++t) {
     ns.Collide(lbm.f);
-    ns.ApplyForce(lbm.f);
     auto node_f = lbm.f[obs_center];
     lbm.Obstacles(lbm.f);
     // check obstacle center in ns lattice is not changed
@@ -979,7 +972,6 @@ TEST(ObstaclesDoNotReflectIntoObstacles)
     lm.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
     ns.ComputeEq();
     cd.Collide(lbm.g);
-    cd.ApplyForce(lbm.g);
     auto node_g = lbm.g[obs_center];
     lbm.Obstacles(lbm.g);
     // check obstacle center in cd lattice is not changed
@@ -1025,7 +1017,6 @@ TEST(ObstaclesDoNotReflectLeftRightEdges)
     , cd);
   for (auto t = 0; t < 1000; ++t) {
     ns.Collide(lbm.f);
-    ns.ApplyForce(lbm.f);
     std::vector<std::vector<double>> left_edge_unchanged_f;
     std::vector<std::vector<double>> right_edge_unchanged_f;
     for (auto y = 0u; y < g_ny; ++y) {
@@ -1054,7 +1045,6 @@ TEST(ObstaclesDoNotReflectLeftRightEdges)
     lm.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
     ns.ComputeEq();
     cd.Collide(lbm.g);
-    cd.ApplyForce(lbm.g);
     std::vector<std::vector<double>> left_edge_unchanged_g;
     std::vector<std::vector<double>> right_edge_unchanged_g;
     for (auto y = 0u; y < g_ny; ++y) {
@@ -1116,7 +1106,6 @@ TEST(ObstaclesDoNotReflectTopBottomEdges)
     , cd);
   for (auto t = 0; t < 1000; ++t) {
     ns.Collide(lbm.f);
-    ns.ApplyForce(lbm.f);
     std::vector<std::vector<double>> top_edge_unchanged_f;
     std::vector<std::vector<double>> bottom_edge_unchanged_f;
     for (auto x = 0u; x < g_nx; ++x) {
@@ -1142,7 +1131,6 @@ TEST(ObstaclesDoNotReflectTopBottomEdges)
     lm.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
     ns.ComputeEq();
     cd.Collide(lbm.g);
-    cd.ApplyForce(lbm.g);
     std::vector<std::vector<double>> top_edge_unchanged_g;
     std::vector<std::vector<double>> bottom_edge_unchanged_g;
     for (auto x = 0u; x < g_nx; ++x) {
@@ -1201,7 +1189,6 @@ TEST(ObstaclesDoNotReflectCorners)
   auto top_right = (g_ny - 1) * g_nx + g_nx - 1;
   for (auto t = 0; t < 1000; ++t) {
     ns.Collide(lbm.f);
-    ns.ApplyForce(lbm.f);
     std::vector<std::vector<double>> corners_unchanged_f{lbm.f[0],
         lbm.f[bot_right], lbm.f[top_left], lbm.f[top_right]};
     lbm.Obstacles(lbm.f);
@@ -1217,7 +1204,6 @@ TEST(ObstaclesDoNotReflectCorners)
     lm.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
     ns.ComputeEq();
     cd.Collide(lbm.g);
-    cd.ApplyForce(lbm.g);
     std::vector<std::vector<double>> top_edge_unchanged_g;
     std::vector<std::vector<double>> bottom_edge_unchanged_g;
     std::vector<std::vector<double>> corners_unchanged_g{lbm.g[0],
@@ -1265,7 +1251,6 @@ TEST(ObstaclesNormalReflect)
   auto n = 2 * g_nx + 2;
   for (auto t = 0; t < 1; ++t) {
     ns.Collide(lbm.f);
-    ns.ApplyForce(lbm.f);
     lbm.Obstacles(lbm.f);
     // check directions around the obstacle in ns lattice are reflected
     CHECK_CLOSE(lbm.f[n + g_nx][S], lbm.f[n][N], zero_tol);
@@ -1283,7 +1268,6 @@ TEST(ObstaclesNormalReflect)
     lm.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
     ns.ComputeEq();
     cd.Collide(lbm.g);
-    cd.ApplyForce(lbm.g);
     lbm.Obstacles(lbm.g);
     // check directions around the obstacle in cd lattice are reflected
     CHECK_CLOSE(lbm.g[n + g_nx][S], lbm.g[n][N], zero_tol);

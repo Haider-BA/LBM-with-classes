@@ -23,30 +23,17 @@ class Collision {
   void ComputeEq();
 
   /**
-   * Computes collision step according to LBIntro
+   * Pure virtual function to compute collision step and apply force step
+   * according to "A new scheme for source term in LBGK model for
+   * convection–diffusion equation" and Guo2002
    * \param lattice 2D vector containing distribution functions
    */
-  void Collide(std::vector<std::vector<double>> &lattice);
-
-  /**
-   * Pure virtual function for forcing term
-   * \param lattice 2D vector containing distribution functions
-   */
-  virtual void ApplyForce(std::vector<std::vector<double>> &lattice) = 0;
+  virtual void Collide(std::vector<std::vector<double>> &lattice) = 0;
 
   /**
    * Pure virtual function for removing source term
    */
   virtual void KillSource() = 0;
-
-  /**
-   * Does dot product between 2 vectors of equal length
-   * \param a first vector
-   * \param b second vector
-   * \return dot product of a and b
-   */
-  double InnerProduct(const std::vector<double> &a
-  , const std::vector<double> &b);
 
   /**
    * Equilibrium distribution function stored row-wise in a 2D vector

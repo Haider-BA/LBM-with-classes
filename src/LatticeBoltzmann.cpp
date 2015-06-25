@@ -213,7 +213,6 @@ void LatticeBoltzmann::TakeStep()
 {
   if (is_ns_) {
     ns_.Collide(f);
-    ns_.ApplyForce(f);
     if (has_obstacles_) LatticeBoltzmann::Obstacles(f);
     f = LatticeBoltzmann::Stream(f, LatticeBoltzmann::BoundaryCondition(f));
     ns_.rho = lm_.ComputeRho(f);
@@ -222,7 +221,6 @@ void LatticeBoltzmann::TakeStep()
   }
   if (is_cd_) {
     cd_.Collide(g);
-    cd_.ApplyForce(g);
     if (is_instant_) cd_.KillSource();
     if (has_obstacles_) LatticeBoltzmann::Obstacles(g);
     g = LatticeBoltzmann::Stream(g, LatticeBoltzmann::BoundaryCondition(g));

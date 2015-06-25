@@ -1,6 +1,7 @@
 #include "CollisionCD.hpp"
 #include <iostream>
 #include <stdexcept>
+#include "Algorithm.hpp"
 #include "LatticeModel.hpp"
 
 // specifies the base class constructor to call
@@ -41,7 +42,8 @@ void CollisionCD::InitSource(
   }  // pos
 }
 
-void CollisionCD::ApplyForce(std::vector<std::vector<double>> &lattice)
+
+void CollisionCD::Collide(std::vector<std::vector<double>> &lattice)
 {
   auto nc = lm_.GetNumberOfDirections();
   auto nx = lm_.GetNumberOfColumns();
@@ -49,12 +51,12 @@ void CollisionCD::ApplyForce(std::vector<std::vector<double>> &lattice)
   auto dt = lm_.GetTimeStep();
   for (auto n = 0u; n < nx * ny; ++n) {
     for (auto i = 0u; i < nc; ++i) {
-      double c_dot_u = Collision::InnerProduct(lm_.e[i], lm_.u[n]);
-      c_dot_u /= cs_sqr_ / c_;
+      double c_dot_u = InnerProduct(lm_.e[i], lm_.u[n]);
+      c_dot_u /= cs_sqr_;
       // source term using forward scheme, theta = 0
       auto src_i = lm_.omega[i] * source[n] * (1.0 + (1.0 - 0.5 / tau_) *
           c_dot_u);
-      lattice[n][i] += dt * src_i;
+      lattice[n][i] += (lattice_eq[n][i] - lattice[n][i]) / tau_ + dt * src_i;
     }  // i
   }  // n
 }
