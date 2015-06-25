@@ -1,5 +1,6 @@
 #include <iostream>
 #include <stdexcept>  // runtime_error
+#include <vector>
 #include "CollisionCD.hpp"
 #include "CollisionNS.hpp"
 #include "LatticeBoltzmann.hpp"
@@ -38,14 +39,14 @@ static const double g_d_coeff = 0.2;
 static const double g_k_visco = 0.2;
 static const double g_rho0_f = 1.1;
 static const double g_rho0_g = 1.2;
-static const std::vector<double> g_u0{1.3, 1.4};
-static const std::vector<std::vector<std::size_t>> g_src_pos_f{{1, 1},
+static const std::vector<double> g_u0 = {1.3, 1.4};
+static const std::vector<std::vector<std::size_t>> g_src_pos_f = {{1, 1},
     {2, 3}};
-static const std::vector<std::vector<double>> g_src_str_f{{1.5, 1.6},
+static const std::vector<std::vector<double>> g_src_str_f = {{1.5, 1.6},
     {1.7, 1.8}};
-static const std::vector<std::vector<std::size_t>> g_src_pos_g{{2, 2},
+static const std::vector<std::vector<std::size_t>> g_src_pos_g = {{2, 2},
     {3, 4}};
-static const std::vector<double> g_src_str_g{1.9, 2.0};
+static const std::vector<double> g_src_str_g = {1.9, 2.0};
 static const std::vector<std::vector<std::size_t>> g_obs_pos;
 static const bool g_is_ns = true;
 static const bool g_is_cd = true;
@@ -1158,7 +1159,7 @@ TEST(ObstaclesDoNotReflectTopBottomEdges)
 
 TEST(ObstaclesDoNotReflectCorners)
 {
-  std::vector<std::vector<std::size_t>> obs_pos{{0, 0}, {0, g_ny - 1},
+  std::vector<std::vector<std::size_t>> obs_pos = {{0, 0}, {0, g_ny - 1},
       {g_nx - 1, 0}, {g_nx - 1, g_ny - 1}};
   LatticeD2Q9 lm(g_ny
     , g_nx
@@ -1189,7 +1190,7 @@ TEST(ObstaclesDoNotReflectCorners)
   auto top_right = (g_ny - 1) * g_nx + g_nx - 1;
   for (auto t = 0; t < 1000; ++t) {
     ns.Collide(lbm.f);
-    std::vector<std::vector<double>> corners_unchanged_f{lbm.f[0],
+    std::vector<std::vector<double>> corners_unchanged_f = {lbm.f[0],
         lbm.f[bot_right], lbm.f[top_left], lbm.f[top_right]};
     lbm.Obstacles(lbm.f);
     // check corner obstacles in ns lattice is not changed
@@ -1206,7 +1207,7 @@ TEST(ObstaclesDoNotReflectCorners)
     cd.Collide(lbm.g);
     std::vector<std::vector<double>> top_edge_unchanged_g;
     std::vector<std::vector<double>> bottom_edge_unchanged_g;
-    std::vector<std::vector<double>> corners_unchanged_g{lbm.g[0],
+    std::vector<std::vector<double>> corners_unchanged_g = {lbm.g[0],
         lbm.g[bot_right], lbm.g[top_left], lbm.g[top_right]};
     lbm.Obstacles(lbm.g);
     // check corner obstacles in cd lattice is not changed
@@ -1223,7 +1224,7 @@ TEST(ObstaclesDoNotReflectCorners)
 
 TEST(ObstaclesNormalReflect)
 {
-  std::vector<std::vector<std::size_t>> obs_pos{{2, 2}};
+  std::vector<std::vector<std::size_t>> obs_pos = {{2, 2}};
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include "CollisionCD.hpp"
 #include "CollisionNS.hpp"
 #include "LatticeBoltzmann.hpp"
@@ -29,9 +30,9 @@ TEST(SimulateDiffusion)
 {
   std::size_t ny = 21;
   std::size_t nx = 31;
-  std::vector<std::vector<std::size_t>> src_pos_g{{15, 10}};
-  std::vector<double> src_str_g{50};
-  std::vector<double> u0{0, 0};
+  std::vector<std::vector<std::size_t>> src_pos_g = {{15, 10}};
+  std::vector<double> src_str_g = {50};
+  std::vector<double> u0 = {0, 0};
   LatticeD2Q9 lm(ny
     , nx
     , g_dx
@@ -63,9 +64,9 @@ TEST(SimulateConvectionDiffusion)
 {
   std::size_t ny = 21;
   std::size_t nx = 31;
-  std::vector<std::vector<std::size_t>> src_pos_g{{15, 10}};
-  std::vector<double> src_str_g{50};
-  std::vector<double> u0{10, -0.01};
+  std::vector<std::vector<std::size_t>> src_pos_g = {{15, 10}};
+  std::vector<double> src_str_g = {50};
+  std::vector<double> u0 = {10, -0.01};
   LatticeD2Q9 lm(ny
     , nx
     , g_dx
@@ -99,7 +100,7 @@ TEST(SimulatePoiseuilleFlow)
   std::size_t nx = 31;
   std::vector<std::vector<std::size_t>> src_pos_f;
   std::vector<std::vector<double>> src_str_f(nx * ny, {10.0, 0.0});
-  std::vector<double> u0{0.0, 0.0};
+  std::vector<double> u0 = {0.0, 0.0};
   for (auto n = 0u; n < nx * ny; ++n) {
     src_pos_f.push_back({n % nx, static_cast<std::size_t>(n / nx)});
   }
@@ -136,9 +137,9 @@ TEST(SimulateNSCDCoupling)
   std::size_t nx = 31;
   std::vector<std::vector<std::size_t>> src_pos_f;
   std::vector<std::vector<double>> src_str_f(nx * ny, {50.0, -10.0});
-  std::vector<std::vector<std::size_t>> src_pos_g{{15, 10}};
-  std::vector<double> src_str_g{50};
-  std::vector<double> u0{-5.0, 0.0};
+  std::vector<std::vector<std::size_t>> src_pos_g = {{15, 10}};
+  std::vector<double> src_str_g = {50};
+  std::vector<double> u0 = {-5.0, 0.0};
   for (auto n = 0u; n < nx * ny; ++n) {
     src_pos_f.push_back({n % nx, static_cast<std::size_t>(n / nx)});
   }
@@ -175,12 +176,12 @@ TEST(SimulateNSCDCouplingWithObstacles)
   std::size_t nx = 31;
   std::vector<std::vector<std::size_t>> src_pos_f;
   std::vector<std::vector<double>> src_str_f(nx * ny, {50.0, -10.0});
-  std::vector<std::vector<std::size_t>> src_pos_g{{15, 10}};
-  std::vector<double> src_str_g{50};
+  std::vector<std::vector<std::size_t>> src_pos_g = {{15, 10}};
+  std::vector<double> src_str_g = {50};
   std::vector<std::vector<std::size_t>> obs_pos;
-  std::vector<double> u0{-5.0, 0.0};
+  std::vector<double> u0 = {-5.0, 0.0};
   for (auto n = 0u; n < nx * ny; ++n) {
-    src_pos_f.push_back({n % nx, static_cast<std::size_t>(n / nx)});
+    src_pos_f.push_back({n % nx, n / nx});
   }
   for (auto y = 9u; y < 12u; ++y) {
     obs_pos.push_back({17, y});

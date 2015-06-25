@@ -3,6 +3,7 @@
 #include <iomanip>  // std::setprecision
 #include <iostream>
 #include <stdexcept>  // std::runtime_error
+#include <vector>
 #include "CollisionCD.hpp"
 #include "CollisionNS.hpp"
 #include "LatticeModel.hpp"

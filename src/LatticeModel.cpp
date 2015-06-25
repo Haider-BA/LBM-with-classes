@@ -1,5 +1,6 @@
 #include "LatticeModel.hpp"
 #include <stdexcept>  // runtime_error
+#include <vector>
 
 LatticeModel::LatticeModel(std::size_t num_dims
   , std::size_t num_dirs

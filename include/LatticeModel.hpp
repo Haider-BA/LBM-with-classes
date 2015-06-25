@@ -4,22 +4,22 @@
 
 class LatticeModel {
  public:
-   LatticeModel(std::size_t num_dims
-     , std::size_t num_dirs
-     , std::size_t num_rows
-     , std::size_t num_cols
-     , double dx
-     , double dt
-     , const std::vector<double> &initial_velocity);
+  LatticeModel(std::size_t num_dims
+    , std::size_t num_dirs
+    , std::size_t num_rows
+    , std::size_t num_cols
+    , double dx
+    , double dt
+    , const std::vector<double> &initial_velocity);
 
-   /**
-    * Virtual destructor since we deriving from this class, see Collision.hpp
-    * \return virtual
-    *
-    */
-   virtual ~LatticeModel() = default;
+  /**
+   * Virtual destructor since we deriving from this class, see Collision.hpp
+   * \return virtual
+   *
+   */
+  virtual ~LatticeModel() = default;
 
-   /**
+  /**
    * Get the number of dimensions of the lattice. 2 for 2D and 3 for 3D.
    * \return number of dimensions of the lattice
    */

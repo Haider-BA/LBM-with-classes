@@ -198,4 +198,4 @@ class LatticeBoltzmann {
   CollisionNS &ns_;
   CollisionCD &cd_;
 };
-#endif // LATTICEBOLTZMANN_HPP_
+#endif  // LATTICEBOLTZMANN_HPP_

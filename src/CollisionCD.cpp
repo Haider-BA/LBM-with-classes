@@ -1,6 +1,7 @@
 #include "CollisionCD.hpp"
 #include <iostream>
 #include <stdexcept>
+#include <vector>
 #include "Algorithm.hpp"
 #include "LatticeModel.hpp"
 

@@ -1,7 +1,7 @@
 #ifndef LATTICED2Q9_HPP_
 #define LATTICED2Q9_HPP_
-#include "LatticeModel.hpp"
 #include <vector>
+#include "LatticeModel.hpp"
 
 class LatticeD2Q9: public LatticeModel {
  public:
