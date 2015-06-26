@@ -26,6 +26,7 @@ class LatticeBoltzmann {
     , const std::vector<std::vector<std::size_t>> &obstacles_pos
     , bool is_ns
     , bool is_cd
+    , bool is_taylor
     , bool is_instant
     , bool has_obstacles
     , LatticeModel &lm
@@ -187,6 +188,7 @@ class LatticeBoltzmann {
   double total_time_;
   bool is_ns_;
   bool is_cd_;
+  bool is_taylor_;
   bool is_instant_;
   bool has_obstacles_;
   // LatticeModel to take care of dims, dirs, rows, cols and discrete e vectors

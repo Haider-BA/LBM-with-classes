@@ -23,6 +23,7 @@ const static double g_t_total = 1.0;
 const static std::vector<std::vector<std::size_t>> g_obs_pos;
 static const bool g_is_ns = true;
 static const bool g_is_cd = true;
+static const bool g_is_taylor = true;
 static const bool g_is_instant = true;
 static const bool g_no_obstacles = false;
 
@@ -52,6 +53,7 @@ TEST(SimulateDiffusion)
     , g_obs_pos
     , !g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , !g_is_instant
     , g_no_obstacles
     , lm
@@ -86,6 +88,7 @@ TEST(SimulateConvectionDiffusion)
     , g_obs_pos
     , !g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , !g_is_instant
     , g_no_obstacles
     , lm
@@ -123,6 +126,7 @@ TEST(SimulatePoiseuilleFlow)
     , g_obs_pos
     , g_is_ns
     , !g_is_cd
+    , !g_is_taylor
     , !g_is_instant
     , g_no_obstacles
     , lm
@@ -162,6 +166,7 @@ TEST(SimulateNSCDCoupling)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , !g_is_instant
     , g_no_obstacles
     , lm
@@ -207,6 +212,7 @@ TEST(SimulateNSCDCouplingWithObstacles)
     , obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , !g_is_instant
     , !g_no_obstacles
     , lm

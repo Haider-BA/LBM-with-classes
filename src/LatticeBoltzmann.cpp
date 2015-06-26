@@ -21,6 +21,7 @@ LatticeBoltzmann::LatticeBoltzmann(double t_total
   , const std::vector<std::vector<std::size_t>> &obstacles_position
   , bool is_ns
   , bool is_cd
+  , bool is_taylor
   , bool is_instant
   , bool has_obstacles
   , LatticeModel &lm
@@ -34,6 +35,7 @@ LatticeBoltzmann::LatticeBoltzmann(double t_total
     total_time_ {t_total},
     is_ns_ {is_ns},
     is_cd_ {is_cd},
+    is_taylor_ {is_taylor},
     is_instant_ {is_instant},
     has_obstacles_ {has_obstacles},
     lm_ (lm),
@@ -107,16 +109,43 @@ std::vector<std::vector<double>> LatticeBoltzmann::BoundaryCondition(
   // initialize some boundaries to mirror their counterparts
   auto right_boundary(left_boundary);
   auto bottom_boundary(top_boundary);
+  // no-slip boundary condition on left and right for taylor vortex
+  // analytical solution, this is a temporary workaround
+  if (is_taylor_) {
+    for (auto y = 0u; y < ny; ++y) {
+      auto n = y * nx;
+      left_boundary[y][E] = lattice[n + 1][W];
+      right_boundary[y][W] = lattice[n + nx - 1][E];
+      if (y == 0) {
+        left_boundary[y][SE] = lattice[nx * (ny - 1)][NW];
+        right_boundary[y][SW] = lattice[nx * ny - 1][NE];
+      }
+      else {
+        left_boundary[y][SE] = lattice[n - nx + 1][NW];
+        right_boundary[y][SW] = lattice[n - 1][NE];
+      }
+      if (y == ny - 1) {
+        left_boundary[y][NE] = lattice[0][SW];
+        right_boundary[y][NW] = lattice[nx - 1][SE];
+      }
+      else {
+        left_boundary[y][NE] = lattice[n + nx + 1][SW];
+        right_boundary[y][NW] = lattice[n + nx + nx - 1][SE];
+      }
+    }  // y
+  }
   // Periodic boundary condition on left and right
-  for (auto y = 0u; y < ny; ++y) {
-    auto n = y * nx;
-    left_boundary[y][E] = lattice[n + nx - 1][E];
-    left_boundary[y][NE] = lattice[n + nx - 1][NE];
-    left_boundary[y][SE] = lattice[n + nx - 1][SE];
-    right_boundary[y][W] = lattice[n][W];
-    right_boundary[y][NW] = lattice[n][NW];
-    right_boundary[y][SW] = lattice[n][SW];
-  }  // y
+  else {
+    for (auto y = 0u; y < ny; ++y) {
+      auto n = y * nx;
+      left_boundary[y][E] = lattice[n + nx - 1][E];
+      left_boundary[y][NE] = lattice[n + nx - 1][NE];
+      left_boundary[y][SE] = lattice[n + nx - 1][SE];
+      right_boundary[y][W] = lattice[n][W];
+      right_boundary[y][NW] = lattice[n][NW];
+      right_boundary[y][SW] = lattice[n][SW];
+    }  // y
+  }
   // no-slip boundary condition on top and bottom
   for (auto x = 0u; x < nx; ++x) {
     auto n = (ny - 1) * nx;

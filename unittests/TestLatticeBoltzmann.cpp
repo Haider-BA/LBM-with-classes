@@ -50,6 +50,7 @@ static const std::vector<double> g_src_str_g = {1.9, 2.0};
 static const std::vector<std::vector<std::size_t>> g_obs_pos;
 static const bool g_is_ns = true;
 static const bool g_is_cd = true;
+static const bool g_is_taylor = true;
 static const bool g_is_instant = true;
 static const bool g_no_obstacles = false;
 
@@ -76,6 +77,7 @@ TEST(Constructor)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -110,6 +112,7 @@ TEST(InitObstacles)
     , obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , !g_no_obstacles
     , lm
@@ -150,6 +153,7 @@ TEST(InitDensity)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -182,6 +186,7 @@ TEST(InitVelocity)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -191,6 +196,7 @@ TEST(InitVelocity)
     , g_obs_pos
     , !g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -223,6 +229,7 @@ TEST(ComputeEq)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -265,6 +272,7 @@ TEST(InitDistributionFunctionLattice)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -305,6 +313,7 @@ TEST(InitSourceMultiplePosition)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -356,6 +365,7 @@ TEST(CollideWithMixedSource)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -482,6 +492,7 @@ TEST(ComputeU)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -526,6 +537,7 @@ TEST(ComputeRho)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -558,6 +570,7 @@ TEST(BoundaryPeriodic)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -599,6 +612,7 @@ TEST(BoundaryBounceback)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -634,6 +648,63 @@ TEST(BoundaryBounceback)
   }  // x
 }
 
+TEST(BoundaryBouncebackTaylor)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g);
+  LatticeBoltzmann lbm(g_t_total
+    , g_obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_taylor
+    , g_is_instant
+    , g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  double value = 0;
+  for (auto &node : lbm.f) node = std::vector<double>(9, value++);
+  lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
+  auto right = g_ny;
+  for (auto y = 0u; y < g_ny; ++y) {
+    auto n = y * g_nx;
+    CHECK_CLOSE(lbm.f[n + 1][W], lbm.boundary_f[y][E], zero_tol);
+    CHECK_CLOSE(lbm.f[n + g_nx - 1][E], lbm.boundary_f[right + y][W], zero_tol);
+    if (y == 0) {
+      CHECK_CLOSE(lbm.f[g_nx * (g_ny - 1)][NW], lbm.boundary_f[y][SE],
+          zero_tol);
+      CHECK_CLOSE(lbm.f[g_nx * g_ny - 1][SE], lbm.boundary_f[right + y][SW],
+          zero_tol);
+    }
+    else {
+      CHECK_CLOSE(lbm.f[n - g_nx + 1][NW], lbm.boundary_f[y][SE], zero_tol);
+      CHECK_CLOSE(lbm.f[n - 1][SE], lbm.boundary_f[right + y][SW], zero_tol);
+    }
+    if (y == g_ny - 1) {
+      CHECK_CLOSE(lbm.f[0][SW], lbm.boundary_f[y][NE], zero_tol);
+      CHECK_CLOSE(lbm.f[g_nx - 1][SW], lbm.boundary_f[right + y][NW], zero_tol);
+    }
+    else {
+      CHECK_CLOSE(lbm.f[n + g_nx + 1][SW], lbm.boundary_f[y][NE], zero_tol);
+      CHECK_CLOSE(lbm.f[n + g_nx + g_nx - 1][SW], lbm.boundary_f[right + y][NW],
+          zero_tol);
+    }
+  }  // y
+}
+
 TEST(BoundaryCorner)
 {
   LatticeD2Q9 lm(g_ny
@@ -655,6 +726,7 @@ TEST(BoundaryCorner)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -692,6 +764,7 @@ TEST(StreamHorizontal)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -757,6 +830,7 @@ TEST(StreamVertical)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -817,6 +891,7 @@ TEST(StreamDiagonalNESW)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -877,6 +952,7 @@ TEST(StreamDiagonalNWSE)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -953,6 +1029,7 @@ TEST(ObstaclesDoNotReflectIntoObstacles)
     , obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , !g_no_obstacles
     , lm
@@ -1011,6 +1088,7 @@ TEST(ObstaclesDoNotReflectLeftRightEdges)
     , obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , !g_no_obstacles
     , lm
@@ -1100,6 +1178,7 @@ TEST(ObstaclesDoNotReflectTopBottomEdges)
     , obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , !g_no_obstacles
     , lm
@@ -1180,6 +1259,7 @@ TEST(ObstaclesDoNotReflectCorners)
     , obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , !g_no_obstacles
     , lm
@@ -1244,6 +1324,7 @@ TEST(ObstaclesNormalReflect)
     , obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , !g_no_obstacles
     , lm
@@ -1307,6 +1388,7 @@ TEST(InstantSourceToggle)
     , g_obs_pos
     , g_is_ns
     , g_is_cd
+    , !g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
