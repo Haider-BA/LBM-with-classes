@@ -143,20 +143,28 @@ TEST(AnalyticalTaylorVortex)
   std::vector<double> u0 = {0, 0};
   double t_total = 1.0;
   // analytical solution parameters
+  std::vector<std::vector<double>> u_lattice_an;
   auto body_force = 1.0;
+  auto u0_an = 0.0316;
   auto k_visco = 0.005;
   auto k1 = 1.0;
   auto k2 = 1.0;
-  auto tc = log(2.0 / (k_visco * (k1 * k1 + k2 * k2)));
+  // time points selected by Guo2002 to compare against analytical solution
+  // and plot graph (pg 5)
+  auto tc = log(2.0) / (k_visco * (k1 * k1 + k2 * k2));
   for (auto n = 0u; n < nx * ny; ++n) {
     auto x = n % nx;
     auto y = n / nx;
-    auto x_an = static_cast<double>(x - 32) * -g_pi / nx;
-    auto y_an = static_cast<double>(y - 32) * -g_pi / ny;
+    auto x_an = (static_cast<double>(x) - 32) * g_pi / nx;
+    auto y_an = (static_cast<double>(y) - 32) * g_pi / ny;
     src_pos_f.push_back({x, y});
-    auto force_x = -0.5 * k1 * body_force * sin(2.0 * x_an);
-    auto force_y = -0.5 * k2 * body_force * sin(2.0 * y_an);
+    auto force_x = -0.5 * k1 * body_force * sin(2.0 * k1 * x_an);
+    auto force_y = -0.5 * k1 * k1 / k2 * body_force * sin(2.0 * k2 * y_an);
+//    std::cout << force_y << std::endl;
     src_str_f.push_back({force_x, force_y});
+    auto u_an = -1.0 * u0_an * cos(k1 * x_an) * sin(k2 * y_an);
+    auto v_an = u0_an * k1 / k2 * sin(k1 * x_an) * cos(k2 * y_an);
+    u_lattice_an.push_back({u_an, v_an});
   }
   LatticeD2Q9 lm(ny
     , nx
@@ -176,31 +184,36 @@ TEST(AnalyticalTaylorVortex)
   LatticeBoltzmann lbm(t_total
     , g_obs_pos
     , g_is_ns
-    , g_is_cd
+    , !g_is_cd
     , g_is_taylor
     , g_is_instant
     , g_no_obstacles
     , lm
     , ns
     , cd);
-  auto t_count = 0u;
-  WriteResultsCmgui(lbm.g, nx, ny, t_count);
-  for (auto t = 0.0; t < t_total / 2.0; t += g_dt) {
-    for (auto n = 0u; n < nx * ny; ++n) {
-      auto x_an = static_cast<double>(n % nx - 32) * -g_pi / 2.0 / nx;
-      auto y_an = static_cast<double>(n / nx - 32) * -g_pi / 2.0 / ny;
-      auto force_x = -0.5 * k1 * body_force * sin(2.0 * k1 * x_an) *
-          exp(-2.0 * k_visco * (k1 * k1 + k2 * k2) * t);
-      auto force_y = -0.5 * k2 * body_force * sin(2.0 * k2 * y_an) *
-          exp(-2.0 * k_visco * (k1 * k1 + k2 * k2) * t);
-      src_str_f[n] = {force_x, force_y};
-    }  // n
-    ns.InitSource(src_pos_f, src_str_f);
-    lbm.TakeStep();
-    if (std::fmod(t, 0.001) < 1e-3) {
-      WriteResultsCmgui(lm.u, nx, ny, ++t_count);
-      std::cout << t_count << " " << t << std::endl;
-    }
-  }  // t
+  lm.u = u_lattice_an;
+//  auto t_count = 0u;
+//  WriteResultsCmgui(lm.u, nx, ny, t_count);
+//  for (auto t = 0.0; t < 0.5; t += g_dt) {
+//    lbm.TakeStep();
+//    for (auto n = 0u; n < nx * ny; ++n) {
+//      auto x_an = (static_cast<double>(n % nx) - 32) * g_pi / nx;
+//      auto y_an = (static_cast<double>(n / nx) - 32) * g_pi / ny;
+//      auto force_x = -0.5 * k1 * body_force * sin(2.0 * k1 * x_an) *
+//          exp(-2.0 * k_visco * (k1 * k1 + k2 * k2) * t);
+//      auto force_y = -0.5 * k1 * k1 / k2 * body_force * sin(2.0 * k2 * y_an) *
+//          exp(-2.0 * k_visco * (k1 * k1 + k2 * k2) * t);
+//      src_str_f[n] = {force_x, force_y};
+//    }  // n
+//    ns.InitSource(src_pos_f, src_str_f);
+//    if (std::fmod(t, 0.001) < 1e-3) {
+//      WriteResultsCmgui(lm.u, nx, ny, ++t_count);
+//      std::cout << t_count << " " << t << std::endl;
+//    }
+//  }  // t
+  for (auto y = 0u; y < ny; ++y) {
+    auto n = y * nx + 32;
+//    std::cout << ns.source[n][1] << std::endl;
+  }
 }
 }

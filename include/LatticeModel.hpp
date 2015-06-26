@@ -4,6 +4,16 @@
 
 class LatticeModel {
  public:
+  /**
+   * Constructor: creates lattice model
+   * \param num_dims number of dimensions
+   * \param num_dirs number of discrete directions
+   * \param num_rows number of rows
+   * \param num_cols number of columns
+   * \param dx space step
+   * \param dt time step
+   * \param initial_velocity initial velocity of the lattice
+   */
   LatticeModel(std::size_t num_dims
     , std::size_t num_dirs
     , std::size_t num_rows
@@ -14,8 +24,6 @@ class LatticeModel {
 
   /**
    * Virtual destructor since we deriving from this class, see Collision.hpp
-   * \return virtual
-   *
    */
   virtual ~LatticeModel() = default;
 

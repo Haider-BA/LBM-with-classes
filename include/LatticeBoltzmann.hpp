@@ -17,10 +17,19 @@ class LatticeBoltzmann {
 
   /**
    * Constructor: Creates lattice
-   * \param
-   * \param
-   * \return
-   *
+   * \param t_total total time of simulation
+   * \param obstacles_pos lattice containing position of obstacles
+   * \param is_ns NS equation toggle
+   * \param is_cd CD equation toggle
+   * \param is_taylor workaround to toggle bounceback boundary condition for
+   *        left and right edge for taylor analytical test
+   * \param is_instant instantaneous source togle
+   * \param has_obstacles obstacles toggle
+   * \param lm lattice model to take care of dimensions, directions, number of
+   *        rows, number of columns, space step, time step, omega, discrete
+   *        velocity vectors
+   * \param ns Collision model for NS equation
+   * \param cd Collision model for CD equation
    */
   LatticeBoltzmann(double t_total
     , const std::vector<std::vector<std::size_t>> &obstacles_pos
@@ -126,15 +135,6 @@ class LatticeBoltzmann {
    *       velocity)
    */
   void RunSim(std::vector<std::vector<double>> &lattice);
-
-  std::vector<double> Flip(const std::vector<double> &lattice);
-  std::vector<bool> Flip(const std::vector<bool> &lattice);
-  std::vector<std::vector<double>> Flip(
-      const std::vector<std::vector<double>> &lattice);
-  void Print(const std::vector<double> &lattice);
-  void Print(const std::vector<bool> &lattice);
-  void Print(int which_to_print
-  , const std::vector<std::vector<double>> &lattice);
 
   /**
    * NS distribution function stored row-wise in a 2D vector.

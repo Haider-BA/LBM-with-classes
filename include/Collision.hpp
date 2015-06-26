@@ -9,12 +9,20 @@ class Collision {
   // https://stackoverflow.com/questions/15827632/overload-of-pure-virtual-
   // function
   //virtual void InitSource() = 0;
+  /**
+   * Constructor: Creates collision model
+   * \param lm lattice model used for simulation
+   * \param initial_density initial density of the lattice
+   */
   Collision(LatticeModel &lm
     , double initial_density);
 
   // Since we are deriving from this class, need virtual destructor
   // https://stackoverflow.com/questions/353817/should-every-class-have-a-
   // virtual-destructor
+  /**
+   * Virtual destructor since we are deriving from this class
+   */
   virtual ~Collision() = default;
 
   /**

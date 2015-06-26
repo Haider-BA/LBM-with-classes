@@ -5,12 +5,23 @@
 
 class LatticeD2Q9: public LatticeModel {
  public:
+  /**
+   * Constructor: Create lattice model for D2Q9
+   * \param num_rows number of rows
+   * \param num_cols number of columns
+   * \param dx space step
+   * \param dt time step
+   * \param initial_velocity initial velocity of the lattice
+   */
   LatticeD2Q9(std::size_t num_rows
     , std::size_t num_cols
     , double dx
     , double dt
     , const std::vector<double> &initial_velocity);
 
+  /**
+   * Destructor
+   */
   ~LatticeD2Q9() = default;
 
   /**

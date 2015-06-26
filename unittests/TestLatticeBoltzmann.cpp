@@ -6,10 +6,12 @@
 #include "LatticeBoltzmann.hpp"
 #include "LatticeD2Q9.hpp"
 #include "LatticeModel.hpp"
+#include "Printing.hpp"
 #include "UnitTest++.h"
 
 SUITE(TestException)
 {
+
 TEST(ConstructorException)
 {
 //  CHECK_THROW(LatticeBoltzmann lbm, std::runtime_error);
@@ -1304,7 +1306,7 @@ TEST(ObstaclesDoNotReflectCorners)
 
 TEST(ObstaclesNormalReflect)
 {
-  std::vector<std::vector<std::size_t>> obs_pos = {{2, 2}};
+  std::vector<std::vector<std::size_t>> obs_pos = {{2, 4}};
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
@@ -1330,7 +1332,7 @@ TEST(ObstaclesNormalReflect)
     , lm
     , ns
     , cd);
-  auto n = 2 * g_nx + 2;
+  auto n = 4 * g_nx + 2;
   for (auto t = 0; t < 1; ++t) {
     ns.Collide(lbm.f);
     lbm.Obstacles(lbm.f);

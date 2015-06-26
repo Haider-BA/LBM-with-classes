@@ -7,9 +7,12 @@
 class CollisionCD: public Collision {
  public:
   /**
-   * Constructor:
-   * \param lat std::vector<std::vector<double>>&
-   *
+   * Constructor: Creates collision model for CD equation
+   * \param lm lattice model used for simulation
+   * \param position source positions
+   * \param strenght source strengths
+   * \param diffusion_coefficient
+   * \param initial_density_g initial density of CD lattice
    */
   CollisionCD(LatticeModel &lm
     , const std::vector<std::vector<std::size_t>> &position
@@ -17,6 +20,9 @@ class CollisionCD: public Collision {
     , double diffusion_coefficient
     , double initial_density_g);
 
+  /**
+   * Destructor
+   */
   ~CollisionCD() = default;
 
   /**
