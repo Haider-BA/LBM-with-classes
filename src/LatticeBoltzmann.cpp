@@ -110,70 +110,63 @@ std::vector<std::vector<double>> LatticeBoltzmann::BoundaryCondition(
   // initialize some boundaries to mirror their counterparts
   auto right_boundary(left_boundary);
   auto bottom_boundary(top_boundary);
-  // no-slip boundary condition on left and right for taylor vortex
+  // Periodic boundary condition on left and right
+  for (auto y = 0u; y < ny; ++y) {
+    auto n = y * nx;
+    left_boundary[y][E] = lattice[n + nx - 1][E];
+    left_boundary[y][NE] = lattice[n + nx - 1][NE];
+    left_boundary[y][SE] = lattice[n + nx - 1][SE];
+    right_boundary[y][W] = lattice[n][W];
+    right_boundary[y][NW] = lattice[n][NW];
+    right_boundary[y][SW] = lattice[n][SW];
+  }  // y
+  // periodic boundary condition on top and bottom for taylor vortex
   // analytical solution, this is a temporary workaround
   if (is_taylor_) {
-    for (auto y = 0u; y < ny; ++y) {
-      auto n = y * nx;
-      left_boundary[y][E] = lattice[n + 1][W];
-      right_boundary[y][W] = lattice[n + nx - 1][E];
-      if (y == 0) {
-        left_boundary[y][SE] = lattice[nx * (ny - 1)][NW];
-        right_boundary[y][SW] = lattice[nx * ny - 1][NE];
-      }
-      else {
-        left_boundary[y][SE] = lattice[n - nx + 1][NW];
-        right_boundary[y][SW] = lattice[n - 1][NE];
-      }
-      if (y == ny - 1) {
-        left_boundary[y][NE] = lattice[0][SW];
-        right_boundary[y][NW] = lattice[nx - 1][SE];
-      }
-      else {
-        left_boundary[y][NE] = lattice[n + nx + 1][SW];
-        right_boundary[y][NW] = lattice[n + nx + nx - 1][SE];
-      }
+    for (auto x = 0u; x < nx; ++x) {
+      auto n = (ny - 1) * nx;
+      top_boundary[x][S] = lattice[x][S];
+      top_boundary[x][SW] = lattice[x][SW];
+      top_boundary[x][SE] = lattice[x][SE];
+      bottom_boundary[x][N] = lattice[n + x][N];
+      bottom_boundary[x][NW] = lattice[n + x][NW];
+      bottom_boundary[x][NE] = lattice[n + x][NE];
     }  // y
+    // mixture of boundaries at the corners
+    corner_boundary[0][NE] = lattice[ny * nx - 1][NE];
+    corner_boundary[1][NW] = lattice[(ny - 1) * nx][NW];
+    corner_boundary[2][SE] = lattice[nx - 1][SE];
+    corner_boundary[3][SW] = lattice[0][SW];
   }
-  // Periodic boundary condition on left and right
   else {
-    for (auto y = 0u; y < ny; ++y) {
-      auto n = y * nx;
-      left_boundary[y][E] = lattice[n + nx - 1][E];
-      left_boundary[y][NE] = lattice[n + nx - 1][NE];
-      left_boundary[y][SE] = lattice[n + nx - 1][SE];
-      right_boundary[y][W] = lattice[n][W];
-      right_boundary[y][NW] = lattice[n][NW];
-      right_boundary[y][SW] = lattice[n][SW];
-    }  // y
+    // no-slip boundary condition on top and bottom
+    for (auto x = 0u; x < nx; ++x) {
+      auto n = (ny - 1) * nx;
+      top_boundary[x][S] = lattice[x + n][N];
+      bottom_boundary[x][N] = lattice[x][S];
+      if (x == 0) {
+        top_boundary[x][SW] = lattice[nx * ny - 1][NE];
+        bottom_boundary[x][NW] = lattice[nx - 1][SE];
+      }
+      else {
+        top_boundary[x][SW] = lattice[x + n - 1][NE];
+        bottom_boundary[x][NW] = lattice[x - 1][SE];
+      }
+      if (x == nx - 1) {
+        top_boundary[x][SE] = lattice[n][NW];
+        bottom_boundary[x][NE] = lattice[0][SW];
+      }
+      else {
+        top_boundary[x][SE] = lattice[x + n + 1][NW];
+        bottom_boundary[x][NE] = lattice[x + 1][SW];
+      }
+    }  // x
+    // mixture of boundaries at the corners
+    corner_boundary[0][NE] = lattice[0][SW];
+    corner_boundary[1][NW] = lattice[nx - 1][SE];
+    corner_boundary[2][SE] = lattice[(ny - 1) * nx][NW];
+    corner_boundary[3][SW] = lattice[ny * nx - 1][NE];
   }
-  // no-slip boundary condition on top and bottom
-  for (auto x = 0u; x < nx; ++x) {
-    auto n = (ny - 1) * nx;
-    top_boundary[x][S] = lattice[x + n][N];
-    bottom_boundary[x][N] = lattice[x][S];
-    if (x == 0) {
-      top_boundary[x][SW] = lattice[nx * ny - 1][NE];
-      bottom_boundary[x][NW] = lattice[nx - 1][SE];
-    }
-    else {
-      top_boundary[x][SW] = lattice[x + n - 1][NE];
-      bottom_boundary[x][NW] = lattice[x - 1][SE];
-    }
-    if (x == nx - 1) {
-      top_boundary[x][SE] = lattice[n][NW];
-      bottom_boundary[x][NE] = lattice[0][SW];
-    }
-    else {
-      top_boundary[x][SE] = lattice[x + n + 1][NW];
-      bottom_boundary[x][NE] = lattice[x + 1][SW];
-    }
-  }  // x
-  // mixture of boundaries at the corners
-  corner_boundary[0][NE] = lattice[0][SW];
-  corner_boundary[1][NW] = lattice[nx - 1][SE];
-  corner_boundary[2][SE] = lattice[(ny - 1) * nx][NW];
-  corner_boundary[3][SW] = lattice[ny * nx - 1][NE];
 
   // append the boundaries of different edges to the main boundary vector
   auto boundary(left_boundary);

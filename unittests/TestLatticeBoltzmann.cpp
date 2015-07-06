@@ -581,7 +581,7 @@ TEST(BoundaryPeriodic)
   lbm.f.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
   lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
   for (auto y = 0u; y < g_ny; ++y) {
-    auto n = y * (g_nx);
+    auto n = y * g_nx;
     CHECK_CLOSE(lbm.f[n + g_nx - 1][E], lbm.boundary_f[y][E], zero_tol);
     CHECK_CLOSE(lbm.f[n + g_nx - 1][NE], lbm.boundary_f[y][NE],
         zero_tol);
@@ -590,6 +590,48 @@ TEST(BoundaryPeriodic)
     CHECK_CLOSE(lbm.f[n][W], lbm.boundary_f[y + g_ny][W], zero_tol);
     CHECK_CLOSE(lbm.f[n][NW], lbm.boundary_f[y + g_ny][NW], zero_tol);
     CHECK_CLOSE(lbm.f[n][SW], lbm.boundary_f[y + g_ny][SW], zero_tol);
+  }  // y
+}
+
+TEST(BoundaryPeriodicTaylor)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  CollisionNS ns(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g);
+  LatticeBoltzmann lbm(g_t_total
+    , g_obs_pos
+    , g_is_ns
+    , g_is_cd
+    , g_is_taylor
+    , g_is_instant
+    , g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  lbm.f.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
+  lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
+  auto top = 2 * g_ny;
+  auto bottom = 2 * g_ny + g_nx;
+  for (auto x = 0u; x < g_nx; ++x) {
+    auto n = (g_ny - 1) * g_nx;
+    CHECK_CLOSE(lbm.f[x][S], lbm.boundary_f[top + x][S], zero_tol);
+    CHECK_CLOSE(lbm.f[x][SW], lbm.boundary_f[top + x][SW], zero_tol);
+    CHECK_CLOSE(lbm.f[x][SE], lbm.boundary_f[top + x][SE], zero_tol);
+    CHECK_CLOSE(lbm.f[n + x][N], lbm.boundary_f[bottom + x][N], zero_tol);
+    CHECK_CLOSE(lbm.f[n + x][NW], lbm.boundary_f[bottom + x][NW], zero_tol);
+    CHECK_CLOSE(lbm.f[n + x][NE], lbm.boundary_f[bottom + x][NE], zero_tol);
   }  // y
 }
 
@@ -648,63 +690,6 @@ TEST(BoundaryBounceback)
       CHECK_CLOSE(lbm.f[x + 1][SW], lbm.boundary_f[bottom + x][NE], zero_tol);
     }
   }  // x
-}
-
-TEST(BoundaryBouncebackTaylor)
-{
-  LatticeD2Q9 lm(g_ny
-    , g_nx
-    , g_dx
-    , g_dt
-    , g_u0);
-  CollisionNS ns(lm
-    , g_src_pos_f
-    , g_src_str_f
-    , g_k_visco
-    , g_rho0_f);
-  CollisionCD cd(lm
-    , g_src_pos_g
-    , g_src_str_g
-    , g_d_coeff
-    , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , g_is_taylor
-    , g_is_instant
-    , g_no_obstacles
-    , lm
-    , ns
-    , cd);
-  double value = 0;
-  for (auto &node : lbm.f) node = std::vector<double>(9, value++);
-  lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
-  auto right = g_ny;
-  for (auto y = 0u; y < g_ny; ++y) {
-    auto n = y * g_nx;
-    CHECK_CLOSE(lbm.f[n + 1][W], lbm.boundary_f[y][E], zero_tol);
-    CHECK_CLOSE(lbm.f[n + g_nx - 1][E], lbm.boundary_f[right + y][W], zero_tol);
-    if (y == 0) {
-      CHECK_CLOSE(lbm.f[g_nx * (g_ny - 1)][NW], lbm.boundary_f[y][SE],
-          zero_tol);
-      CHECK_CLOSE(lbm.f[g_nx * g_ny - 1][SE], lbm.boundary_f[right + y][SW],
-          zero_tol);
-    }
-    else {
-      CHECK_CLOSE(lbm.f[n - g_nx + 1][NW], lbm.boundary_f[y][SE], zero_tol);
-      CHECK_CLOSE(lbm.f[n - 1][SE], lbm.boundary_f[right + y][SW], zero_tol);
-    }
-    if (y == g_ny - 1) {
-      CHECK_CLOSE(lbm.f[0][SW], lbm.boundary_f[y][NE], zero_tol);
-      CHECK_CLOSE(lbm.f[g_nx - 1][SW], lbm.boundary_f[right + y][NW], zero_tol);
-    }
-    else {
-      CHECK_CLOSE(lbm.f[n + g_nx + 1][SW], lbm.boundary_f[y][NE], zero_tol);
-      CHECK_CLOSE(lbm.f[n + g_nx + g_nx - 1][SW], lbm.boundary_f[right + y][NW],
-          zero_tol);
-    }
-  }  // y
 }
 
 TEST(BoundaryCorner)
