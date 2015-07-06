@@ -155,8 +155,8 @@ TEST(AnalyticalTaylorVortex)
   for (auto n = 0u; n < nx * ny; ++n) {
     auto x = n % nx;
     auto y = n / nx;
-    auto x_an = (static_cast<double>(x) - 32) * g_pi / (nx - 1);
-    auto y_an = (static_cast<double>(y) - 32) * g_pi / (ny - 1);
+    auto x_an = (static_cast<double>(x) + 0.5 - 32) * g_pi / (nx - 1);
+    auto y_an = (static_cast<double>(y) + 0.5 - 32) * g_pi / (ny - 1);
     src_pos_f.push_back({x, y});
     auto force_x = -0.5 * k1 * body_force * sin(2.0 * k1 * x_an);
     auto force_y = -0.5 * k1 * k1 / k2 * body_force * sin(2.0 * k2 * y_an);
@@ -192,13 +192,13 @@ TEST(AnalyticalTaylorVortex)
     , ns
     , cd);
   lm.u = u_lattice_an;
-  auto t_count = 0u;
-  WriteResultsCmgui(lm.u, nx, ny, t_count);
+//  auto t_count = 0u;
+//  WriteResultsCmgui(lm.u, nx, ny, t_count);
   for (auto t = 0.0; t < 0.5; t += g_dt) {
     lbm.TakeStep();
     for (auto n = 0u; n < nx * ny; ++n) {
-      auto x_an = (static_cast<double>(n % nx) - 32) * g_pi / (nx - 1);
-      auto y_an = (static_cast<double>(n / nx) - 32) * g_pi / (ny - 1);
+      auto x_an = (static_cast<double>(n % nx) + 0.5 - 32) * g_pi / (nx - 1);
+      auto y_an = (static_cast<double>(n / nx) + 0.5 - 32) * g_pi / (ny - 1);
       auto force_x = -0.5 * k1 * body_force * sin(2.0 * k1 * x_an) *
           exp(-2.0 * k_visco * (k1 * k1 + k2 * k2) * t * 1000);
       auto force_y = -0.5 * k1 * k1 / k2 * body_force * sin(2.0 * k2 * y_an) *
@@ -206,14 +206,14 @@ TEST(AnalyticalTaylorVortex)
       src_str_f[n] = {force_x, force_y};
     }  // n
     ns.InitSource(src_pos_f, src_str_f);
-    if (std::fmod(t, 0.001) < 1e-3) {
-      WriteResultsCmgui(lm.u, nx, ny, ++t_count);
-      std::cout << t_count << " " << t << std::endl;
-    }
+//    if (std::fmod(t, 0.001) < 1e-3) {
+//      WriteResultsCmgui(lm.u, nx, ny, ++t_count);
+//      std::cout << t_count << " " << t << std::endl;
+//    }
   }  // t
   for (auto y = 0u; y < ny; ++y) {
     auto n = y * nx + 32;
-    std::cout << ns.source[n][1] << std::endl;
+    std::cout << lm.u[n][1] << std::endl;
   }
 }
 }

@@ -22,7 +22,7 @@ class LatticeD2Q9: public LatticeModel {
   /**
    * Destructor
    */
-  ~LatticeD2Q9() = default;
+  virtual ~LatticeD2Q9() = default;
 
   /**
    * Compute density at each node by summing up its distribution functions

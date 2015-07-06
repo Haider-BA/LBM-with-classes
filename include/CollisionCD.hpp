@@ -23,7 +23,7 @@ class CollisionCD: public Collision {
   /**
    * Destructor
    */
-  ~CollisionCD() = default;
+  virtual ~CollisionCD() = default;
 
   /**
    * Initializes the source lattice
