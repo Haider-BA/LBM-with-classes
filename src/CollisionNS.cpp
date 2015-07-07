@@ -1,4 +1,5 @@
 #include "CollisionNS.hpp"
+#include <cmath>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -32,13 +33,14 @@ void CollisionNS::InitSource(
   auto nx = lm_.GetNumberOfColumns();
   auto ny = lm_.GetNumberOfRows();
   auto nd = lm_.GetNumberOfDimensions();
-  source.assign(nx * ny, {0.0, 0.0});
+  if (source.empty()) source.assign(nx * ny, {0.0, 0.0});
   auto it_strength = begin(strength);
   for (auto pos : position) {
     if (pos.size() != nd)
         throw std::runtime_error("Position doesn't match dimensions");
     if (pos[0] > nx - 1) throw std::runtime_error("x value out of range");
     if (pos[1] > ny - 1) throw std::runtime_error("y value out of range");
+    auto temp = source[pos[1] * nx + pos[0]][0];
     source[pos[1] * nx + pos[0]] = *it_strength++;
   }  // pos
 }
@@ -56,8 +58,8 @@ void CollisionNS::Collide(std::vector<std::vector<double>> &lattice)
       c_dot_u /= cs_sqr_;
       double src_dot_product = 0.0;
       for (auto d = 0u; d < nd; ++d) {
-        src_dot_product += (lm_.e[i][d] - lm_.u[n][d] + c_dot_u *
-            lm_.e[i][d]) * source[n][d];
+        src_dot_product += (lm_.e[i][d] - lm_.u[n][d] + c_dot_u * lm_.e[i][d]) *
+            source[n][d];
       }  // d
       src_dot_product /= cs_sqr_ / rho[n];
       auto src_i = (1.0 - 0.5 / tau_) * lm_.omega[i] * src_dot_product;

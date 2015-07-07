@@ -14,11 +14,14 @@ void WriteResultsCmgui(
   std::vector<double> solute_conc(num_nodes, 0.0);
 
   // Calculate the solute density
-  auto depth = lattice[0].size();
+//  auto depth = lattice[0].size();
+//  for (auto n = 0; n < num_nodes; ++n) {
+//    double rho = 0.0;
+//    for (auto i = 0u; i < depth; ++i) rho += lattice[n][i];
+//    solute_conc[n] = rho;
+//  }
   for (auto n = 0; n < num_nodes; ++n) {
-    double rho = 0.0;
-    for (auto i = 0u; i < depth; ++i) rho += lattice[n][i];
-    solute_conc[n] = rho;
+    solute_conc[n] = lattice[n][1];
   }
 
   // Write out only one 'node' file with the lattice size

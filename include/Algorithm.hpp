@@ -43,11 +43,11 @@ T GetZerothMoment(const std::vector<T> &node)
  * \return first moment of node
  */
 template <typename T>
-std::vector<T> GetFirstMoment(const std::vector<T> &node
-  , const std::vector<std::vector<T>> &e)
+T GetFirstMoment(const T &node
+  , const std::vector<T> &e)
 {
   auto nd = e.at(0).size();
-  std::vector<T> result(nd, 0);
+  T result(nd, 0);
   for (auto d = 0u; d < nd; ++d) {
     auto it_node = begin(node);
     for (auto dir : e) result[d] += (*it_node++) * dir[d];
