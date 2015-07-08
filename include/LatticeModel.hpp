@@ -23,6 +23,24 @@ class LatticeModel {
     , const std::vector<double> &initial_velocity);
 
   /**
+   * Constructor: creates lattice model
+   * \param num_dims number of dimensions
+   * \param num_dirs number of discrete directions
+   * \param num_rows number of rows
+   * \param num_cols number of columns
+   * \param dx space step
+   * \param dt time step
+   * \param initial_velocity initial velocity of the lattice
+   */
+  LatticeModel(std::size_t num_dims
+    , std::size_t num_dirs
+    , std::size_t num_rows
+    , std::size_t num_cols
+    , double dx
+    , double dt
+    , const std::vector<std::vector<double>> &initial_velocity);
+
+  /**
    * Virtual destructor since we deriving from this class, see Collision.hpp
    */
    // temporary workaround due to MinGW bug

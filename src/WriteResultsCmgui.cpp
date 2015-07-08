@@ -21,7 +21,7 @@ void WriteResultsCmgui(
 //    solute_conc[n] = rho;
 //  }
   for (auto n = 0; n < num_nodes; ++n) {
-    solute_conc[n] = lattice[n][1];
+    solute_conc[n] = lattice[n][0];
   }
 
   // Write out only one 'node' file with the lattice size

@@ -24,6 +24,7 @@ static const auto g_is_taylor = true;
 static const auto g_is_instant = true;
 static const auto g_no_obstacles = false;
 static const auto g_pi = 3.14159265;
+static const auto g_2pi = 3.14159265 * 2;
 static const std::vector<std::vector<std::size_t>> g_obs_pos;
 
 TEST(AnalyticalDiffusion)
@@ -155,8 +156,8 @@ TEST(AnalyticalTaylorVortex)
   for (auto n = 0u; n < nx * ny; ++n) {
     auto x = n % nx;
     auto y = n / nx;
-    auto x_an = (static_cast<double>(x) + 0.5 - 32) * g_pi / (nx - 1);
-    auto y_an = (static_cast<double>(y) + 0.5 - 32) * g_pi / (ny - 1);
+    auto x_an = (static_cast<double>(x) + 0.5 - 32) * g_2pi / (nx - 1);
+    auto y_an = (static_cast<double>(y) + 0.5 - 32) * g_2pi / (ny - 1);
     src_pos_f.push_back({x, y});
     auto force_x = -0.5 * k1 * body_force * sin(2.0 * k1 * x_an);
     auto force_y = -0.5 * k1 * k1 / k2 * body_force * sin(2.0 * k2 * y_an);
@@ -164,13 +165,15 @@ TEST(AnalyticalTaylorVortex)
     src_str_f.push_back({force_x, force_y});
     auto u_an = -1.0 * u0_an * cos(k1 * x_an) * sin(k2 * y_an);
     auto v_an = u0_an * k1 / k2 * sin(k1 * x_an) * cos(k2 * y_an);
+//    auto u_an = u0_an * sin(k1 * x_an) * cos(k2 * y_an);
+//    auto v_an = -1.0 * u0_an * k1 / k2 * cos(k1 * x_an) * sin(k2 * y_an);
     u_lattice_an.push_back({u_an, v_an});
   }
   LatticeD2Q9 lm(ny
     , nx
     , g_dx
     , g_dt
-    , u0);
+    , u_lattice_an);
   CollisionNS ns(lm
     , src_pos_f
     , src_str_f
@@ -191,13 +194,13 @@ TEST(AnalyticalTaylorVortex)
     , lm
     , ns
     , cd);
-  lm.u = u_lattice_an;
+//  lm.u = u_lattice_an;
   auto t_count = 0u;
-  WriteResultsCmgui(lbm.f, nx, ny, t_count);
+  WriteResultsCmgui(lm.u, nx, ny, t_count);
   for (auto t = 0.0; t < 0.5; t += g_dt) {
     for (auto n = 0u; n < nx * ny; ++n) {
-      auto x_an = (static_cast<double>(n % nx) + 0.5 - 32) * g_pi / (nx - 1);
-      auto y_an = (static_cast<double>(n / nx) + 0.5 - 32) * g_pi / (ny - 1);
+      auto x_an = (static_cast<double>(n % nx) + 0.5 - 32) * g_2pi / (nx - 1);
+      auto y_an = (static_cast<double>(n / nx) + 0.5 - 32) * g_2pi / (ny - 1);
       auto force_x = -0.5 * k1 * body_force * sin(2.0 * k1 * x_an) *
           exp(-2.0 * k_visco * (k1 * k1 + k2 * k2) * t * 138);
       auto force_y = -0.5 * k1 * k1 / k2 * body_force * sin(2.0 * k2 * y_an) *
@@ -208,13 +211,20 @@ TEST(AnalyticalTaylorVortex)
     lbm.TakeStep();
 //    std::cout << ns.source[2112][1] << std::endl;
     if (std::fmod(t, 0.001) < 1e-3) {
-      WriteResultsCmgui(lbm.f, nx, ny, ++t_count);
+      WriteResultsCmgui(lm.u, nx, ny, ++t_count);
       std::cout << t_count << " " << t << std::endl;
     }
   }  // t
   for (auto y = 0u; y < ny; ++y) {
     auto n = y * nx + 32;
+    auto x_an = (static_cast<double>(n % nx) + 0.5 - 32) * g_2pi / (nx - 1);
+    auto y_an = (static_cast<double>(n / nx) + 0.5 - 32) * g_2pi / (ny - 1);
     std::cout << lm.u[n][0] << std::endl;
+    auto u_an = -1.0 * u0_an * cos(k1 * x_an) * sin(k2 * y_an) *
+          exp(-1.0 * k_visco * (k1 * k1 + k2 * k2) * 0.499 * 138);
+//    auto v_an = u0_an * k1 / k2 * sin(k1 * x_an) * cos(k2 * y_an) *
+//          exp(-1.0 * k_visco * (k1 * k1 + k2 * k2) * t * 138);
+    CHECK_CLOSE(u_an, lm.u[n][0], 1e-6);
   }
 }
 }
