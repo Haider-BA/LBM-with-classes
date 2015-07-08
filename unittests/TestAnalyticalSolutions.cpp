@@ -200,7 +200,7 @@ TEST(AnalyticalTaylorVortex)
     , cd);
 //  lm.u = u_lattice_an;
   auto t_count = 0u;
-  WriteResultsCmgui(lm.u, nx, ny, t_count);
+  WriteResultsCmgui(ns.source, nx, ny, t_count);
   for (auto t = 0.0; t < 0.5; t += g_dt) {
     for (auto n = 0u; n < nx * ny; ++n) {
       auto x_an = (static_cast<double>(n % nx) + 0.5 - 32) * g_2pi / (nx - 1);
@@ -215,7 +215,7 @@ TEST(AnalyticalTaylorVortex)
     lbm.TakeStep();
 //    std::cout << ns.source[2112][0] << std::endl;
     if (std::fmod(t, 0.001) < 1e-3) {
-      WriteResultsCmgui(lm.u, nx, ny, ++t_count);
+      WriteResultsCmgui(ns.source, nx, ny, ++t_count);
       std::cout << t_count << " " << t << std::endl;
     }
   }  // t
