@@ -17,6 +17,14 @@ class Collision {
   Collision(LatticeModel &lm
     , double initial_density);
 
+  /**
+   * Constructor: Creates collision model
+   * \param lm lattice model used for simulation
+   * \param initial_density initial density of the lattice
+   */
+  Collision(LatticeModel &lm
+    , const std::vector<double> &initial_density);
+
   // Since we are deriving from this class, need virtual destructor
   // https://stackoverflow.com/questions/353817/should-every-class-have-a-
   // virtual-destructor

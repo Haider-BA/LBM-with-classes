@@ -24,6 +24,21 @@ CollisionNS::CollisionNS(LatticeModel &lm
   InitSource(position, strength);
 }
 
+CollisionNS::CollisionNS(LatticeModel &lm
+  , const std::vector<std::vector<std::size_t>> &position
+  , const std::vector<std::vector<double>> &strength
+  , double kinematic_viscosity
+  , const std::vector<double> &initial_density_f)
+  : Collision(lm, initial_density_f),
+    source {}
+{
+  auto dt = lm.GetTimeStep();
+  // tau_ formula from "Discrete lattice effects on the forcing term in
+  // the lattice Boltzmann method" Guo2002
+  tau_ = 0.5 + kinematic_viscosity / cs_sqr_ / dt;
+  InitSource(position, strength);
+}
+
 void CollisionNS::InitSource(
     const std::vector<std::vector<std::size_t>> &position
   , const std::vector<std::vector<double>> &strength)

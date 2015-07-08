@@ -22,6 +22,20 @@ class CollisionNS: public Collision {
     , double initial_density_f);
 
   /**
+   * Constructor: Creates collision model for NS equation
+   * \param lm lattice model used for simulation
+   * \param position source positions
+   * \param strenght source strengths
+   * \param kinematic viscosity
+   * \param initial_density_g initial density of NS lattice
+   */
+  CollisionNS(LatticeModel &lm
+    , const std::vector<std::vector<std::size_t>> &position
+    , const std::vector<std::vector<double>> &strength
+    , double kinematic_viscosity
+    , const std::vector<double> &initial_density_f);
+
+  /**
    * Destructor
    */
   ~CollisionNS() = default;

@@ -45,5 +45,5 @@ gfx modify g_element "/" general clear;
 gfx modify g_element "/" surfaces coordinate coordinates tessellation default LOCAL native_discretization solute select_on material default data solute spectrum default selected_material default_selected render_shaded;
 
 gfx modify spectrum default clear overwrite_colour;
-gfx modify spectrum default linear reverse range 0.95 1.05 extend_above extend_below rainbow colour_range 0 1 component 1;
+gfx modify spectrum default linear reverse range -0.0316 0.0316 extend_above extend_below rainbow colour_range 0 1 component 1;
 
