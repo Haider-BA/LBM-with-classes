@@ -144,7 +144,7 @@ TEST(AnalyticalTaylorVortex)
   double t_total = 1.0;
   // analytical solution parameters
   std::vector<std::vector<double>> u_lattice_an;
-  auto body_force = 1.0;
+  auto body_force = 0.001;
   auto u0_an = sqrt(body_force);
   auto k_visco = 0.2;
   auto k1 = 1.0;
@@ -158,8 +158,8 @@ TEST(AnalyticalTaylorVortex)
     auto x_an = (static_cast<double>(x) + 0.5 - 32) * g_pi / (nx - 1);
     auto y_an = (static_cast<double>(y) + 0.5 - 32) * g_pi / (ny - 1);
     src_pos_f.push_back({x, y});
-    auto force_x = -0.5 * k1 * body_force / 1000 * sin(2.0 * k1 * x_an);
-    auto force_y = -0.5 * k1 * k1 / k2 * body_force / 1000 * sin(2.0 * k2 * y_an);
+    auto force_x = -0.5 * k1 * body_force * sin(2.0 * k1 * x_an);
+    auto force_y = -0.5 * k1 * k1 / k2 * body_force * sin(2.0 * k2 * y_an);
 //    std::cout << force_y << std::endl;
     src_str_f.push_back({force_x, force_y});
     auto u_an = -1.0 * u0_an * cos(k1 * x_an) * sin(k2 * y_an);
@@ -193,14 +193,14 @@ TEST(AnalyticalTaylorVortex)
     , cd);
   lm.u = u_lattice_an;
   auto t_count = 0u;
-  WriteResultsCmgui(lm.u, nx, ny, t_count);
+  WriteResultsCmgui(lbm.f, nx, ny, t_count);
   for (auto t = 0.0; t < 0.5; t += g_dt) {
     for (auto n = 0u; n < nx * ny; ++n) {
       auto x_an = (static_cast<double>(n % nx) + 0.5 - 32) * g_pi / (nx - 1);
       auto y_an = (static_cast<double>(n / nx) + 0.5 - 32) * g_pi / (ny - 1);
-      auto force_x = -0.5 * k1 * body_force / 1000 * sin(2.0 * k1 * x_an) *
+      auto force_x = -0.5 * k1 * body_force * sin(2.0 * k1 * x_an) *
           exp(-2.0 * k_visco * (k1 * k1 + k2 * k2) * t * 138);
-      auto force_y = -0.5 * k1 * k1 / k2 * body_force / 1000 * sin(2.0 * k2 * y_an) *
+      auto force_y = -0.5 * k1 * k1 / k2 * body_force * sin(2.0 * k2 * y_an) *
           exp(-2.0 * k_visco * (k1 * k1 + k2 * k2) * t * 138);
       src_str_f[n] = {force_x, force_y};
     }  // n
@@ -208,13 +208,13 @@ TEST(AnalyticalTaylorVortex)
     lbm.TakeStep();
 //    std::cout << ns.source[2112][1] << std::endl;
     if (std::fmod(t, 0.001) < 1e-3) {
-      WriteResultsCmgui(lm.u, nx, ny, ++t_count);
+      WriteResultsCmgui(lbm.f, nx, ny, ++t_count);
       std::cout << t_count << " " << t << std::endl;
     }
   }  // t
   for (auto y = 0u; y < ny; ++y) {
     auto n = y * nx + 32;
-    std::cout << lm.u[n][1] << std::endl;
+    std::cout << lm.u[n][0] << std::endl;
   }
 }
 }
