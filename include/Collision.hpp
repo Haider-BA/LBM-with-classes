@@ -10,7 +10,7 @@ class Collision {
   // function
   //virtual void InitSource() = 0;
   /**
-   * Constructor: Creates collision model
+   * Constructor: Creates collision model with the same density at each node
    * \param lm lattice model used for simulation
    * \param initial_density initial density of the lattice
    */
@@ -18,7 +18,7 @@ class Collision {
     , double initial_density);
 
   /**
-   * Constructor: Creates collision model
+   * Constructor: Creates collision model with variable density at each node
    * \param lm lattice model used for simulation
    * \param initial_density initial density of the lattice
    */

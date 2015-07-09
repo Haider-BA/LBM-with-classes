@@ -5,7 +5,7 @@
 class LatticeModel {
  public:
   /**
-   * Constructor: creates lattice model
+   * Constructor: creates lattice model with the same velocity at each node
    * \param num_dims number of dimensions
    * \param num_dirs number of discrete directions
    * \param num_rows number of rows
@@ -23,7 +23,7 @@ class LatticeModel {
     , const std::vector<double> &initial_velocity);
 
   /**
-   * Constructor: creates lattice model
+   * Constructor: creates lattice model with variable velocity at each node
    * \param num_dims number of dimensions
    * \param num_dirs number of discrete directions
    * \param num_rows number of rows

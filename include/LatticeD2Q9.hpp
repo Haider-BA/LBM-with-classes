@@ -6,7 +6,8 @@
 class LatticeD2Q9: public LatticeModel {
  public:
   /**
-   * Constructor: Create lattice model for D2Q9
+   * Constructor: Create lattice model for D2Q9 with the same velocity at each
+   * node
    * \param num_rows number of rows
    * \param num_cols number of columns
    * \param dx space step
@@ -20,7 +21,8 @@ class LatticeD2Q9: public LatticeModel {
     , const std::vector<double> &initial_velocity);
 
   /**
-   * Constructor: Create lattice model for D2Q9
+   * Constructor: Create lattice model for D2Q9 with variable velocity at each
+   * node
    * \param num_rows number of rows
    * \param num_cols number of columns
    * \param dx space step
