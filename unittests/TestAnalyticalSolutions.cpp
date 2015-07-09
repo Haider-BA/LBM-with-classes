@@ -146,31 +146,22 @@ TEST(AnalyticalTaylorVortex)
   // analytical solution parameters
   std::vector<std::vector<double>> u_lattice_an;
   std::vector<double> rho_lattice_an;
-  auto body_force = 0.001;
-  auto u0_an = sqrt(body_force);
-//  body_force = 0.0;
-  auto k_visco = 0.005;
-  auto k1 = 1.0;
-  auto k2 = 1.0;
-  // time points selected by Guo2002 to compare against analytical solution
-  // and plot graph (pg 5)
-  auto tc = log(2.0) / (k_visco * (k1 * k1 + k2 * k2));
+  auto u0_an = 0.001;
+  auto k_visco = 0.5;
+  // using one k since it's a square box
+  auto k = g_2pi / nx;
   for (auto n = 0u; n < nx * ny; ++n) {
     auto x = n % nx;
     auto y = n / nx;
-    auto x_an = (static_cast<double>(x) + 0.5 - 32) * g_2pi / (nx - 1);
-    auto y_an = (static_cast<double>(y) + 0.5 - 32) * g_2pi / (ny - 1);
-    src_pos_f.push_back({x, y});
-    auto force_x = -0.5 * k1 * body_force * sin(2.0 * k1 * x_an);
-    auto force_y = -0.5 * k1 * k1 / k2 * body_force * sin(2.0 * k2 * y_an);
-//    std::cout << force_y << std::endl;
-    src_str_f.push_back({force_x, force_y});
-    auto u_an = -1.0 * u0_an * cos(k1 * x_an) * sin(k2 * y_an);
-    auto v_an = u0_an * k1 / k2 * sin(k1 * x_an) * cos(k2 * y_an);
-//    auto u_an = u0_an * sin(k1 * x_an) * cos(k2 * y_an);
-//    auto v_an = -1.0 * u0_an * k1 / k2 * cos(k1 * x_an) * sin(k2 * y_an);
+    auto x_an = static_cast<double>(x);
+    auto y_an = static_cast<double>(y);
+    // analytical formula from "Interpolation methods and the accuracy of
+    // lattice-Boltzmann mesh refinement" eq17
+    auto u_an = -1.0 * u0_an * cos(k * x_an) * sin(k * y_an);
+    auto v_an = u0_an * sin(k * x_an) * cos(k * y_an);
     u_lattice_an.push_back({u_an, v_an});
-    auto rho_an = g_rho0_f + 0.25 / g_cs_sqr * u0_an * u0_an * (cos(2.0 * k1 * x_an) + (k1 * k1) / (k2 * k2) * cos(2.0 * k2 * y_an));
+    auto rho_an = g_rho0_f - 0.25 / g_cs_sqr * u0_an * u0_an *
+        (cos(2.0 * k * x_an) + cos(2.0 * k * y_an));
     rho_lattice_an.push_back(rho_an);
   }  // n
   LatticeD2Q9 lm(ny
@@ -198,50 +189,20 @@ TEST(AnalyticalTaylorVortex)
     , lm
     , ns
     , cd);
-//  lm.u = u_lattice_an;
-  auto t_count = 0u;
-  WriteResultsCmgui(ns.source, nx, ny, t_count);
-  for (auto t = 0.0; t < 0.5; t += g_dt) {
-    for (auto n = 0u; n < nx * ny; ++n) {
-      auto x_an = (static_cast<double>(n % nx) + 0.5 - 32) * g_2pi / (nx - 1);
-      auto y_an = (static_cast<double>(n / nx) + 0.5 - 32) * g_2pi / (ny - 1);
-      auto force_x = -0.5 * k1 * body_force * sin(2.0 * k1 * x_an) *
-          exp(-2.0 * k_visco * (k1 * k1 + k2 * k2) * t);
-      auto force_y = -0.5 * k1 * k1 / k2 * body_force * sin(2.0 * k2 * y_an) *
-          exp(-2.0 * k_visco * (k1 * k1 + k2 * k2) * t);
-      src_str_f[n] = {force_x, force_y};
-    }  // n
-    ns.InitSource(src_pos_f, src_str_f);
+  // According to t_c formula in Guo2002 pg5, checks simulation results against
+  // analytical result until velocity is 25% of initial value
+  for (auto t = 0u; t < 150; ++t) {
     lbm.TakeStep();
-//    std::cout << ns.source[2112][0] << std::endl;
-    if (std::fmod(t, 0.001) < 1e-3) {
-      WriteResultsCmgui(ns.source, nx, ny, ++t_count);
-      std::cout << t_count << " " << t << std::endl;
-    }
+    for (auto n = 0u; n < nx * ny; ++n) {
+        auto x_an = static_cast<double>(n % nx);
+        auto y_an = static_cast<double>(n / nx);
+        auto u_an = -1.0 * u0_an * cos(k * x_an) * sin(k * y_an) *
+            exp(-2.0 * k_visco * k * k * t);
+        auto v_an = u0_an * sin(k * x_an) * cos(k * y_an) *
+            exp(-2.0 * k_visco * k * k * t);
+      if (fabs(u_an) > 1e-20) CHECK_CLOSE(u_an, lm.u[n][0], fabs(u_an) * 0.01);
+      if (fabs(v_an) > 1e-20) CHECK_CLOSE(v_an, lm.u[n][1], fabs(v_an) * 0.01);
+    }  // y
   }  // t
-  for (auto y = 0u; y < ny; ++y) {
-    auto n = y * nx + 32;
-    auto x_an = (static_cast<double>(n % nx) + 0.5 - 32) * g_2pi / (nx - 1);
-    auto y_an = (static_cast<double>(n / nx) + 0.5 - 32) * g_2pi / (ny - 1);
-    std::cout << lm.u[n][0] << std::endl;
-    auto u_an = -1.0 * u0_an * cos(k1 * x_an) * sin(k2 * y_an) *
-          exp(-1.0 * k_visco * (k1 * k1 + k2 * k2) * 0.499);
-//    auto v_an = u0_an * k1 / k2 * sin(k1 * x_an) * cos(k2 * y_an) *
-//          exp(-1.0 * k_visco * (k1 * k1 + k2 * k2) * t * 138);
-//    CHECK_CLOSE(u_an, lm.u[n][0], 1e-6);
-  }
-  for (auto y = 0u; y < ny; ++y) {
-    auto n = y * nx + 32;
-    std::cout << ns.source[n][0] << std::endl;
-  }
-//  for (auto y = 0u; y < ny; ++y) {
-//    auto n = y * nx + 32;
-//    auto x_an = (static_cast<double>(n % nx) + 0.5 - 32) * g_2pi / (nx - 1);
-//    auto y_an = (static_cast<double>(n / nx) + 0.5 - 32) * g_2pi / (ny - 1);
-//    auto u_an = -1.0 * u0_an * cos(k1 * x_an) * sin(k2 * y_an) *
-//          exp(-1.0 * k_visco * (k1 * k1 + k2 * k2) * 0.499);
-//    std::cout << u_an << std::endl;
-//  }
-  std::cout << tc << std::endl;
 }
 }

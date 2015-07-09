@@ -48,7 +48,7 @@ void CollisionNS::InitSource(
   auto nx = lm_.GetNumberOfColumns();
   auto ny = lm_.GetNumberOfRows();
   auto nd = lm_.GetNumberOfDimensions();
-  if (source.empty()) source.assign(nx * ny, {0.0, 0.0});
+  source.assign(nx * ny, {0.0, 0.0});
   auto it_strength = begin(strength);
   for (auto pos : position) {
     if (pos.size() != nd)
