@@ -22,6 +22,7 @@ static const auto g_rho0_g = 1.0;
 static const auto g_is_ns = true;
 static const auto g_is_cd = true;
 static const auto g_is_taylor = true;
+static const auto g_is_lid = true;
 static const auto g_is_instant = true;
 static const auto g_no_obstacles = false;
 static const auto g_pi = 3.14159265;
@@ -58,6 +59,7 @@ TEST(AnalyticalDiffusion)
     , !g_is_ns
     , g_is_cd
     , !g_is_taylor
+    , !g_is_lid
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -112,6 +114,7 @@ TEST(AnalyticalPoiseuille)
     , g_is_ns
     , !g_is_cd
     , !g_is_taylor
+    , !g_is_lid
     , g_is_instant
     , g_no_obstacles
     , lm
@@ -136,6 +139,7 @@ TEST(AnalyticalPoiseuille)
 
 TEST(AnalyticalTaylorVortex)
 {
+  // have to use odd number for sizes
   std::size_t ny = 65;
   std::size_t nx = 65;
   std::vector<std::vector<std::size_t>> src_pos_f;
@@ -184,6 +188,7 @@ TEST(AnalyticalTaylorVortex)
     , g_is_ns
     , !g_is_cd
     , g_is_taylor
+    , !g_is_lid
     , !g_is_instant
     , g_no_obstacles
     , lm
@@ -192,6 +197,7 @@ TEST(AnalyticalTaylorVortex)
   // According to t_c formula in Guo2002 pg5, checks simulation results against
   // analytical result until velocity is 25% of initial value
   for (auto t = 0u; t < 150; ++t) {
+    std::cout << t << std::endl;
     lbm.TakeStep();
     for (auto n = 0u; n < nx * ny; ++n) {
         auto x_an = static_cast<double>(n % nx);
@@ -200,6 +206,8 @@ TEST(AnalyticalTaylorVortex)
             exp(-2.0 * k_visco * k * k * t);
         auto v_an = u0_an * sin(k * x_an) * cos(k * y_an) *
             exp(-2.0 * k_visco * k * k * t);
+      // checks that simulation is within 1% of analytical value if analytical
+      // value is not zero
       if (fabs(u_an) > 1e-20) CHECK_CLOSE(u_an, lm.u[n][0], fabs(u_an) * 0.01);
       if (fabs(v_an) > 1e-20) CHECK_CLOSE(v_an, lm.u[n][1], fabs(v_an) * 0.01);
     }  // y

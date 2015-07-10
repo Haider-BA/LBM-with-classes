@@ -36,6 +36,7 @@ class LatticeBoltzmann {
     , bool is_ns
     , bool is_cd
     , bool is_taylor
+    , bool is_lid
     , bool is_instant
     , bool has_obstacles
     , LatticeModel &lm
@@ -115,6 +116,12 @@ class LatticeBoltzmann {
     , const std::vector<std::vector<double>> &boundary);
 
   /**
+   * Does Zou-He velocity BC for lid-driven flow and streams
+   * \param lattice 2D vector containing distribution functions
+   */
+  void BoundaryAndStream(std::vector<std::vector<double>> &lattice);
+
+  /**
    * Performs one cycle of evolution equation, computes the relevant macroscopic
    * properties such as velocity and density
    */
@@ -189,6 +196,7 @@ class LatticeBoltzmann {
   bool is_ns_;
   bool is_cd_;
   bool is_taylor_;
+  bool is_lid_;
   bool is_instant_;
   bool has_obstacles_;
   // LatticeModel to take care of dims, dirs, rows, cols and discrete e vectors

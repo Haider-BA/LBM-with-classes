@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdexcept>  // std::runtime_error
 #include <vector>
+#include "Algorithm.hpp"
 #include "CollisionCD.hpp"
 #include "CollisionNS.hpp"
 #include "LatticeModel.hpp"
@@ -23,6 +24,7 @@ LatticeBoltzmann::LatticeBoltzmann(double t_total
   , bool is_ns
   , bool is_cd
   , bool is_taylor
+  , bool is_lid
   , bool is_instant
   , bool has_obstacles
   , LatticeModel &lm
@@ -37,6 +39,7 @@ LatticeBoltzmann::LatticeBoltzmann(double t_total
     is_ns_ {is_ns},
     is_cd_ {is_cd},
     is_taylor_ {is_taylor},
+    is_lid_ {is_lid},
     is_instant_ {is_instant},
     has_obstacles_ {has_obstacles},
     lm_ (lm),
@@ -104,76 +107,63 @@ std::vector<std::vector<double>> LatticeBoltzmann::BoundaryCondition(
   auto ny = lm_.GetNumberOfRows();
   auto nc = lm_.GetNumberOfDirections();
   std::vector<double> length_q(nc, 0.0);
-  std::vector<std::vector<double>> left_boundary(ny, length_q);
-  std::vector<std::vector<double>> top_boundary(nx, length_q);
-  std::vector<std::vector<double>> corner_boundary(4, length_q);
+  std::vector<std::vector<double>> left_bdr(ny, length_q);
+  std::vector<std::vector<double>> top_bdr(nx, length_q);
+  std::vector<std::vector<double>> corner_bdr(4, length_q);
   // initialize some boundaries to mirror their counterparts
-  auto right_boundary(left_boundary);
-  auto bottom_boundary(top_boundary);
+  auto right_bdr(left_bdr);
+  auto bottom_bdr(top_bdr);
   // Periodic boundary condition on left and right
   for (auto y = 0u; y < ny; ++y) {
     auto n = y * nx;
-    left_boundary[y][E] = lattice[n + nx - 1][E];
-    left_boundary[y][NE] = lattice[n + nx - 1][NE];
-    left_boundary[y][SE] = lattice[n + nx - 1][SE];
-    right_boundary[y][W] = lattice[n][W];
-    right_boundary[y][NW] = lattice[n][NW];
-    right_boundary[y][SW] = lattice[n][SW];
+    left_bdr[y][E] = lattice[n + nx - 1][E];
+    left_bdr[y][NE] = lattice[n + nx - 1][NE];
+    left_bdr[y][SE] = lattice[n + nx - 1][SE];
+    right_bdr[y][W] = lattice[n][W];
+    right_bdr[y][NW] = lattice[n][NW];
+    right_bdr[y][SW] = lattice[n][SW];
   }  // y
   // periodic boundary condition on top and bottom for taylor vortex
   // analytical solution, this is a temporary workaround
   if (is_taylor_) {
     for (auto x = 0u; x < nx; ++x) {
       auto n = (ny - 1) * nx;
-      top_boundary[x][S] = lattice[x][S];
-      top_boundary[x][SW] = lattice[x][SW];
-      top_boundary[x][SE] = lattice[x][SE];
-      bottom_boundary[x][N] = lattice[n + x][N];
-      bottom_boundary[x][NW] = lattice[n + x][NW];
-      bottom_boundary[x][NE] = lattice[n + x][NE];
+      top_bdr[x][S] = lattice[x][S];
+      top_bdr[x][SW] = lattice[x][SW];
+      top_bdr[x][SE] = lattice[x][SE];
+      bottom_bdr[x][N] = lattice[n + x][N];
+      bottom_bdr[x][NW] = lattice[n + x][NW];
+      bottom_bdr[x][NE] = lattice[n + x][NE];
     }  // y
-    // mixture of boundaries at the corners
-    corner_boundary[0][NE] = lattice[ny * nx - 1][NE];
-    corner_boundary[1][NW] = lattice[(ny - 1) * nx][NW];
-    corner_boundary[2][SE] = lattice[nx - 1][SE];
-    corner_boundary[3][SW] = lattice[0][SW];
+    // mixture of boundaries (periodic) at the corners
+    corner_bdr[0][NE] = lattice[ny * nx - 1][NE];
+    corner_bdr[1][NW] = lattice[(ny - 1) * nx][NW];
+    corner_bdr[2][SE] = lattice[nx - 1][SE];
+    corner_bdr[3][SW] = lattice[0][SW];
   }
   else {
     // no-slip boundary condition on top and bottom
     for (auto x = 0u; x < nx; ++x) {
       auto n = (ny - 1) * nx;
-      top_boundary[x][S] = lattice[x + n][N];
-      bottom_boundary[x][N] = lattice[x][S];
-      if (x == 0) {
-        top_boundary[x][SW] = lattice[nx * ny - 1][NE];
-        bottom_boundary[x][NW] = lattice[nx - 1][SE];
-      }
-      else {
-        top_boundary[x][SW] = lattice[x + n - 1][NE];
-        bottom_boundary[x][NW] = lattice[x - 1][SE];
-      }
-      if (x == nx - 1) {
-        top_boundary[x][SE] = lattice[n][NW];
-        bottom_boundary[x][NE] = lattice[0][SW];
-      }
-      else {
-        top_boundary[x][SE] = lattice[x + n + 1][NW];
-        bottom_boundary[x][NE] = lattice[x + 1][SW];
-      }
+      top_bdr[x][S] = lattice[x + n][N];
+      bottom_bdr[x][N] = lattice[x][S];
+      top_bdr[x][SW] = lattice[(x == 0) ? nx * ny - 1 : x + n - 1][NE];
+      bottom_bdr[x][NW] =lattice[(x == 0) ? nx - 1 : x - 1][SE];
+      top_bdr[x][SE] = lattice[(x == nx - 1) ? n : x + n + 1][NW];
+      bottom_bdr[x][NE] = lattice[(x == nx - 1) ? 0 : x + 1][SW];
     }  // x
-    // mixture of boundaries at the corners
-    corner_boundary[0][NE] = lattice[0][SW];
-    corner_boundary[1][NW] = lattice[nx - 1][SE];
-    corner_boundary[2][SE] = lattice[(ny - 1) * nx][NW];
-    corner_boundary[3][SW] = lattice[ny * nx - 1][NE];
+    // mixture of boundaries (bounce-back) at the corners
+    corner_bdr[0][NE] = lattice[0][SW];
+    corner_bdr[1][NW] = lattice[nx - 1][SE];
+    corner_bdr[2][SE] = lattice[(ny - 1) * nx][NW];
+    corner_bdr[3][SW] = lattice[ny * nx - 1][NE];
   }
-
   // append the boundaries of different edges to the main boundary vector
-  auto boundary(left_boundary);
-  boundary.insert(end(boundary), begin(right_boundary), end(right_boundary));
-  boundary.insert(end(boundary), begin(top_boundary), end(top_boundary));
-  boundary.insert(end(boundary), begin(bottom_boundary), end(bottom_boundary));
-  boundary.insert(end(boundary), begin(corner_boundary), end(corner_boundary));
+  auto boundary(left_bdr);
+  boundary.insert(end(boundary), begin(right_bdr), end(right_bdr));
+  boundary.insert(end(boundary), begin(top_bdr), end(top_bdr));
+  boundary.insert(end(boundary), begin(bottom_bdr), end(bottom_bdr));
+  boundary.insert(end(boundary), begin(corner_bdr), end(corner_bdr));
   return boundary;
 }
 
@@ -233,12 +223,82 @@ std::vector<std::vector<double>> LatticeBoltzmann::Stream(
   return temp_lattice;
 }
 
+void LatticeBoltzmann::BoundaryAndStream(
+    std::vector<std::vector<double>> &lattice)
+{
+  auto nx = lm_.GetNumberOfColumns();
+  auto ny = lm_.GetNumberOfRows();
+  auto nc = lm_.GetNumberOfDirections();
+  // Zou-He velocity BC for lid-driven flow, left, right and bottom boundary
+  // zero velocity
+  auto u_x = 0.0;
+  auto u_y = 0.0;
+  auto u_lid = 0.01;
+  for (auto y = 1u; y < ny - 1; ++y) {
+    auto left = y * nx;
+    auto right = left + nx - 1;
+    auto eq_diff_left = 0.5 * (lattice[left][N] - lattice[left][S]);
+    auto eq_diff_right = 0.5 * (lattice[right][N] - lattice[right][S]);
+    auto rho_left = (lattice[left][0] + lattice[left][N] + lattice[left][S] +
+        2.0 * (lattice[left][W] + lattice[left][NW] + lattice[left][SW])) /
+        (1.0 - u_x);
+    auto rho_right = (lattice[right][0] + lattice[right][N] +
+        lattice[right][S] + 2.0 * (lattice[right][E] + lattice[right][NE] +
+        lattice[right][SE])) / (1.0 - u_x);
+    lattice[left][E] = lattice[left][W] + 2.0 / 3.0 * rho_left * u_x;
+    lattice[left][NE] = lattice[left][SW] - eq_diff_left + rho_left *
+        (u_x / 6.0 + 0.5 * u_y);
+    lattice[left][SE] = lattice[left][NW] + eq_diff_left + rho_left *
+        (u_x / 6.0 - 0.5 * u_y);
+    lattice[right][W] = lattice[right][E] - 2.0 / 3.0 * rho_right * u_x;
+    lattice[right][NW] = lattice[right][SE] - eq_diff_right - rho_right *
+        (u_x / 6.0 - 0.5 * u_y);
+    lattice[right][SW] = lattice[right][NE] + eq_diff_right - rho_right *
+        (u_x / 6.0 + 0.5 * u_y);
+  }
+  for (auto x = 1u; x < nx - 1; ++x) {
+    auto top = (ny - 1) * nx + x;
+    auto eq_diff_bottom = 0.5 * (lattice[x][E] - lattice[x][W]);
+    auto eq_diff_top = 0.5 * (lattice[top][E] - lattice[top][W]);
+    auto rho_bottom = (lattice[x][0] + lattice[x][E] + lattice[x][W] + 2.0 *
+        (lattice[x][S] + lattice[x][SW] + lattice[x][SE])) / (1 - u_y);
+    auto rho_top = (lattice[top][0] + lattice[top][E] + lattice[top][W] + 2.0 *
+        (lattice[top][S] + lattice[top][SW] + lattice[top][SE])) / (1 - u_y);
+    lattice[x][N] = lattice[x][S] + 2.0 / 3.0 * rho_bottom * u_y;
+    lattice[x][NE] = lattice[x][SW] - eq_diff_bottom + rho_bottom * (0.5 * u_x +
+        u_y / 6.0);
+    lattice[x][NW] = lattice[x][SE] + eq_diff_bottom - rho_bottom * (0.5 * u_x -
+        u_y / 6.0);
+    lattice[top][S] = lattice[top][N] - 2.0 / 3.0 * rho_top * u_y;
+    lattice[top][SE] = lattice[top][NW] - eq_diff_top + rho_top * (0.5 * u_lid -
+        u_y / 6.0);
+    lattice[top][SW] = lattice[top][NE] + eq_diff_top - rho_top * (0.5 * u_lid +
+        u_y / 6.0);
+  }
+  // bottom corners
+  lattice[0][E] = lattice[0][W] + 2.0 / 3.0 * u_x;
+  lattice[0][N] = lattice[0][S] + 2.0 / 3.0 * u_y;
+  lattice[0][NE] = lattice[0][SW] + (u_x + u_y) / 6.0;
+  lattice[0][NW] = (u_y - u_x) / 12.0;
+  lattice[0][SE] = (u_x - u_y) / 12.0;
+  auto rho_1_1 = GetZerothMoment(lattice[nx + 1]);
+  auto rho_2_2 = GetZerothMoment(lattice[2 * nx + 2]);
+  auto rho_bottom_left = rho_1_1 - (rho_2_2 - rho_1_1);
+  for (auto i = 1u; i < nc; ++i) rho_bottom_left -= lattice[0][i];
+  lattice[0][0] = rho_bottom_left;
+}
+
 void LatticeBoltzmann::TakeStep()
 {
   if (is_ns_) {
     ns_.Collide(f);
     if (has_obstacles_) LatticeBoltzmann::Obstacles(f);
-    f = LatticeBoltzmann::Stream(f, LatticeBoltzmann::BoundaryCondition(f));
+    if (is_lid_) {
+      LatticeBoltzmann::BoundaryAndStream(f);
+    }
+    else {
+      f = LatticeBoltzmann::Stream(f, LatticeBoltzmann::BoundaryCondition(f));
+    }
     ns_.rho = lm_.ComputeRho(f);
     lm_.u = lm_.ComputeU(f, ns_.rho, ns_.source);
     ns_.ComputeEq();
@@ -247,7 +307,12 @@ void LatticeBoltzmann::TakeStep()
     cd_.Collide(g);
     if (is_instant_) cd_.KillSource();
     if (has_obstacles_) LatticeBoltzmann::Obstacles(g);
-    g = LatticeBoltzmann::Stream(g, LatticeBoltzmann::BoundaryCondition(g));
+    if (is_lid_) {
+      LatticeBoltzmann::BoundaryAndStream(g);
+    }
+    else {
+      g = LatticeBoltzmann::Stream(g, LatticeBoltzmann::BoundaryCondition(g));
+    }
     cd_.rho = lm_.ComputeRho(g);
     cd_.ComputeEq();
   }
