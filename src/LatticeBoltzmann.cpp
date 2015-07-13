@@ -230,6 +230,8 @@ void LatticeBoltzmann::BoundaryAndStream(
   auto ny = lm_.GetNumberOfRows();
   auto nc = lm_.GetNumberOfDirections();
   // Zou-He velocity BC for lid-driven flow, left, right and bottom boundary
+  // from "http://lbmworkshop.com/wp-content/uploads/2011/08/Straight_
+  // boundaries.pdf"
   // zero velocity
   auto u_x = 0.0;
   auto u_y = 0.0;
@@ -275,17 +277,59 @@ void LatticeBoltzmann::BoundaryAndStream(
     lattice[top][SW] = lattice[top][NE] + eq_diff_top - rho_top * (0.5 * u_lid +
         u_y / 6.0);
   }
-  // bottom corners
+  // Zou-He corners from "http://lbmworkshop.com/wp-content/uploads/2011/08/
+  // Corners.pdf"
+  // bottom-left corner
   lattice[0][E] = lattice[0][W] + 2.0 / 3.0 * u_x;
   lattice[0][N] = lattice[0][S] + 2.0 / 3.0 * u_y;
   lattice[0][NE] = lattice[0][SW] + (u_x + u_y) / 6.0;
   lattice[0][NW] = (u_y - u_x) / 12.0;
   lattice[0][SE] = (u_x - u_y) / 12.0;
-  auto rho_1_1 = GetZerothMoment(lattice[nx + 1]);
-  auto rho_2_2 = GetZerothMoment(lattice[2 * nx + 2]);
-  auto rho_bottom_left = rho_1_1 - (rho_2_2 - rho_1_1);
-  for (auto i = 1u; i < nc; ++i) rho_bottom_left -= lattice[0][i];
-  lattice[0][0] = rho_bottom_left;
+  auto rho_1 = GetZerothMoment(lattice[nx + 1]);
+  auto rho_2 = GetZerothMoment(lattice[2 * nx + 2]);
+  // extrapolating density based on nodes along the diagonal
+  auto rho_extrapolate = rho_1 - (rho_2 - rho_1);
+  for (auto i = 1u; i < nc; ++i) rho_extrapolate -= lattice[0][i];
+  lattice[0][0] = rho_extrapolate;
+  // bottom-right corner
+  lattice[nx - 1][W] = lattice[nx - 1][E] - 2.0 / 3.0 * u_x;
+  lattice[nx - 1][N] = lattice[nx - 1][S] + 2.0 / 3.0 * u_y;
+  lattice[nx - 1][NW] = lattice[nx - 1][SE] + (u_y - u_x) / 6.0;
+  lattice[nx - 1][NE] = (u_x + u_y) / 12.0;
+  lattice[nx - 1][SW] = (u_x + u_y) / -12.0;
+  rho_1 = GetZerothMoment(lattice[2 * nx - 2]);
+  rho_2 = GetZerothMoment(lattice[3 * nx - 3]);
+  // extrapolating density based on nodes along the diagonal
+  rho_extrapolate = rho_1 - (rho_2 - rho_1);
+  for (auto i = 1u; i < nc; ++i) rho_extrapolate -= lattice[nx - 1][i];
+  lattice[nx - 1][0] = rho_extrapolate;
+  // top-left corner
+  auto top_left = (ny - 1) * nx;
+  lattice[top_left][E] = lattice[top_left][W] + 2.0 / 3.0 * u_lid;
+  lattice[top_left][S] = lattice[top_left][N] - 2.0 / 3.0 * u_y;
+  lattice[top_left][SE] = lattice[top_left][NW] + (u_lid - u_y) / 6.0;
+  lattice[top_left][NE] = (u_lid + u_y) / 12.0;
+  lattice[top_left][SW] = (u_lid + u_y) / -12.0;
+  rho_1 = GetZerothMoment(lattice[top_left - nx + 1]);
+  rho_2 = GetZerothMoment(lattice[top_left - 2 * nx + 2]);
+  // extrapolating density based on nodes along the diagonal
+  rho_extrapolate = rho_1 - (rho_2 - rho_1);
+  for (auto i = 1u; i < nc; ++i) rho_extrapolate -= lattice[top_left][i];
+  lattice[top_left][0] = rho_extrapolate;
+  // top-right corner
+  auto top_right = nx * ny - 1;
+  lattice[top_right][W] = lattice[top_right][E] - 2.0 / 3.0 * u_lid;
+  lattice[top_right][S] = lattice[top_right][N] - 2.0 / 3.0 * u_y;
+  lattice[top_right][SW] = lattice[top_right][NE] - (u_lid + u_y) / 6.0;
+  lattice[top_right][NW] = (u_y - u_lid) / 12.0;
+  lattice[top_right][SE] = (u_lid - u_y) / 12.0;
+  rho_1 = GetZerothMoment(lattice[top_right - nx - 1]);
+  rho_2 = GetZerothMoment(lattice[top_right - 2 * nx - 2]);
+  // extrapolating density based on nodes along the diagonal
+  rho_extrapolate = rho_1 - (rho_2 - rho_1);
+  for (auto i = 1u; i < nc; ++i) rho_extrapolate -= lattice[top_right][i];
+  lattice[top_right][0] = rho_extrapolate;
+  // Streaming
 }
 
 void LatticeBoltzmann::TakeStep()

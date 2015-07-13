@@ -1116,17 +1116,34 @@ TEST(BoundaryCornerZouHeLid)
     }
   }
   auto f0 = lbm.f;
+  auto top_left = (g_ny - 1) * g_nx;
+  auto top_right = g_ny * g_nx - 1;
+  Print(f0, g_nx, g_ny);
   lbm.BoundaryAndStream(lbm.f);
-  CHECK_CLOSE(lbm.f[0][W], lbm.f[0][E], zero_tol);
-  CHECK_CLOSE(lbm.f[0][S], lbm.f[0][N], zero_tol);
-  CHECK_CLOSE(lbm.f[0][SW], lbm.f[0][NE], zero_tol);
+  CHECK_CLOSE(3.0, lbm.f[0][E], zero_tol);
+  CHECK_CLOSE(4.0, lbm.f[0][N], zero_tol);
+  CHECK_CLOSE(7.0, lbm.f[0][NE], zero_tol);
   CHECK_CLOSE(0.0, lbm.f[0][NW], zero_tol);
   CHECK_CLOSE(0.0, lbm.f[0][SE], zero_tol);
-  auto rho_1_1 = GetZerothMoment(lbm.f[g_nx + 1]);
-  auto rho_2_2 = GetZerothMoment(lbm.f[2 * g_nx + 2]);
-  auto rho_bottom_left = rho_1_1 - (rho_2_2 - rho_1_1);
-  for (auto i = 1u; i < 9; ++i) rho_bottom_left -= lbm.f[0][i];
-  CHECK_CLOSE(rho_bottom_left, lbm.f[0][0], loose_tol);
+  CHECK_CLOSE(8.0, lbm.f[0][0], zero_tol);
+  CHECK_CLOSE(55.0, lbm.f[g_nx - 1][W], zero_tol);
+  CHECK_CLOSE(58.0, lbm.f[g_nx - 1][N], zero_tol);
+  CHECK_CLOSE(62.0, lbm.f[g_nx - 1][NW], zero_tol);
+  CHECK_CLOSE(0.0, lbm.f[g_nx - 1][NE], zero_tol);
+  CHECK_CLOSE(0.0, lbm.f[g_nx - 1][SW], zero_tol);
+  CHECK_CLOSE(172.0, lbm.f[g_nx - 1][0], zero_tol);
+  CHECK_CLOSE(318.00667, lbm.f[top_left][E], loose_tol);
+  CHECK_CLOSE(317.0, lbm.f[top_left][S], loose_tol);
+  CHECK_CLOSE(321.001667, lbm.f[top_left][SE], loose_tol);
+  CHECK_CLOSE(0.00083333, lbm.f[top_left][NE], loose_tol);
+  CHECK_CLOSE(-0.00083333, lbm.f[top_left][SW], loose_tol);
+  CHECK_CLOSE(958.991667, lbm.f[top_left][0], loose_tol);
+  CHECK_CLOSE(369.993333, lbm.f[top_right][W], loose_tol);
+  CHECK_CLOSE(371.0, lbm.f[top_right][S], loose_tol);
+  CHECK_CLOSE(373.998333, lbm.f[top_right][SW], loose_tol);
+  CHECK_CLOSE(-0.00083333, lbm.f[top_right][NW], loose_tol);
+  CHECK_CLOSE(0.00083333, lbm.f[top_right][SE], loose_tol);
+  CHECK_CLOSE(1127.00833, lbm.f[top_right][0], loose_tol);
 }
 
 TEST(ObstaclesDoNotReflectIntoObstacles)
