@@ -61,6 +61,11 @@ class LatticeD2Q9: public LatticeModel {
     , const std::vector<double> &rho
     , const std::vector<std::vector<double>> &src);
 
+  std::vector<std::vector<double>> ComputeULid(
+      const std::vector<std::vector<double>> &lattice
+    , const std::vector<double> &rho
+    , const std::vector<std::vector<double>> &src);
+
 //  std::vector<std::vector<double>> e_d2q9 = {{0, 0},
 //      {1, 0}, {0, 1}, {-1, 0}, {0, -1},
 //      {1, 1}, {-1, 1}, {-1, -1}, {1, -1}};

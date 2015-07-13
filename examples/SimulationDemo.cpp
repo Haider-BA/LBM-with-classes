@@ -21,6 +21,7 @@ const static double g_d_coeff = 0.2;
 const static double g_rho0_g = 1.0;
 const static double g_t_total = 1.0;
 const static std::vector<std::vector<std::size_t>> g_obs_pos;
+static const double g_u_lid = 0.001;
 static const bool g_is_ns = true;
 static const bool g_is_cd = true;
 static const bool g_is_taylor = true;
@@ -51,6 +52,7 @@ TEST(SimulateDiffusion)
     , g_d_coeff
     , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
+    , g_u_lid
     , g_obs_pos
     , !g_is_ns
     , g_is_cd
@@ -87,6 +89,7 @@ TEST(SimulateConvectionDiffusion)
     , g_d_coeff
     , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
+    , g_u_lid
     , g_obs_pos
     , !g_is_ns
     , g_is_cd
@@ -126,6 +129,7 @@ TEST(SimulatePoiseuilleFlow)
     , g_d_coeff
     , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
+    , g_u_lid
     , g_obs_pos
     , g_is_ns
     , !g_is_cd
@@ -167,6 +171,7 @@ TEST(SimulateNSCDCoupling)
     , g_d_coeff
     , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
+    , g_u_lid
     , g_obs_pos
     , g_is_ns
     , g_is_cd
@@ -214,6 +219,7 @@ TEST(SimulateNSCDCouplingWithObstacles)
     , g_d_coeff
     , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
+    , g_u_lid
     , obs_pos
     , g_is_ns
     , g_is_cd
@@ -225,5 +231,46 @@ TEST(SimulateNSCDCouplingWithObstacles)
     , ns
     , cd);
   lbm.RunSim(lbm.g);
+}
+
+TEST(SimulateLidDrivenCavityFlow)
+{
+  std::size_t ny = 51;
+  std::size_t nx = 51;
+  std::vector<std::vector<std::size_t>> src_pos_f;
+  std::vector<std::vector<double>> src_str_f;
+  std::vector<std::vector<std::size_t>> src_pos_g;
+  std::vector<double> src_str_g;
+  std::vector<std::vector<std::size_t>> obs_pos;
+  std::vector<double> u0 = {0.0, 0.0};
+  auto k_visco = 0.5;
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt
+    , u0);
+  CollisionNS ns(lm
+    , src_pos_f
+    , src_str_f
+    , k_visco
+    , g_rho0_f);
+  CollisionCD cd(lm
+    , src_pos_g
+    , src_str_g
+    , g_d_coeff
+    , g_rho0_g);
+  LatticeBoltzmann lbm(g_t_total
+    , g_u_lid
+    , obs_pos
+    , g_is_ns
+    , !g_is_cd
+    , !g_is_taylor
+    , g_is_lid
+    , !g_is_instant
+    , g_no_obstacles
+    , lm
+    , ns
+    , cd);
+  lbm.RunSim(lm.u);
 }
 }

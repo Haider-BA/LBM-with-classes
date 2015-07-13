@@ -57,6 +57,8 @@ class CollisionNS: public Collision {
    */
   void Collide(std::vector<std::vector<double>> &lattice);
 
+  void CollideLid(std::vector<std::vector<double>> &lattice);
+
   /**
    * Sets source term to 0
    */

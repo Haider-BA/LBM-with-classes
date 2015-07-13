@@ -82,6 +82,32 @@ void CollisionNS::Collide(std::vector<std::vector<double>> &lattice)
   }  // n
 }
 
+void CollisionNS::CollideLid(std::vector<std::vector<double>> &lattice)
+{
+  auto nc = lm_.GetNumberOfDirections();
+  auto nd = lm_.GetNumberOfDimensions();
+  auto nx = lm_.GetNumberOfColumns();
+  auto ny = lm_.GetNumberOfRows();
+  auto dt = lm_.GetTimeStep();
+  for (auto y = 0u; y < ny - 1; ++y) {
+    for (auto x = 0u; x < nx; ++x) {
+      auto n = y * nx + x;
+      for (auto i = 0u; i < nc; ++i) {
+        double c_dot_u = InnerProduct(lm_.e[i], lm_.u[n]);
+        c_dot_u /= cs_sqr_;
+        double src_dot_product = 0.0;
+        for (auto d = 0u; d < nd; ++d) {
+          src_dot_product += (lm_.e[i][d] - lm_.u[n][d] + c_dot_u *
+              lm_.e[i][d]) * source[n][d];
+        }  // d
+        src_dot_product /= cs_sqr_ / rho[n];
+        auto src_i = (1.0 - 0.5 / tau_) * lm_.omega[i] * src_dot_product;
+        lattice[n][i] += (lattice_eq[n][i] - lattice[n][i]) / tau_ + dt * src_i;
+      }  // i
+    }  // x
+  }  // y
+}
+
 void CollisionNS::KillSource()
 {
   auto nd = lm_.GetNumberOfDimensions();

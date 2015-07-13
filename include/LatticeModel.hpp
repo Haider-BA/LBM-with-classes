@@ -111,6 +111,11 @@ class LatticeModel {
     , const std::vector<double> &rho
     , const std::vector<std::vector<double>> &src) = 0;
 
+  virtual std::vector<std::vector<double>> ComputeULid(
+      const std::vector<std::vector<double>> &lattice
+    , const std::vector<double> &rho
+    , const std::vector<std::vector<double>> &src) = 0;
+
   /**
    * Lattice velocity stored row-wise in a 2D vector
    */

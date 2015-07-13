@@ -32,6 +32,7 @@ class LatticeBoltzmann {
    * \param cd Collision model for CD equation
    */
   LatticeBoltzmann(double t_total
+    , double u_lid
     , const std::vector<std::vector<std::size_t>> &obstacles_pos
     , bool is_ns
     , bool is_cd
@@ -116,10 +117,13 @@ class LatticeBoltzmann {
     , const std::vector<std::vector<double>> &boundary);
 
   /**
-   * Does Zou-He velocity BC for lid-driven flow and streams
+   * Does Zou-He velocity BC for lid-driven flow
    * \param lattice 2D vector containing distribution functions
    */
-  void BoundaryAndStream(std::vector<std::vector<double>> &lattice);
+  void BoundaryLid(std::vector<std::vector<double>> &lattice);
+
+  std::vector<std::vector<double>> StreamImmersed(
+      const std::vector<std::vector<double>> &lattice);
 
   /**
    * Performs one cycle of evolution equation, computes the relevant macroscopic
@@ -193,6 +197,7 @@ class LatticeBoltzmann {
   bool CheckParameters();
   // input parameters
   double total_time_;
+  double u_lid_;
   bool is_ns_;
   bool is_cd_;
   bool is_taylor_;

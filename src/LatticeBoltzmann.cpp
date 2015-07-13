@@ -20,6 +20,7 @@
 // https://stackoverflow.com/questions/10509603/why-cant-i-initialize-a-
 // reference-in-an-initializer-list-with-uniform-initializ
 LatticeBoltzmann::LatticeBoltzmann(double t_total
+  , double u_lid
   , const std::vector<std::vector<std::size_t>> &obstacles_position
   , bool is_ns
   , bool is_cd
@@ -36,6 +37,7 @@ LatticeBoltzmann::LatticeBoltzmann(double t_total
     boundary_g {},
     obstacles {},
     total_time_ {t_total},
+    u_lid_ {u_lid},
     is_ns_ {is_ns},
     is_cd_ {is_cd},
     is_taylor_ {is_taylor},
@@ -223,7 +225,7 @@ std::vector<std::vector<double>> LatticeBoltzmann::Stream(
   return temp_lattice;
 }
 
-void LatticeBoltzmann::BoundaryAndStream(
+void LatticeBoltzmann::BoundaryLid(
     std::vector<std::vector<double>> &lattice)
 {
   auto nx = lm_.GetNumberOfColumns();
@@ -239,38 +241,21 @@ void LatticeBoltzmann::BoundaryAndStream(
   for (auto y = 1u; y < ny - 1; ++y) {
     auto left = y * nx;
     auto right = left + nx - 1;
-    auto eq_diff_left = 0.5 * (lattice[left][N] - lattice[left][S]);
-    auto eq_diff_right = 0.5 * (lattice[right][N] - lattice[right][S]);
-    auto rho_left = (lattice[left][0] + lattice[left][N] + lattice[left][S] +
-        2.0 * (lattice[left][W] + lattice[left][NW] + lattice[left][SW])) /
-        (1.0 - u_x);
-    auto rho_right = (lattice[right][0] + lattice[right][N] +
-        lattice[right][S] + 2.0 * (lattice[right][E] + lattice[right][NE] +
-        lattice[right][SE])) / (1.0 - u_x);
-    lattice[left][E] = lattice[left][W] + 2.0 / 3.0 * rho_left * u_x;
-    lattice[left][NE] = lattice[left][SW] - eq_diff_left + rho_left *
-        (u_x / 6.0 + 0.5 * u_y);
-    lattice[left][SE] = lattice[left][NW] + eq_diff_left + rho_left *
-        (u_x / 6.0 - 0.5 * u_y);
-    lattice[right][W] = lattice[right][E] - 2.0 / 3.0 * rho_right * u_x;
-    lattice[right][NW] = lattice[right][SE] - eq_diff_right - rho_right *
-        (u_x / 6.0 - 0.5 * u_y);
-    lattice[right][SW] = lattice[right][NE] + eq_diff_right - rho_right *
-        (u_x / 6.0 + 0.5 * u_y);
+    lattice[left][E] = lattice[left][W];
+    lattice[left][NE] = lattice[left][SW];
+    lattice[left][SE] = lattice[left][NW];
+    lattice[right][W] = lattice[right][E];
+    lattice[right][NW] = lattice[right][SE];
+    lattice[right][SW] = lattice[right][NE];
   }
   for (auto x = 1u; x < nx - 1; ++x) {
     auto top = (ny - 1) * nx + x;
-    auto eq_diff_bottom = 0.5 * (lattice[x][E] - lattice[x][W]);
     auto eq_diff_top = 0.5 * (lattice[top][E] - lattice[top][W]);
-    auto rho_bottom = (lattice[x][0] + lattice[x][E] + lattice[x][W] + 2.0 *
-        (lattice[x][S] + lattice[x][SW] + lattice[x][SE])) / (1 - u_y);
     auto rho_top = (lattice[top][0] + lattice[top][E] + lattice[top][W] + 2.0 *
         (lattice[top][S] + lattice[top][SW] + lattice[top][SE])) / (1 - u_y);
-    lattice[x][N] = lattice[x][S] + 2.0 / 3.0 * rho_bottom * u_y;
-    lattice[x][NE] = lattice[x][SW] - eq_diff_bottom + rho_bottom * (0.5 * u_x +
-        u_y / 6.0);
-    lattice[x][NW] = lattice[x][SE] + eq_diff_bottom - rho_bottom * (0.5 * u_x -
-        u_y / 6.0);
+    lattice[x][N] = lattice[x][S];
+    lattice[x][NE] = lattice[x][SW];
+    lattice[x][NW] = lattice[x][SE];
     lattice[top][S] = lattice[top][N] - 2.0 / 3.0 * rho_top * u_y;
     lattice[top][SE] = lattice[top][NW] - eq_diff_top + rho_top * (0.5 * u_lid -
         u_y / 6.0);
@@ -280,71 +265,99 @@ void LatticeBoltzmann::BoundaryAndStream(
   // Zou-He corners from "http://lbmworkshop.com/wp-content/uploads/2011/08/
   // Corners.pdf"
   // bottom-left corner
-  lattice[0][E] = lattice[0][W] + 2.0 / 3.0 * u_x;
-  lattice[0][N] = lattice[0][S] + 2.0 / 3.0 * u_y;
-  lattice[0][NE] = lattice[0][SW] + (u_x + u_y) / 6.0;
-  lattice[0][NW] = (u_y - u_x) / 12.0;
-  lattice[0][SE] = (u_x - u_y) / 12.0;
-  auto rho_1 = GetZerothMoment(lattice[nx + 1]);
-  auto rho_2 = GetZerothMoment(lattice[2 * nx + 2]);
-  // extrapolating density based on nodes along the diagonal
-  auto rho_extrapolate = rho_1 - (rho_2 - rho_1);
-  for (auto i = 1u; i < nc; ++i) rho_extrapolate -= lattice[0][i];
-  lattice[0][0] = rho_extrapolate;
+  lattice[0][E] = lattice[0][W];
+  lattice[0][N] = lattice[0][S];
+  lattice[0][NE] = lattice[0][SW];
   // bottom-right corner
-  lattice[nx - 1][W] = lattice[nx - 1][E] - 2.0 / 3.0 * u_x;
-  lattice[nx - 1][N] = lattice[nx - 1][S] + 2.0 / 3.0 * u_y;
-  lattice[nx - 1][NW] = lattice[nx - 1][SE] + (u_y - u_x) / 6.0;
-  lattice[nx - 1][NE] = (u_x + u_y) / 12.0;
-  lattice[nx - 1][SW] = (u_x + u_y) / -12.0;
-  rho_1 = GetZerothMoment(lattice[2 * nx - 2]);
-  rho_2 = GetZerothMoment(lattice[3 * nx - 3]);
-  // extrapolating density based on nodes along the diagonal
-  rho_extrapolate = rho_1 - (rho_2 - rho_1);
-  for (auto i = 1u; i < nc; ++i) rho_extrapolate -= lattice[nx - 1][i];
-  lattice[nx - 1][0] = rho_extrapolate;
+  lattice[nx - 1][W] = lattice[nx - 1][E];
+  lattice[nx - 1][N] = lattice[nx - 1][S];
+  lattice[nx - 1][NW] = lattice[nx - 1][SE];
   // top-left corner
   auto top_left = (ny - 1) * nx;
-  lattice[top_left][E] = lattice[top_left][W] + 2.0 / 3.0 * u_lid;
+//  lattice[top_left][E] = lattice[top_left][W] + 2.0 / 3.0 * u_lid;
+  lattice[top_left][E] = lattice[top_left][W] + 2.0 / 3.0 * u_x;
   lattice[top_left][S] = lattice[top_left][N] - 2.0 / 3.0 * u_y;
-  lattice[top_left][SE] = lattice[top_left][NW] + (u_lid - u_y) / 6.0;
-  lattice[top_left][NE] = (u_lid + u_y) / 12.0;
-  lattice[top_left][SW] = (u_lid + u_y) / -12.0;
-  rho_1 = GetZerothMoment(lattice[top_left - nx + 1]);
-  rho_2 = GetZerothMoment(lattice[top_left - 2 * nx + 2]);
+//  lattice[top_left][SE] = lattice[top_left][NW] + (u_lid - u_y) / 6.0;
+  lattice[top_left][SE] = lattice[top_left][NW] + (u_x - u_y) / 6.0;
+//  lattice[top_left][NE] = (u_lid + u_y) / 12.0;
+//  lattice[top_left][SW] = (u_lid + u_y) / -12.0;
+  lattice[top_left][NE] = (u_x + u_y) / 12.0;
+  lattice[top_left][SW] = (u_x + u_y) / -12.0;
+  auto rho_1 = GetZerothMoment(lattice[top_left - nx + 1]);
+  auto rho_2 = GetZerothMoment(lattice[top_left - 2 * nx + 2]);
   // extrapolating density based on nodes along the diagonal
-  rho_extrapolate = rho_1 - (rho_2 - rho_1);
+//  rho_extrapolate = rho_1 - (rho_2 - rho_1);
+  auto rho_extrapolate = 1.0;
   for (auto i = 1u; i < nc; ++i) rho_extrapolate -= lattice[top_left][i];
   lattice[top_left][0] = rho_extrapolate;
   // top-right corner
   auto top_right = nx * ny - 1;
-  lattice[top_right][W] = lattice[top_right][E] - 2.0 / 3.0 * u_lid;
+//  lattice[top_right][W] = lattice[top_right][E] - 2.0 / 3.0 * u_lid;
+  lattice[top_right][W] = lattice[top_right][E] - 2.0 / 3.0 * u_x;
   lattice[top_right][S] = lattice[top_right][N] - 2.0 / 3.0 * u_y;
-  lattice[top_right][SW] = lattice[top_right][NE] - (u_lid + u_y) / 6.0;
-  lattice[top_right][NW] = (u_y - u_lid) / 12.0;
-  lattice[top_right][SE] = (u_lid - u_y) / 12.0;
+//  lattice[top_right][SW] = lattice[top_right][NE] - (u_lid + u_y) / 6.0;
+  lattice[top_right][SW] = lattice[top_right][NE] - (u_x + u_y) / 6.0;
+//  lattice[top_right][NW] = (u_y - u_lid) / 12.0;
+//  lattice[top_right][SE] = (u_lid - u_y) / 12.0;
+  lattice[top_right][NW] = (u_y - u_x) / 12.0;
+  lattice[top_right][SE] = (u_x - u_y) / 12.0;
   rho_1 = GetZerothMoment(lattice[top_right - nx - 1]);
   rho_2 = GetZerothMoment(lattice[top_right - 2 * nx - 2]);
   // extrapolating density based on nodes along the diagonal
-  rho_extrapolate = rho_1 - (rho_2 - rho_1);
+//  rho_extrapolate = rho_1 - (rho_2 - rho_1);
+  rho_extrapolate = 1.0;
   for (auto i = 1u; i < nc; ++i) rho_extrapolate -= lattice[top_right][i];
   lattice[top_right][0] = rho_extrapolate;
+}
+
+std::vector<std::vector<double>> LatticeBoltzmann::StreamImmersed(
+    const std::vector<std::vector<double>> &lattice)
+{
+  auto nx = lm_.GetNumberOfColumns();
+  auto ny = lm_.GetNumberOfRows();
+  auto temp_lattice = lattice;
   // Streaming
+  for (auto n = 0u; n < nx * ny; ++n) {
+    temp_lattice[n][E] = lattice[(n % nx == 0) ? n : n - 1][E];
+    temp_lattice[n][N] = lattice[(n / nx == 0) ? n : n - nx][N];
+    temp_lattice[n][W] = lattice[(n % nx == nx - 1) ? n : n + 1][W];
+    temp_lattice[n][S] = lattice[(n / nx == ny - 1) ? n : n + nx][S];
+    temp_lattice[n][NE] = lattice[(n % nx == 0 || n / nx == 0) ?
+        n : n - nx - 1][NE];
+    temp_lattice[n][NW] = lattice[(n % nx == nx - 1 || n / nx == 0) ?
+        n : n - nx + 1][NW];
+    temp_lattice[n][SW] = lattice[(n % nx == nx - 1 || n / nx == ny - 1) ?
+        n : n + nx + 1][SW];
+    temp_lattice[n][SE] = lattice[(n % nx == 0 || n / nx == ny - 1) ?
+        n : n + nx - 1][SE];
+  }
+  return temp_lattice;
 }
 
 void LatticeBoltzmann::TakeStep()
 {
   if (is_ns_) {
-    ns_.Collide(f);
+    if (is_lid_) {
+      ns_.CollideLid(f);
+    }
+    else {
+      ns_.Collide(f);
+    }
     if (has_obstacles_) LatticeBoltzmann::Obstacles(f);
     if (is_lid_) {
-      LatticeBoltzmann::BoundaryAndStream(f);
+      LatticeBoltzmann::BoundaryLid(f);
+      f = LatticeBoltzmann::StreamImmersed(f);
     }
     else {
       f = LatticeBoltzmann::Stream(f, LatticeBoltzmann::BoundaryCondition(f));
     }
     ns_.rho = lm_.ComputeRho(f);
-    lm_.u = lm_.ComputeU(f, ns_.rho, ns_.source);
+    if (is_lid_) {
+      lm_.u = lm_.ComputeULid(f, ns_.rho, ns_.source);
+    }
+    else {
+      lm_.u = lm_.ComputeU(f, ns_.rho, ns_.source);
+    }
     ns_.ComputeEq();
   }
   if (is_cd_) {
@@ -352,7 +365,8 @@ void LatticeBoltzmann::TakeStep()
     if (is_instant_) cd_.KillSource();
     if (has_obstacles_) LatticeBoltzmann::Obstacles(g);
     if (is_lid_) {
-      LatticeBoltzmann::BoundaryAndStream(g);
+      LatticeBoltzmann::BoundaryLid(g);
+      g = LatticeBoltzmann::StreamImmersed(g);
     }
     else {
       g = LatticeBoltzmann::Stream(g, LatticeBoltzmann::BoundaryCondition(g));

@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -14,15 +15,20 @@ void WriteResultsCmgui(
   std::vector<double> solute_conc(num_nodes, 0.0);
 
   // Calculate the solute density
-//  auto depth = lattice[0].size();
+  auto depth = lattice[0].size();
 //  for (auto n = 0; n < num_nodes; ++n) {
 //    double rho = 0.0;
 //    for (auto i = 0u; i < depth; ++i) rho += lattice[n][i];
 //    solute_conc[n] = rho;
 //  }
   for (auto n = 0; n < num_nodes; ++n) {
-    solute_conc[n] = lattice[n][0];
+    double rho = 0.0;
+    for (auto i = 0u; i < depth; ++i) rho += lattice[n][i] * lattice[n][i];
+    solute_conc[n] = sqrt(rho);
   }
+//  for (auto n = 0; n < num_nodes; ++n) {
+//    solute_conc[n] = lattice[n][0];
+//  }
 
   // Write out only one 'node' file with the lattice size
   if (first_time) {

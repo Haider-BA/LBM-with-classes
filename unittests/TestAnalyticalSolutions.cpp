@@ -28,6 +28,7 @@ static const auto g_no_obstacles = false;
 static const auto g_pi = 3.14159265;
 static const auto g_2pi = 3.14159265 * 2;
 static const std::vector<std::vector<std::size_t>> g_obs_pos;
+static const double g_u_lid = 0.01;
 
 TEST(AnalyticalDiffusion)
 {
@@ -55,6 +56,7 @@ TEST(AnalyticalDiffusion)
     , g_d_coeff
     , g_rho0_g);
   LatticeBoltzmann lbm(t_total
+    , g_u_lid
     , g_obs_pos
     , !g_is_ns
     , g_is_cd
@@ -110,6 +112,7 @@ TEST(AnalyticalPoiseuille)
     , g_d_coeff
     , g_rho0_g);
   LatticeBoltzmann lbm(t_total
+    , g_u_lid
     , g_obs_pos
     , g_is_ns
     , !g_is_cd
@@ -184,6 +187,7 @@ TEST(AnalyticalTaylorVortex)
     , g_d_coeff
     , g_rho0_g);
   LatticeBoltzmann lbm(t_total
+    , g_u_lid
     , g_obs_pos
     , g_is_ns
     , !g_is_cd
