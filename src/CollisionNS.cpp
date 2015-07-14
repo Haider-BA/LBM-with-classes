@@ -89,8 +89,9 @@ void CollisionNS::CollideLid(std::vector<std::vector<double>> &lattice)
   auto nx = lm_.GetNumberOfColumns();
   auto ny = lm_.GetNumberOfRows();
   auto dt = lm_.GetTimeStep();
-  for (auto y = 0u; y < ny - 1; ++y) {
+  for (auto y = 0u; y < ny; ++y) {
     for (auto x = 0u; x < nx; ++x) {
+      if (y == ny - 1 && !x && x != nx - 1) continue;
       auto n = y * nx + x;
       for (auto i = 0u; i < nc; ++i) {
         double c_dot_u = InnerProduct(lm_.e[i], lm_.u[n]);

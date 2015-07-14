@@ -274,40 +274,46 @@ void LatticeBoltzmann::BoundaryLid(
   lattice[nx - 1][NW] = lattice[nx - 1][SE];
   // top-left corner
   auto top_left = (ny - 1) * nx;
-//  lattice[top_left][E] = lattice[top_left][W] + 2.0 / 3.0 * u_lid;
-  lattice[top_left][E] = lattice[top_left][W] + 2.0 / 3.0 * u_x;
-  lattice[top_left][S] = lattice[top_left][N] - 2.0 / 3.0 * u_y;
-//  lattice[top_left][SE] = lattice[top_left][NW] + (u_lid - u_y) / 6.0;
-  lattice[top_left][SE] = lattice[top_left][NW] + (u_x - u_y) / 6.0;
-//  lattice[top_left][NE] = (u_lid + u_y) / 12.0;
-//  lattice[top_left][SW] = (u_lid + u_y) / -12.0;
-  lattice[top_left][NE] = (u_x + u_y) / 12.0;
-  lattice[top_left][SW] = (u_x + u_y) / -12.0;
-  auto rho_1 = GetZerothMoment(lattice[top_left - nx + 1]);
-  auto rho_2 = GetZerothMoment(lattice[top_left - 2 * nx + 2]);
-  // extrapolating density based on nodes along the diagonal
-//  rho_extrapolate = rho_1 - (rho_2 - rho_1);
-  auto rho_extrapolate = 1.0;
-  for (auto i = 1u; i < nc; ++i) rho_extrapolate -= lattice[top_left][i];
-  lattice[top_left][0] = rho_extrapolate;
+  lattice[top_left][E] = lattice[top_left][W];
+  lattice[top_left][S] = lattice[top_left][N];
+  lattice[top_left][SE] = lattice[top_left][NW];
+////  lattice[top_left][E] = lattice[top_left][W] + 2.0 / 3.0 * u_lid;
+//  lattice[top_left][E] = lattice[top_left][W] + 2.0 / 3.0 * u_x;
+//  lattice[top_left][S] = lattice[top_left][N] - 2.0 / 3.0 * u_y;
+////  lattice[top_left][SE] = lattice[top_left][NW] + (u_lid - u_y) / 6.0;
+//  lattice[top_left][SE] = lattice[top_left][NW] + (u_x - u_y) / 6.0;
+////  lattice[top_left][NE] = (u_lid + u_y) / 12.0;
+////  lattice[top_left][SW] = (u_lid + u_y) / -12.0;
+//  lattice[top_left][NE] = (u_x + u_y) / 12.0;
+//  lattice[top_left][SW] = (u_x + u_y) / -12.0;
+//  auto rho_1 = GetZerothMoment(lattice[top_left - nx + 1]);
+//  auto rho_2 = GetZerothMoment(lattice[top_left - 2 * nx + 2]);
+//  // extrapolating density based on nodes along the diagonal
+////  rho_extrapolate = rho_1 - (rho_2 - rho_1);
+//  auto rho_extrapolate = 1.0;
+//  for (auto i = 1u; i < nc; ++i) rho_extrapolate -= lattice[top_left][i];
+//  lattice[top_left][0] = rho_extrapolate;
   // top-right corner
   auto top_right = nx * ny - 1;
-//  lattice[top_right][W] = lattice[top_right][E] - 2.0 / 3.0 * u_lid;
-  lattice[top_right][W] = lattice[top_right][E] - 2.0 / 3.0 * u_x;
-  lattice[top_right][S] = lattice[top_right][N] - 2.0 / 3.0 * u_y;
-//  lattice[top_right][SW] = lattice[top_right][NE] - (u_lid + u_y) / 6.0;
-  lattice[top_right][SW] = lattice[top_right][NE] - (u_x + u_y) / 6.0;
-//  lattice[top_right][NW] = (u_y - u_lid) / 12.0;
-//  lattice[top_right][SE] = (u_lid - u_y) / 12.0;
-  lattice[top_right][NW] = (u_y - u_x) / 12.0;
-  lattice[top_right][SE] = (u_x - u_y) / 12.0;
-  rho_1 = GetZerothMoment(lattice[top_right - nx - 1]);
-  rho_2 = GetZerothMoment(lattice[top_right - 2 * nx - 2]);
-  // extrapolating density based on nodes along the diagonal
-//  rho_extrapolate = rho_1 - (rho_2 - rho_1);
-  rho_extrapolate = 1.0;
-  for (auto i = 1u; i < nc; ++i) rho_extrapolate -= lattice[top_right][i];
-  lattice[top_right][0] = rho_extrapolate;
+  lattice[top_right][W] = lattice[top_right][E];
+  lattice[top_right][S] = lattice[top_right][N];
+  lattice[top_right][SW] = lattice[top_right][NE];
+////  lattice[top_right][W] = lattice[top_right][E] - 2.0 / 3.0 * u_lid;
+//  lattice[top_right][W] = lattice[top_right][E] - 2.0 / 3.0 * u_x;
+//  lattice[top_right][S] = lattice[top_right][N] - 2.0 / 3.0 * u_y;
+////  lattice[top_right][SW] = lattice[top_right][NE] - (u_lid + u_y) / 6.0;
+//  lattice[top_right][SW] = lattice[top_right][NE] - (u_x + u_y) / 6.0;
+////  lattice[top_right][NW] = (u_y - u_lid) / 12.0;
+////  lattice[top_right][SE] = (u_lid - u_y) / 12.0;
+//  lattice[top_right][NW] = (u_y - u_x) / 12.0;
+//  lattice[top_right][SE] = (u_x - u_y) / 12.0;
+//  rho_1 = GetZerothMoment(lattice[top_right - nx - 1]);
+//  rho_2 = GetZerothMoment(lattice[top_right - 2 * nx - 2]);
+//  // extrapolating density based on nodes along the diagonal
+////  rho_extrapolate = rho_1 - (rho_2 - rho_1);
+//  rho_extrapolate = 1.0;
+//  for (auto i = 1u; i < nc; ++i) rho_extrapolate -= lattice[top_right][i];
+//  lattice[top_right][0] = rho_extrapolate;
 }
 
 std::vector<std::vector<double>> LatticeBoltzmann::StreamImmersed(
@@ -353,7 +359,7 @@ void LatticeBoltzmann::TakeStep()
     }
     ns_.rho = lm_.ComputeRho(f);
     if (is_lid_) {
-      lm_.u = lm_.ComputeULid(f, ns_.rho, ns_.source);
+      lm_.u = lm_.ComputeULid(f, ns_.rho, ns_.source, u_lid_);
     }
     else {
       lm_.u = lm_.ComputeU(f, ns_.rho, ns_.source);

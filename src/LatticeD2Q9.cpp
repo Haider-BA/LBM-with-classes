@@ -90,7 +90,8 @@ std::vector<std::vector<double>> LatticeD2Q9::ComputeU(
 std::vector<std::vector<double>> LatticeD2Q9::ComputeULid(
     const std::vector<std::vector<double>> &lattice
   , const std::vector<double> &rho
-  , const std::vector<std::vector<double>> &src)
+  , const std::vector<std::vector<double>> &src
+  , double u_lid)
 {
   auto nx = number_of_columns_;
   auto ny = number_of_rows_;
@@ -113,7 +114,7 @@ std::vector<std::vector<double>> LatticeD2Q9::ComputeULid(
   for (auto x = 0u; x < nx; ++x) {
     auto top = (ny - 1) * nx + x;
     result[x] = {0.0, 0.0};
-    result[top] = {0.01, 0.0};
+    result[top] = {u_lid, 0.0};
   }  // y
   return result;
 }

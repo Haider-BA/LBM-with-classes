@@ -244,6 +244,7 @@ TEST(SimulateLidDrivenCavityFlow)
   std::vector<std::vector<std::size_t>> obs_pos;
   std::vector<double> u0 = {0.0, 0.0};
   auto k_visco = 0.5;
+  auto u_lid = 1;
   LatticeD2Q9 lm(ny
     , nx
     , g_dx
@@ -260,7 +261,7 @@ TEST(SimulateLidDrivenCavityFlow)
     , g_d_coeff
     , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
+    , u_lid
     , obs_pos
     , g_is_ns
     , !g_is_cd
