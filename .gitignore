@@ -5,6 +5,5 @@ UnitTest++.cbp
 *.depend
 *.layout
 main.cpp
-unittests/UnitTestCustomUtilities.hpp
 *.exelem
 *.exnode
