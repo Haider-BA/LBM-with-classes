@@ -44,8 +44,7 @@ class LatticeModel {
   /**
    * Virtual destructor since we deriving from this class, see Collision.hpp
    */
-  // temporary workaround due to MinGW bug
-  virtual ~LatticeModel() {};  // = default;
+  virtual ~LatticeModel() = default;
 
   /**
    * Get the number of dimensions of the lattice. 2 for 2D and 3 for 3D.

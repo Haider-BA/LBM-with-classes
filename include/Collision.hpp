@@ -33,7 +33,7 @@ class Collision {
   /**
    * Virtual destructor since we are deriving from this class
    */
-  virtual ~Collision() {};  // = default;
+  virtual ~Collision() = default;
 
   /**
    * Calculates equilibrium distribution function according to LBIntro
