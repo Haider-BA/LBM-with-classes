@@ -9,6 +9,12 @@ class LatticeBoltzmann {
  public:
   LatticeBoltzmann(double t_total
     , LatticeModel &lm
+    , CollisionNS &ns);
+  LatticeBoltzmann(double t_total
+    , LatticeModel &lm
+    , CollisionCD &cd);
+  LatticeBoltzmann(double t_total
+    , LatticeModel &lm
     , CollisionNS &ns
     , CollisionCD &cd);
   std::vector<std::vector<double>> Stream(

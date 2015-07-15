@@ -2,6 +2,9 @@
 #include <stdexcept>  // runtime_error
 #include <vector>
 
+LatticeModel::LatticeModel()
+{}
+
 LatticeModel::LatticeModel(std::size_t num_dims
   , std::size_t num_dirs
   , std::size_t num_rows

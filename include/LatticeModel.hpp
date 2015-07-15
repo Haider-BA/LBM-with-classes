@@ -4,6 +4,7 @@
 
 class LatticeModel {
  public:
+  LatticeModel();
   /**
    * Constructor: creates lattice model with the same velocity at each node
    * \param num_dims number of dimensions

@@ -5,6 +5,7 @@
 
 class LatticeD2Q9: public LatticeModel {
  public:
+  LatticeD2Q9();
   /**
    * Constructor: Create lattice model for D2Q9 with the same velocity at each
    * node

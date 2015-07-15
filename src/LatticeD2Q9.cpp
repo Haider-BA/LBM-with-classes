@@ -4,6 +4,9 @@
 #include "Algorithm.hpp"
 #include "LatticeModel.hpp"
 
+LatticeD2Q9::LatticeD2Q9()
+{}
+
 LatticeD2Q9::LatticeD2Q9(std::size_t num_rows
   , std::size_t num_cols
   , double dx
