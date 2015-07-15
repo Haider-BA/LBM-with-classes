@@ -7,9 +7,8 @@
 #include "LatticeModel.hpp"
 
 CollisionNS::CollisionNS()
-{
-  is_implemented = false;
-}
+  : source {}
+{}
 
 // specifies the base class constructor to call
 // https://stackoverflow.com/questions/10282787/calling-the-base-class-

@@ -6,14 +6,24 @@
 #include "LatticeD2Q9.hpp"
 #include "LatticeModel.hpp"
 
+// For use with default constructor so that binding temporary to reference
+// warning can be avoided
+LatticeD2Q9 null_lm;
+
 Collision::Collision()
-  : lm_ (LatticeD2Q9())
+  : lattice_eq {},
+    rho {},
+    is_implemented {false},
+    lm_ (null_lm),
+    tau_ {0.0},
+    c_ {0.0}
 {}
 
 Collision::Collision(LatticeModel &lm
   , double initial_density)
   : lattice_eq {},
     rho {},
+    is_implemented {true},
     lm_ (lm),
     tau_ {0},
     c_ {lm.GetLatticeSpeed()}
@@ -31,6 +41,7 @@ Collision::Collision(LatticeModel &lm
   , const std::vector<double> &initial_density)
   : lattice_eq {},
     rho {initial_density},
+    is_implemented {true},
     lm_ (lm),
     tau_ {0},
     c_ {lm.GetLatticeSpeed()}

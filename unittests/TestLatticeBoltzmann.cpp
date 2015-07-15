@@ -44,10 +44,11 @@ static const std::vector<std::vector<std::size_t>> g_obs_pos;
 TEST(test)
 {
   LatticeD2Q9 lm(g_ny, g_nx, g_dx, g_dt, g_u0);
-//  CollisionNS ns(lm, g_src_pos_f, g_src_str_f, g_k_visco, g_rho0_f);
-  CollisionNS ns;
-//  CollisionCD cd(lm, g_src_pos_g, g_src_str_g, g_d_coeff, g_rho0_g);
-  CollisionCD cd;
-  LatticeBoltzmann lbm(0.1, lm, ns, cd);
+  CollisionNS ns(lm, g_src_pos_f, g_src_str_f, g_k_visco, g_rho0_f);
+  CollisionNS no_ns;
+  CollisionCD cd(lm, g_src_pos_g, g_src_str_g, g_d_coeff, g_rho0_g);
+  CollisionCD no_cd;
+  LatticeBoltzmann lbm(0.1, lm, no_ns, no_cd);
+  LatticeBoltzmann lbm1(0.1, lm, ns, cd);
 }
 }

@@ -3,6 +3,15 @@
 #include <vector>
 
 LatticeModel::LatticeModel()
+  : u {},
+    e {},  // cannot pass in LatticeD2Q9 public member e_d2q9
+    omega {},
+    number_of_dimensions_ {0},
+    number_of_directions_ {0},
+    number_of_rows_ {0},
+    number_of_columns_ {0},
+    space_step_ {0.0},
+    time_step_ {0.0}
 {}
 
 LatticeModel::LatticeModel(std::size_t num_dims

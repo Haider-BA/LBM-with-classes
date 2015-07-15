@@ -63,6 +63,13 @@ class Collision {
    */
   std::vector<double> rho;
 
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
   bool is_implemented;
 
  protected:
@@ -70,7 +77,7 @@ class Collision {
   // LatticeModel object
   // https://stackoverflow.com/questions/17905101/invalid-initialization-of-non-
   // const-reference-of-type-stdvectordouble-fro
-  const LatticeModel &lm_;
+  LatticeModel &lm_;
   double tau_;
   double c_;
   double cs_sqr_ = c_ * c_ / 3.0;

@@ -6,9 +6,8 @@
 #include "LatticeModel.hpp"
 
 CollisionCD::CollisionCD()
-{
-  is_implemented = false;
-}
+  : source {}
+{}
 
 // specifies the base class constructor to call
 // https://stackoverflow.com/questions/10282787/calling-the-base-class-
@@ -21,7 +20,6 @@ CollisionCD::CollisionCD(LatticeModel &lm
   : Collision(lm, initial_density_g),
     source {}
 {
-  is_implemented = true;
   auto dt = lm.GetTimeStep();
   // tau_ formula from "A new scheme for source term in LBGK model for
   // convection diffusion equation"
