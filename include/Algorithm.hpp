@@ -55,4 +55,18 @@ T GetFirstMoment(const T &node
   return result;
 }
 
+/**
+ * Compute density at each node by summing up its distribution functions
+ * \param lattice 2D vector containing distribution functions
+ * \return density of lattice stored row-wise in a 1D vector
+ */
+template <typename T>
+T ComputeRho(const std::vector<T> &lattice)
+{
+  T result(lattice.size(), 0.0);
+  auto it_result = begin(result);
+  for (auto node : lattice) (*it_result++) = GetZerothMoment(node);
+  return result;
+}
+
 #endif  // ALGORITHM_HPP_
