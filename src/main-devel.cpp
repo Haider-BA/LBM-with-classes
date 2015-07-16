@@ -20,6 +20,6 @@ int main()
   // return Unfit::RunOneSuite("suite_name");
 
   // to run only one test, uncomment the following line
-  // and specify the name of the test.Also, comment out the RunAllTheTests()
+  // and specify the name of the test. Also, comment out the RunAllTheTests()
   // return Unfit::RunOneTest("test_name");
 }

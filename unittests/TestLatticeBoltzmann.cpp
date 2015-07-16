@@ -6,6 +6,7 @@
 #include "LatticeBoltzmann.hpp"
 #include "LatticeD2Q9.hpp"
 #include "LatticeModel.hpp"
+#include "Printing.hpp"
 #include "UnitTest++.h"
 
 SUITE(TestFunctionality)
@@ -48,7 +49,8 @@ TEST(test)
   CollisionNS no_ns;
   CollisionCD cd(lm, g_src_pos_g, g_src_str_g, g_d_coeff, g_rho0_g);
   CollisionCD no_cd;
-  LatticeBoltzmann lbm(0.1, lm, no_ns, no_cd);
+  LatticeBoltzmann lbm(0.1, lm, no_ns, cd);
   LatticeBoltzmann lbm1(0.1, lm, ns, cd);
+  Print(lbm.g, g_nx, g_ny);
 }
 }

@@ -10,7 +10,12 @@ class Collision {
   // https://stackoverflow.com/questions/15827632/overload-of-pure-virtual-
   // function
   // virtual void InitSource() = 0;
+  /**
+   * Constructor (default): Creates collision model with all member variables
+   * set to zero
+   */
   Collision();
+
   /**
    * Constructor: Creates collision model with the same density at each node
    * \param lm lattice model used for simulation
@@ -63,12 +68,9 @@ class Collision {
    */
   std::vector<double> rho;
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+  /**
+   * Indicates if the collision model is implemented, replaces the use of input
+   * boolean parameters is_ns and is_cd in previous versions
    */
   bool is_implemented;
 
@@ -77,9 +79,26 @@ class Collision {
   // LatticeModel object
   // https://stackoverflow.com/questions/17905101/invalid-initialization-of-non-
   // const-reference-of-type-stdvectordouble-fro
+  // no longer using const reference as using temporary will give warning
+  /**
+   * Lattice model which contains the number of dimensions, directions, rows,
+   * columns, and the discrete velocity vectors
+   */
   LatticeModel &lm_;
+
+  /**
+   * Relaxation-time
+   */
   double tau_;
+
+  /**
+   * Lattice speed (dx / dt)
+   */
   double c_;
+
+  /**
+   * Square of speed of sound in lattice
+   */
   double cs_sqr_ = c_ * c_ / 3.0;
 };
 #endif  // COLLISION_HPP_

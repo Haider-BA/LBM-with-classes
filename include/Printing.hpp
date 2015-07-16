@@ -11,7 +11,6 @@
  * \param nx number of columns of the lattice
  * \return flipped lattice
  */
-
 template <typename T, typename U>
 T Flip(const T &lattice
   , U nx)
@@ -81,6 +80,7 @@ void Print(const T &lattice
  * \param nx number of columns of lattice
  * \param ny number of rows of lattice
  */
+ // TODO add exceptions
 template <typename T, typename U>
 void Print(const T &lattice
   , U nx

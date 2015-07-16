@@ -6,7 +6,12 @@
 
 class CollisionCD: public Collision {
  public:
+  /**
+   * Constructor: (default) Creates collision model for CD equation with all
+   * member variables set to zero
+   */
   CollisionCD();
+
   /**
    * Constructor: Creates collision model for CD equation
    * \param lm lattice model used for simulation
@@ -36,8 +41,8 @@ class CollisionCD: public Collision {
     , const std::vector<double> &strength);
 
   /**
-   * Applies force/source term according to "A new scheme for source term in
-   * LBGK model for convection-diffusion equation"
+   * Collides and applies force/source term according to "A new scheme for
+   * source term in LBGK model for convection-diffusion equation"
    * \param lattice 2D vector containing distribution functions
    */
   void Collide(std::vector<std::vector<double>> &lattice);

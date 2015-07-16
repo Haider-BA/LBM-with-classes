@@ -4,7 +4,12 @@
 
 class LatticeModel {
  public:
+  /**
+   * Constructor (default): creates lattice model with all member variables set
+   * to zero
+   */
   LatticeModel();
+
   /**
    * Constructor: creates lattice model with the same velocity at each node
    * \param num_dims number of dimensions

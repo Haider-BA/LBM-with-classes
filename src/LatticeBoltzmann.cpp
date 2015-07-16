@@ -11,18 +11,15 @@ LatticeBoltzmann::LatticeBoltzmann(double t_total
   , LatticeModel &lm
   , CollisionNS &ns
   , CollisionCD &cd)
-  : total_time_ {t_total},
+  : f {ns.lattice_eq},
+    g {cd.lattice_eq},
+    total_time_ {t_total},
     lm_ (lm),
     ns_ (ns),
     cd_ (cd),
     is_cd_ {cd.is_implemented},
     is_ns_ {ns.is_implemented}
-{
-  if (is_cd_) std::cout << "cd" << std::endl;
-  if (is_ns_) std::cout << "ns" << std::endl;
-  if (!is_cd_) std::cout << "no cd" << std::endl;
-  if (!is_ns_) std::cout << "no ns" << std::endl;
-}
+{}
 
 std::vector<std::vector<double>> LatticeBoltzmann::Stream(
     const std::vector<std::vector<double>> &lattice)

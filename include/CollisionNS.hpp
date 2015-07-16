@@ -7,7 +7,12 @@
 
 class CollisionNS: public Collision {
  public:
+  /**
+   * Constructor: (default) Creates collision model for NS equation with all
+   * member variables set to zero
+   */
   CollisionNS();
+
   /**
    * Constructor: Creates collision model for NS equation with the same density
    * at each node
@@ -53,11 +58,14 @@ class CollisionNS: public Collision {
     , const std::vector<std::vector<double>> &strength);
 
   /**
-   * Applies force according to Guo2002
+   * Collides and applies force according to Guo2002
    * \param lattice 2D vector containing distribution functions
    */
   void Collide(std::vector<std::vector<double>> &lattice);
 
+  /**
+   * Collision for Lid-driven flow, to be refactored
+   */
   void CollideLid(std::vector<std::vector<double>> &lattice);
 
   /**
