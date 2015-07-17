@@ -1,10 +1,10 @@
-#ifndef COLLISION_HPP_
-#define COLLISION_HPP_
+#ifndef COLLISIONMODEL_HPP_
+#define COLLISIONMODEL_HPP_
 #include <vector>
 #include "LatticeD2Q9.hpp"
 #include "LatticeModel.hpp"
 
-class Collision {
+class CollisionModel {
  public:
   // "Overloading" pure virtual function doesn't work
   // https://stackoverflow.com/questions/15827632/overload-of-pure-virtual-
@@ -16,15 +16,14 @@ class Collision {
    * \param lm lattice model used for simulation
    * \param initial_density initial density of the lattice
    */
-  Collision(LatticeModel &lm
-    , double initial_density);
+  CollisionModel(LatticeModel &lm);
 
   /**
    * Constructor: Creates collision model with variable density at each node
    * \param lm lattice model used for simulation
    * \param initial_density initial density of the lattice
    */
-  Collision(LatticeModel &lm
+  CollisionModel(LatticeModel &lm
     , const std::vector<double> &initial_density);
 
   // Since we are deriving from this class, need virtual destructor
@@ -33,34 +32,45 @@ class Collision {
   /**
    * Virtual destructor since we are deriving from this class
    */
-  virtual ~Collision() = default;
+  virtual ~CollisionModel() = default;
 
   /**
    * Calculates equilibrium distribution function according to LBIntro
    */
-  void ComputeEq();
+  void ComputeEq(std::vector<std::vector<double>> &lattice_eq
+    , const std::vector<double> &rho);
 
   /**
-   * Pure virtual function to compute collision step and apply force step
-   * according to "A new scheme for source term in LBGK model for
-   * convectionâ€“diffusion equation" and Guo2002
+   * Virtual function to compute collision step and apply force step depending
+   * on the model used according to Guo2002
    * \param lattice 2D vector containing distribution functions
    */
-  virtual void Collide(std::vector<std::vector<double>> &lattice);
+//  virtual void CollideNS(std::vector<std::vector<double>> &lattice);
+
+  /**
+   * Virtual function to compute collision step and apply force step
+   * according to "A new scheme for source term in LBGK model for
+   * convection–diffusion equation"
+   * \param lattice 2D vector containing distribution functions
+   */
+//  virtual void CollideCD(std::vector<std::vector<double>> &lattice) {};
 
   /**
    * Equilibrium distribution function stored row-wise in a 2D vector
    */
-  std::vector<std::vector<double>> lattice_eq;
+  std::vector<std::vector<double>> f_eq;
+
+  std::vector<std::vector<double>> g_eq;
 
   /**
    * Density stored row-wise in a 1D vector.
    */
-  std::vector<double> rho;
+  std::vector<double> rho_f;
+
+  std::vector<double> rho_g;
 
   /**
-   * Indicates if the collision model is implemented, replaces the use of input
-   * boolean parameters is_ns and is_cd in previous versions
+   * Indicates which collision model is implemented
    */
   bool is_ns;
   bool is_cd;
@@ -80,7 +90,7 @@ class Collision {
   /**
    * Relaxation-time
    */
-  double tau_;
+//  double tau_;
 
   /**
    * Lattice speed (dx / dt)
@@ -92,4 +102,4 @@ class Collision {
    */
   double cs_sqr_ = c_ * c_ / 3.0;
 };
-#endif  // COLLISION_HPP_
+#endif  // COLLISIONMODEL_HPP_

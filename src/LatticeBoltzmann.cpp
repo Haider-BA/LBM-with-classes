@@ -2,24 +2,31 @@
 #include <cstddef>  // NULL
 #include <iostream>
 #include <vector>
-#include "CollisionCD.hpp"
-#include "CollisionNS.hpp"
+#include "CollisionModel.hpp"
 #include "LatticeModel.hpp"
 #include "LatticeD2Q9.hpp"
+#include "Printing.hpp"
 
 LatticeBoltzmann::LatticeBoltzmann(double t_total
   , LatticeModel &lm
-  , CollisionNS &ns
-  , CollisionCD &cd)
-  : f {ns.lattice_eq},
-    g {cd.lattice_eq},
+  , CollisionModel &cm)
+  : f {},
+    g {},
     total_time_ {t_total},
     lm_ (lm),
-    ns_ (ns),
-    cd_ (cd),
-    is_cd_ {cd.is_implemented},
-    is_ns_ {ns.is_implemented}
-{}
+    cm_ (cm),
+    is_ns_ {cm.is_ns},
+    is_cd_ {cm.is_cd}
+{
+  if (is_ns_) {
+    auto nx = lm_.GetNumberOfColumns();
+    auto ny = lm_.GetNumberOfRows();
+    std::cout << "yes ns" << std::endl;
+    f = cm.f_eq;
+//    std::cout << cm.f_eq[1][5];
+//    Print(cm_.f_eq, nx, ny);
+  }
+}
 
 std::vector<std::vector<double>> LatticeBoltzmann::Stream(
     const std::vector<std::vector<double>> &lattice)

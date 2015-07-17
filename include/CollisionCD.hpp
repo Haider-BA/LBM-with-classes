@@ -1,17 +1,11 @@
 #ifndef COLLISIONCD_HPP_
 #define COLLISIONCD_HPP_
 #include <vector>
-#include "Collision.hpp"
+#include "CollisionModel.hpp"
 #include "LatticeModel.hpp"
 
-class CollisionCD: public Collision {
+class CollisionCD: public CollisionModel {
  public:
-  /**
-   * Constructor: (default) Creates collision model for CD equation with all
-   * member variables set to zero
-   */
-  CollisionCD();
-
   /**
    * Constructor: Creates collision model for CD equation
    * \param lm lattice model used for simulation
@@ -45,7 +39,7 @@ class CollisionCD: public Collision {
    * source term in LBGK model for convection-diffusion equation"
    * \param lattice 2D vector containing distribution functions
    */
-  void Collide(std::vector<std::vector<double>> &lattice);
+  void CollideCD(std::vector<std::vector<double>> &lattice);
 
   /**
    * Sets source term to 0
@@ -56,5 +50,8 @@ class CollisionCD: public Collision {
    * Source term for CD equation stored row-wise
    */
   std::vector<double> source;
+
+ protected:
+  double tau_g_;
 };
 #endif  // COLLISIONCD_HPP_

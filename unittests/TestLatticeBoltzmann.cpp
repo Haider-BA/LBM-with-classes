@@ -2,7 +2,9 @@
 #include <stdexcept>  // runtime_error
 #include <vector>
 #include "CollisionCD.hpp"
+#include "CollisionCDNS.hpp"
 #include "CollisionNS.hpp"
+#include "CollisionNSF.hpp"
 #include "LatticeBoltzmann.hpp"
 #include "LatticeD2Q9.hpp"
 #include "LatticeModel.hpp"
@@ -45,12 +47,13 @@ static const std::vector<std::vector<std::size_t>> g_obs_pos;
 TEST(test)
 {
   LatticeD2Q9 lm(g_ny, g_nx, g_dx, g_dt, g_u0);
-  CollisionNS ns(lm, g_src_pos_f, g_src_str_f, g_k_visco, g_rho0_f);
-  CollisionNS no_ns;
+  CollisionNS ns(lm, g_k_visco, g_rho0_f);
+  CollisionNSF nsf(lm, g_src_pos_f, g_src_str_f, g_k_visco, g_rho0_f);
   CollisionCD cd(lm, g_src_pos_g, g_src_str_g, g_d_coeff, g_rho0_g);
-  CollisionCD no_cd;
-  LatticeBoltzmann lbm(0.1, lm, no_ns, cd);
-  LatticeBoltzmann lbm1(0.1, lm, ns, cd);
-  Print(lbm.g, g_nx, g_ny);
+  CollisionCDNS cdns(lm, g_src_pos_g, g_src_str_g, g_d_coeff, g_rho0_g,
+      g_k_visco, g_rho0_f);
+  LatticeBoltzmann lbm(0.1, lm, ns);
+  Print(lbm.f, g_nx, g_ny);
+//  Print(ns.f_eq, g_nx, g_ny);
 }
 }

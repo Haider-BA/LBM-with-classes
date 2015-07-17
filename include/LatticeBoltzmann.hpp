@@ -1,8 +1,7 @@
 #ifndef LATTICEBOLTZMANN_HPP_
 #define LATTICEBOLTZMANN_HPP_
 #include <vector>
-#include "CollisionCD.hpp"
-#include "CollisionNS.hpp"
+#include "CollisionModel.hpp"
 #include "LatticeModel.hpp"
 
 class LatticeBoltzmann {
@@ -16,8 +15,7 @@ class LatticeBoltzmann {
    */
   LatticeBoltzmann(double t_total
     , LatticeModel &lm
-    , CollisionNS &ns
-    , CollisionCD &cd);
+    , CollisionModel &cm);
 
   /**
    * Destructor
@@ -83,14 +81,14 @@ class LatticeBoltzmann {
    * distribution functions, density and source terms. Performs collision and
    * forcing
    */
-  CollisionNS &ns_;
+  CollisionModel &cm_;
 
   /**
    * Collision model for Convection-Diffusion equation, contains the equilibrium
    * distribution functions, density and source terms. Performs collision and
    * forcing
    */
-  CollisionCD &cd_;
+//  CollisionCD &cd_;
 
   /**
    * Indicates if Navier-Stokes is implemented in the simulation
