@@ -6,8 +6,8 @@
 class CollisionNSF: public CollisionNS {
  public:
   CollisionNSF(LatticeModel &lm
-    , const std::vector<std::vector<std::size_t>> &position
-    , const std::vector<std::vector<double>> &strength
+    , const std::vector<std::vector<std::size_t>> &source_position
+    , const std::vector<std::vector<double>> &source_strength
     , double kinematic_viscosity
     , double initial_density_f);
 
@@ -17,8 +17,8 @@ class CollisionNSF: public CollisionNS {
    * \param strength source magnitude at the position in the various dimensions
    */
   void InitSource(
-      const std::vector<std::vector<std::size_t>> &position
-    , const std::vector<std::vector<double>> &strength);
+      const std::vector<std::vector<std::size_t>> &source_position
+    , const std::vector<std::vector<double>> &source_strength);
 
   /**
    * Collides and applies force according to Guo2002

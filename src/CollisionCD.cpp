@@ -14,6 +14,7 @@ CollisionCD::CollisionCD(LatticeModel &lm
   , double diffusion_coefficient
   , double initial_density_g)
   : CollisionModel(lm),
+    rho_g {},
     source {},
     tau_g_ {0.0}
 {

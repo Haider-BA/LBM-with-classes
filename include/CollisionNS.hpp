@@ -49,6 +49,11 @@ class CollisionNS: public CollisionModel {
    */
   void CollideLid(std::vector<std::vector<double>> &lattice);
 
+  /**
+   * Density stored row-wise in a 1D vector.
+   */
+  std::vector<double> rho_f;
+
  protected:
   double tau_f_;
 };

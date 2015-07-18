@@ -15,8 +15,8 @@ class CollisionCD: public CollisionModel {
    * \param initial_density_g initial density of CD lattice
    */
   CollisionCD(LatticeModel &lm
-    , const std::vector<std::vector<std::size_t>> &position
-    , const std::vector<double> &strength
+    , const std::vector<std::vector<std::size_t>> &source_position
+    , const std::vector<double> &source_strength
     , double diffusion_coefficient
     , double initial_density_g);
 
@@ -45,6 +45,11 @@ class CollisionCD: public CollisionModel {
    * Sets source term to 0
    */
   void KillSource();
+
+  /**
+   * Density stored row-wise in a 1D vector.
+   */
+  std::vector<double> rho_g;
 
   /**
    * Source term for CD equation stored row-wise

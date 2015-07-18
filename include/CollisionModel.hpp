@@ -18,14 +18,6 @@ class CollisionModel {
    */
   CollisionModel(LatticeModel &lm);
 
-  /**
-   * Constructor: Creates collision model with variable density at each node
-   * \param lm lattice model used for simulation
-   * \param initial_density initial density of the lattice
-   */
-  CollisionModel(LatticeModel &lm
-    , const std::vector<double> &initial_density);
-
   // Since we are deriving from this class, need virtual destructor
   // https://stackoverflow.com/questions/353817/should-every-class-have-a-
   // virtual-destructor
@@ -61,13 +53,6 @@ class CollisionModel {
   std::vector<std::vector<double>> f_eq;
 
   std::vector<std::vector<double>> g_eq;
-
-  /**
-   * Density stored row-wise in a 1D vector.
-   */
-  std::vector<double> rho_f;
-
-  std::vector<double> rho_g;
 
   /**
    * Indicates which collision model is implemented

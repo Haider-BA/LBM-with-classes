@@ -34,7 +34,7 @@ CollisionNS::CollisionNS(LatticeModel &lm
 CollisionNS::CollisionNS(LatticeModel &lm
   , double kinematic_viscosity
   , const std::vector<double> &initial_density_f)
-  : CollisionModel(lm, initial_density_f),
+  : CollisionModel(lm),
     tau_f_ {0.0}
 {
   auto dt = lm.GetTimeStep();

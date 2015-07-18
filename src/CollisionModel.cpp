@@ -10,20 +10,6 @@
 CollisionModel::CollisionModel(LatticeModel &lm)
   : f_eq {},
     g_eq {},
-    rho_f {},
-    rho_g {},
-    is_ns {},
-    is_cd {},
-    lm_ (lm),
-    c_ {lm.GetLatticeSpeed()}
-{}
-
-CollisionModel::CollisionModel(LatticeModel &lm
-  , const std::vector<double> &initial_density)
-  : f_eq {},
-    g_eq {},
-    rho_f {initial_density},
-    rho_g {},
     is_ns {},
     is_cd {},
     lm_ (lm),
