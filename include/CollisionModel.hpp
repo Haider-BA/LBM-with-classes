@@ -26,6 +26,23 @@ class CollisionModel {
   void ComputeEq();
 
   /**
+   * Compute density at each node by summing up its distribution functions
+   * \param lattice 2D vector containing distribution functions
+   * \return density of lattice stored row-wise in a 1D vector
+   */
+  std::vector<double> ComputeRho(const std::vector<std::vector<double>> &df);
+
+  /**
+   * Calculated velocity for NS equation without body force based on formula in
+   * Guo2002
+   * \param df 2D vector containing distribution functions of the NS
+   *        equation
+   * \return 2D vector containing velocity at each node of lattice
+   */
+  virtual std::vector<std::vector<double>> ComputeU(
+      const std::vector<std::vector<double>> &df);
+
+  /**
    * Pure virtual function to compute collision step and apply force step
    * according to "A new scheme for source term in LBGK model for
    * convection–diffusion equation" and Guo2002

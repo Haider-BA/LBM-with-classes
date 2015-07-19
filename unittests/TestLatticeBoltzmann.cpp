@@ -2,7 +2,9 @@
 #include <stdexcept>  // runtime_error
 #include <vector>
 #include "Algorithm.hpp"
+#include "CollisionCD.hpp"
 #include "CollisionNS.hpp"
+#include "CollisionNSF.hpp"
 #include "LatticeBoltzmann.hpp"
 #include "LatticeD2Q9.hpp"
 #include "Printing.hpp"
@@ -112,36 +114,7 @@ TEST(InitDensity)
   CollisionNS ns(lm
     , g_k_visco
     , g_rho0_f);
-//  CollisionCD cd(lm
-//    , g_src_pos_g
-//    , g_src_str_g
-//    , g_d_coeff
-//    , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
-    , g_no_obstacles
-    , lm
-    , ns);
-  for (auto n = 0u; n < ns.rho.size(); ++n) {
-    CHECK_CLOSE(g_rho0_f, ns.rho[n], zero_tol);
-//    CHECK_CLOSE(g_rho0_g, cd.rho[n], zero_tol);
-  }  // n
-}
-/*
-TEST(InitVelocity)
-{
-  LatticeD2Q9 lm(g_ny
-    , g_nx
-    , g_dx
-    , g_dt
-    , g_u0);
-  CollisionNS ns(lm
+  CollisionNSF nsf(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
@@ -151,30 +124,20 @@ TEST(InitVelocity)
     , g_src_str_g
     , g_d_coeff
     , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
-    , g_no_obstacles
-    , lm
-    , ns
-    , cd);
-  LatticeBoltzmann lbm2(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , !g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
-    , g_no_obstacles
-    , lm
-    , ns
-    , cd);
+  for (auto n = 0u; n < g_nx * g_ny; ++n) {
+    CHECK_CLOSE(g_rho0_f, ns.rho[n], zero_tol);
+    CHECK_CLOSE(g_rho0_f, nsf.rho[n], zero_tol);
+    CHECK_CLOSE(g_rho0_g, cd.rho[n], zero_tol);
+  }  // n
+}
+
+TEST(InitVelocity)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
   for (auto n = 0u; n < lm.u.size(); ++n) {
     CHECK_CLOSE(g_u0[0], lm.u[n][0], zero_tol);
     CHECK_CLOSE(g_u0[1], lm.u[n][1], zero_tol);
@@ -189,6 +152,9 @@ TEST(ComputeEq)
     , g_dt
     , g_u0);
   CollisionNS ns(lm
+    , g_k_visco
+    , g_rho0_f);
+  CollisionNSF nsf(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
@@ -198,18 +164,6 @@ TEST(ComputeEq)
     , g_src_str_g
     , g_d_coeff
     , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
-    , g_no_obstacles
-    , lm
-    , ns
-    , cd);
   std::vector<double> expected_cd = {0.53041,
                                      0.15007, 0.15150, 0.11716, 0.11606,
                                      0.04279, 0.03347, 0.02570, 0.03284};
@@ -218,10 +172,11 @@ TEST(ComputeEq)
                                      0.03922, 0.03068, 0.02356, 0.03010};
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     for (auto i = 0; i < 9; ++i) {
-      // can just check the member in cd/ns since it's using reference
+      // can just check the member in cd/ns/nsf since it's using reference
       // instead of creating a new copy
-      CHECK_CLOSE(expected_ns[i], ns.lattice_eq[n][i], loose_tol);
-      CHECK_CLOSE(expected_cd[i], cd.lattice_eq[n][i], loose_tol);
+      CHECK_CLOSE(expected_ns[i], ns.edf[n][i], loose_tol);
+      CHECK_CLOSE(expected_ns[i], nsf.edf[n][i], loose_tol);
+      CHECK_CLOSE(expected_cd[i], cd.edf[n][i], loose_tol);
     }  // i
   }  // n
 }
@@ -234,6 +189,9 @@ TEST(InitDistributionFunctionLattice)
     , g_dt
     , g_u0);
   CollisionNS ns(lm
+    , g_k_visco
+    , g_rho0_f);
+  CollisionNSF nsf(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
@@ -243,17 +201,17 @@ TEST(InitDistributionFunctionLattice)
     , g_src_str_g
     , g_d_coeff
     , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
+  LatticeBoltzmann f(g_obs_pos
     , g_no_obstacles
     , lm
-    , ns
+    , ns);
+  LatticeBoltzmann ff(g_obs_pos
+    , g_no_obstacles
+    , lm
+    , nsf);
+  LatticeBoltzmann g(g_obs_pos
+    , g_no_obstacles
+    , lm
     , cd);
   std::vector<double> expected_cd = {0.53041,
                                      0.15007, 0.15150, 0.11716, 0.11606,
@@ -263,8 +221,9 @@ TEST(InitDistributionFunctionLattice)
                                      0.03922, 0.03068, 0.02356, 0.03010};
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     for (auto i = 0; i < 9; ++i) {
-      CHECK_CLOSE(expected_ns[i], lbm.f[n][i], loose_tol);
-      CHECK_CLOSE(expected_cd[i], lbm.g[n][i], loose_tol);
+      CHECK_CLOSE(expected_ns[i], f.df[n][i], loose_tol);
+      CHECK_CLOSE(expected_ns[i], ff.df[n][i], loose_tol);
+      CHECK_CLOSE(expected_cd[i], g.df[n][i], loose_tol);
     }  // i
   }  // n
 }
@@ -276,7 +235,7 @@ TEST(InitSourceMultiplePosition)
     , g_dx
     , g_dt
     , g_u0);
-  CollisionNS ns(lm
+  CollisionNSF nsf(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
@@ -286,29 +245,17 @@ TEST(InitSourceMultiplePosition)
     , g_src_str_g
     , g_d_coeff
     , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
-    , g_no_obstacles
-    , lm
-    , ns
-    , cd);
   std::size_t i_ns = 0;
   std::size_t i_cd = 0;
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     if (n == g_src_pos_f[i_ns][1] * g_nx + g_src_pos_f[i_ns][0]) {
-      CHECK_CLOSE(g_src_str_f[i_ns][0], ns.source[n][0], zero_tol);
-      CHECK_CLOSE(g_src_str_f[i_ns][1], ns.source[n][1], zero_tol);
+      CHECK_CLOSE(g_src_str_f[i_ns][0], nsf.source[n][0], zero_tol);
+      CHECK_CLOSE(g_src_str_f[i_ns][1], nsf.source[n][1], zero_tol);
       if (i_ns < g_src_pos_f.size() - 1) ++i_ns;
     }
     else {
-      CHECK_CLOSE(0.0, ns.source[n][0], zero_tol);
-      CHECK_CLOSE(0.0, ns.source[n][1], zero_tol);
+      CHECK_CLOSE(0.0, nsf.source[n][0], zero_tol);
+      CHECK_CLOSE(0.0, nsf.source[n][1], zero_tol);
     }
     if (n == g_src_pos_g[i_cd][1] * g_nx + g_src_pos_g[i_cd][0]) {
       CHECK_CLOSE(g_src_str_g[i_cd], cd.source[n], zero_tol);
@@ -331,6 +278,9 @@ TEST(CollideWithMixedSource)
     , g_dt
     , g_u0);
   CollisionNS ns(lm
+    , g_k_visco
+    , g_rho0_f);
+  CollisionNSF nsf(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
@@ -340,17 +290,17 @@ TEST(CollideWithMixedSource)
     , g_src_str_g
     , g_d_coeff
     , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
+  LatticeBoltzmann f(g_obs_pos
     , g_no_obstacles
     , lm
-    , ns
+    , ns);
+  LatticeBoltzmann ff(g_obs_pos
+    , g_no_obstacles
+    , lm
+    , nsf);
+  LatticeBoltzmann g(g_obs_pos
+    , g_no_obstacles
+    , lm
     , cd);
   // checks collision result for both cd and ns
   // in expected, index 0 for first source strength, 1 for second source
@@ -398,52 +348,56 @@ TEST(CollideWithMixedSource)
         0.04729, 0.03882, 0.03176, 0.03824}};
   // Set distribution function to have different value from equilibrium
   // distribution function so Collide can produce changed result
-  lbm.g.assign(g_nx * g_ny, std::vector<double>(9, 1.0));
-  lbm.f.assign(g_nx * g_ny, std::vector<double>(9, 1.0));
+  f.df.assign(g_nx * g_ny, std::vector<double>(9, 1.0));
+  ff.df.assign(g_nx * g_ny, std::vector<double>(9, 1.0));
+  g.df.assign(g_nx * g_ny, std::vector<double>(9, 1.0));
   // First collision
-  cd.Collide(lbm.g);
-  ns.Collide(lbm.f);
-
+  ns.Collide(f.df);
+  nsf.Collide(ff.df);
+  cd.Collide(g.df);
   for (auto i = 0; i < 9; ++i) {
     std::size_t i_ns = 0;
     std::size_t i_cd = 0;
     for (auto n = 0u; n < g_nx * g_ny; ++n) {
+      CHECK_CLOSE(expected_ns1[2][i], f.df[n][i], loose_tol);
       if (n == g_src_pos_f[i_ns][1] * g_nx + g_src_pos_f[i_ns][0]) {
-        CHECK_CLOSE(expected_ns1[i_ns][i], lbm.f[n][i], loose_tol);
+        CHECK_CLOSE(expected_ns1[i_ns][i], ff.df[n][i], loose_tol);
         if (i_ns < g_src_pos_f.size() - 1) ++i_ns;
       }
       else {
-        CHECK_CLOSE(expected_ns1[2][i], lbm.f[n][i], loose_tol);
+        CHECK_CLOSE(expected_ns1[2][i], ff.df[n][i], loose_tol);
       }
       if (n == g_src_pos_g[i_cd][1] * g_nx + g_src_pos_g[i_cd][0]) {
-        CHECK_CLOSE(expected_cd1[i_cd][i], lbm.g[n][i], loose_tol);
+        CHECK_CLOSE(expected_cd1[i_cd][i], g.df[n][i], loose_tol);
         if (i_cd < g_src_pos_g.size() - 1) ++i_cd;
       }
       else {
-        CHECK_CLOSE(expected_cd1[2][i], lbm.g[n][i], loose_tol);
+        CHECK_CLOSE(expected_cd1[2][i], g.df[n][i], loose_tol);
       }
     }  // n
   }  // i
   // Second collision
-  cd.Collide(lbm.g);
-  ns.Collide(lbm.f);
+  ns.Collide(f.df);
+  nsf.Collide(ff.df);
+  cd.Collide(g.df);
   for (auto i = 0; i < 9; ++i) {
     std::size_t i_ns = 0;
     std::size_t i_cd = 0;
     for (auto n = 0u; n < g_nx * g_ny; ++n) {
+      CHECK_CLOSE(expected_ns2[2][i], f.df[n][i], loose_tol);
       if (n == g_src_pos_f[i_ns][1] * g_nx + g_src_pos_f[i_ns][0]) {
-        CHECK_CLOSE(expected_ns2[i_ns][i], lbm.f[n][i], loose_tol);
+        CHECK_CLOSE(expected_ns2[i_ns][i], ff.df[n][i], loose_tol);
         if (i_ns < g_src_pos_f.size() - 1) ++i_ns;
       }
       else {
-        CHECK_CLOSE(expected_ns2[2][i], lbm.f[n][i], loose_tol);
+        CHECK_CLOSE(expected_ns2[2][i], ff.df[n][i], loose_tol);
       }
       if (n == g_src_pos_g[i_cd][1] * g_nx + g_src_pos_g[i_cd][0]) {
-        CHECK_CLOSE(expected_cd2[i_cd][i], lbm.g[n][i], loose_tol);
+        CHECK_CLOSE(expected_cd2[i_cd][i], g.df[n][i], loose_tol);
         if (i_cd < g_src_pos_g.size() - 1) ++i_cd;
       }
       else {
-        CHECK_CLOSE(expected_cd2[2][i], lbm.g[n][i], loose_tol);
+        CHECK_CLOSE(expected_cd2[2][i], g.df[n][i], loose_tol);
       }
     }  // n
   }  // i
@@ -459,42 +413,45 @@ TEST(ComputeU)
     , g_dx
     , g_dt
     , g_u0);
+  LatticeD2Q9 lmf(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
   CollisionNS ns(lm
+    , g_k_visco
+    , g_rho0_f);
+  CollisionNSF nsf(lmf
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
     , g_rho0_f);
-  CollisionCD cd(lm
-    , g_src_pos_g
-    , g_src_str_g
-    , g_d_coeff
-    , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
+  LatticeBoltzmann f(g_obs_pos
     , g_no_obstacles
     , lm
-    , ns
-    , cd);
-  lbm.f.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
-  lm.u = lm.ComputeU(lbm.f, ns.rho, ns.source);
+    , ns);
+  LatticeBoltzmann ff(g_obs_pos
+    , g_no_obstacles
+    , lmf
+    , nsf);
+  f.df.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
+  ff.df.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
+  lm.u = ns.ComputeU(f.df);
+  lmf.u = nsf.ComputeU(ff.df);
   std::size_t i_ns = 0;
   std::vector<std::vector<double>> expected{{-57.45380, -172.36284},
       {-57.45370, -172.36274}, {-57.45455, -172.36364}};
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
+    CHECK_CLOSE(expected[2][0], lm.u[n][0], loose_tol);
+    CHECK_CLOSE(expected[2][1], lm.u[n][1], loose_tol);
     if (n == g_src_pos_f[i_ns][1] * g_nx + g_src_pos_f[i_ns][0]) {
-      CHECK_CLOSE(expected[i_ns][0], lm.u[n][0], loose_tol);
-      CHECK_CLOSE(expected[i_ns][1], lm.u[n][1], loose_tol);
+      CHECK_CLOSE(expected[i_ns][0], lmf.u[n][0], loose_tol);
+      CHECK_CLOSE(expected[i_ns][1], lmf.u[n][1], loose_tol);
       if (i_ns < g_src_pos_f.size() - 1) ++i_ns;
     }
     else {
-      CHECK_CLOSE(expected[2][0], lm.u[n][0], loose_tol);
-      CHECK_CLOSE(expected[2][1], lm.u[n][1], loose_tol);
+      CHECK_CLOSE(expected[2][0], lmf.u[n][0], loose_tol);
+      CHECK_CLOSE(expected[2][1], lmf.u[n][1], loose_tol);
     }
   }  // n
 }
@@ -507,6 +464,9 @@ TEST(ComputeRho)
     , g_dt
     , g_u0);
   CollisionNS ns(lm
+    , g_k_visco
+    , g_rho0_f);
+  CollisionNSF nsf(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
@@ -516,24 +476,30 @@ TEST(ComputeRho)
     , g_src_str_g
     , g_d_coeff
     , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
+  LatticeBoltzmann f(g_obs_pos
     , g_no_obstacles
     , lm
-    , ns
+    , ns);
+  LatticeBoltzmann ff(g_obs_pos
+    , g_no_obstacles
+    , lm
+    , nsf);
+  LatticeBoltzmann g(g_obs_pos
+    , g_no_obstacles
+    , lm
     , cd);
-  lbm.f.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
-  ns.rho = lm.ComputeRho(lbm.f);
+  f.df.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
+  ff.df.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
+  g.df.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
+  ns.rho = ns.ComputeRho(f.df);
+  nsf.rho = nsf.ComputeRho(ff.df);
+  cd.rho = cd.ComputeRho(g.df);
   auto expected = 36.0;
   for (auto rho : ns.rho) CHECK_CLOSE(expected, rho, loose_tol);
+  for (auto rho : nsf.rho) CHECK_CLOSE(expected, rho, loose_tol);
+  for (auto rho : cd.rho) CHECK_CLOSE(expected, rho, loose_tol);
 }
-
+/*
 TEST(BoundaryPeriodic)
 {
   LatticeD2Q9 lm(g_ny

@@ -22,14 +22,8 @@ class LatticeBoltzmann {
    * \param ns Collision model for NS equation
    * \param cd Collision model for CD equation
    */
-  LatticeBoltzmann(double t_total
-    , double u_lid
-    , const std::vector<std::vector<std::size_t>> &obstacles_pos
-    , bool is_ns
-    , bool is_cd
-    , bool is_taylor
-    , bool is_lid
-    , bool is_instant
+  LatticeBoltzmann(
+      const std::vector<std::vector<std::size_t>> &obstacles_pos
     , bool has_obstacles
     , LatticeModel &lm
     , CollisionModel &cm);
@@ -75,22 +69,6 @@ class LatticeBoltzmann {
   void TakeStep();
 
   /**
-   * Performs numerous cycles of the evolution equation based on total time of
-   * the simulation and time step of the simulation, does not output any files
-   * to Cmgui
-   */
-  void RunSim();
-
-  /**
-   * Performs numerous cycles of the evolution equation based on total time of
-   * the simulation and time step of the simulation, specifies a file to output
-   * using Cmgui
-   * \param lattice the be printed using Cmgui (distribution functions or
-   *       velocity)
-   */
-  void RunSim(std::vector<std::vector<double>> &lattice);
-
-  /**
    * NS distribution function stored row-wise in a 2D vector.
    */
   std::vector<std::vector<double>> df;
@@ -121,21 +99,8 @@ class LatticeBoltzmann {
     SW,
     SE
   };
-  /**
-   * Checks input parameters to ensure there's not invalid values
-   * \return true if there is invalid: 0 in any values, both is_ns_ and is_cd_
-   *         are false
-   *         false if all input values are valid
-   */
-  bool CheckParameters();
+
   // input parameters
-  double total_time_;
-  double u_lid_;
-  bool is_ns_;
-  bool is_cd_;
-  bool is_taylor_;
-  bool is_lid_;
-  bool is_instant_;
   bool has_obstacles_;
   // LatticeModel to take care of dims, dirs, rows, cols and discrete e vectors
   // by reference, similar to by pointer

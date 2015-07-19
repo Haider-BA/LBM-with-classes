@@ -38,3 +38,25 @@ void CollisionModel::ComputeEq()
     }  // i
   }  // n
 }
+
+std::vector<double> CollisionModel::ComputeRho(
+    const std::vector<std::vector<double>> &df)
+{
+  std::vector<double> result(df.size(), 0.0);
+  auto it_result = begin(result);
+  for (auto node : df) (*it_result++) = GetZerothMoment(node);
+  return result;
+}
+
+std::vector<std::vector<double>> CollisionModel::ComputeU(
+    const std::vector<std::vector<double>> &df)
+{
+  std::vector<std::vector<double>> result;
+  auto index = 0u;
+  for (auto node : df) result.push_back(GetFirstMoment(node, lm_.e));
+  for (auto &node : result) {
+    for (auto &d : node) d /= rho[index];
+    ++ index;
+  }  // node
+  return result;
+}

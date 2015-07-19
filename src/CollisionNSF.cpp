@@ -40,6 +40,24 @@ void CollisionNSF::InitSource(
   }  // pos
 }
 
+std::vector<std::vector<double>> CollisionNSF::ComputeU(
+    const std::vector<std::vector<double>> &df)
+{
+  auto nd = lm_.GetNumberOfDimensions();
+  auto dt = lm_.GetTimeStep();
+  std::vector<std::vector<double>> result;
+  auto index = 0u;
+  for (auto node : df) {
+    result.push_back(GetFirstMoment(node, lm_.e));
+    for (auto d = 0u; d < nd; ++d) {
+      result[index][d] += 0.5 * dt * source[index][d] * rho[index];
+      result[index][d] /= rho[index];
+    }  // d
+    ++index;
+  }
+  return result;
+}
+
 void CollisionNSF::Collide(std::vector<std::vector<double>> &lattice)
 {
   auto nc = lm_.GetNumberOfDirections();

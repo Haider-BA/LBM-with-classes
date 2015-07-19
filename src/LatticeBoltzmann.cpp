@@ -18,38 +18,18 @@
 // cant use braces to initialize reference cuz gcc bug
 // https://stackoverflow.com/questions/10509603/why-cant-i-initialize-a-
 // reference-in-an-initializer-list-with-uniform-initializ
-LatticeBoltzmann::LatticeBoltzmann(double t_total
-  , double u_lid
-  , const std::vector<std::vector<std::size_t>> &obstacles_position
-  , bool is_ns
-  , bool is_cd
-  , bool is_taylor
-  , bool is_lid
-  , bool is_instant
+LatticeBoltzmann::LatticeBoltzmann(
+    const std::vector<std::vector<std::size_t>> &obstacles_position
   , bool has_obstacles
   , LatticeModel &lm
   , CollisionModel &cm)
-  : df {},
-    total_time_ {t_total},
-    u_lid_ {u_lid},
-    is_ns_ {is_ns},
-    is_cd_ {is_cd},
-    is_taylor_ {is_taylor},
-    is_lid_ {is_lid},
-    is_instant_ {is_instant},
+  : df {cm.edf},
     has_obstacles_ {has_obstacles},
     lm_ (lm),
     cm_ (cm)
 {
-  if (CheckParameters()) {
-    throw std::runtime_error("Zero value in input parameters");
-  }
-  else {
-    // Initializing variables with initial values
-//    if (is_ns_) f = ns_.lattice_eq;
-//    if (is_cd_) g = cd_.lattice_eq;
-//    if (has_obstacles) LatticeBoltzmann::Init(obstacles, obstacles_position);
-  }
+  // Initializing variables with initial values
+//  if (has_obstacles) LatticeBoltzmann::Init(obstacles, obstacles_position);
 }
 
 //void LatticeBoltzmann::Init(std::vector<bool> &lattice
@@ -108,51 +88,51 @@ std::vector<std::vector<double>> LatticeBoltzmann::BoundaryCondition(
   // initialize some boundaries to mirror their counterparts
   auto right_bdr(left_bdr);
   auto bottom_bdr(top_bdr);
-  // Periodic boundary condition on left and right
-  for (auto y = 0u; y < ny; ++y) {
-    auto n = y * nx;
-    left_bdr[y][E] = lattice[n + nx - 1][E];
-    left_bdr[y][NE] = lattice[n + nx - 1][NE];
-    left_bdr[y][SE] = lattice[n + nx - 1][SE];
-    right_bdr[y][W] = lattice[n][W];
-    right_bdr[y][NW] = lattice[n][NW];
-    right_bdr[y][SW] = lattice[n][SW];
-  }  // y
-  // periodic boundary condition on top and bottom for taylor vortex
-  // analytical solution, this is a temporary workaround
-  if (is_taylor_) {
-    for (auto x = 0u; x < nx; ++x) {
-      auto n = (ny - 1) * nx;
-      top_bdr[x][S] = lattice[x][S];
-      top_bdr[x][SW] = lattice[x][SW];
-      top_bdr[x][SE] = lattice[x][SE];
-      bottom_bdr[x][N] = lattice[n + x][N];
-      bottom_bdr[x][NW] = lattice[n + x][NW];
-      bottom_bdr[x][NE] = lattice[n + x][NE];
-    }  // y
-    // mixture of boundaries (periodic) at the corners
-    corner_bdr[0][NE] = lattice[ny * nx - 1][NE];
-    corner_bdr[1][NW] = lattice[(ny - 1) * nx][NW];
-    corner_bdr[2][SE] = lattice[nx - 1][SE];
-    corner_bdr[3][SW] = lattice[0][SW];
-  }
-  else {
-    // no-slip boundary condition on top and bottom
-    for (auto x = 0u; x < nx; ++x) {
-      auto n = (ny - 1) * nx;
-      top_bdr[x][S] = lattice[x + n][N];
-      bottom_bdr[x][N] = lattice[x][S];
-      top_bdr[x][SW] = lattice[(x == 0) ? nx * ny - 1 : x + n - 1][NE];
-      bottom_bdr[x][NW] =lattice[(x == 0) ? nx - 1 : x - 1][SE];
-      top_bdr[x][SE] = lattice[(x == nx - 1) ? n : x + n + 1][NW];
-      bottom_bdr[x][NE] = lattice[(x == nx - 1) ? 0 : x + 1][SW];
-    }  // x
-    // mixture of boundaries (bounce-back) at the corners
-    corner_bdr[0][NE] = lattice[0][SW];
-    corner_bdr[1][NW] = lattice[nx - 1][SE];
-    corner_bdr[2][SE] = lattice[(ny - 1) * nx][NW];
-    corner_bdr[3][SW] = lattice[ny * nx - 1][NE];
-  }
+//  // Periodic boundary condition on left and right
+//  for (auto y = 0u; y < ny; ++y) {
+//    auto n = y * nx;
+//    left_bdr[y][E] = lattice[n + nx - 1][E];
+//    left_bdr[y][NE] = lattice[n + nx - 1][NE];
+//    left_bdr[y][SE] = lattice[n + nx - 1][SE];
+//    right_bdr[y][W] = lattice[n][W];
+//    right_bdr[y][NW] = lattice[n][NW];
+//    right_bdr[y][SW] = lattice[n][SW];
+//  }  // y
+//  // periodic boundary condition on top and bottom for taylor vortex
+//  // analytical solution, this is a temporary workaround
+//  if (is_taylor_) {
+//    for (auto x = 0u; x < nx; ++x) {
+//      auto n = (ny - 1) * nx;
+//      top_bdr[x][S] = lattice[x][S];
+//      top_bdr[x][SW] = lattice[x][SW];
+//      top_bdr[x][SE] = lattice[x][SE];
+//      bottom_bdr[x][N] = lattice[n + x][N];
+//      bottom_bdr[x][NW] = lattice[n + x][NW];
+//      bottom_bdr[x][NE] = lattice[n + x][NE];
+//    }  // y
+//    // mixture of boundaries (periodic) at the corners
+//    corner_bdr[0][NE] = lattice[ny * nx - 1][NE];
+//    corner_bdr[1][NW] = lattice[(ny - 1) * nx][NW];
+//    corner_bdr[2][SE] = lattice[nx - 1][SE];
+//    corner_bdr[3][SW] = lattice[0][SW];
+//  }
+//  else {
+//    // no-slip boundary condition on top and bottom
+//    for (auto x = 0u; x < nx; ++x) {
+//      auto n = (ny - 1) * nx;
+//      top_bdr[x][S] = lattice[x + n][N];
+//      bottom_bdr[x][N] = lattice[x][S];
+//      top_bdr[x][SW] = lattice[(x == 0) ? nx * ny - 1 : x + n - 1][NE];
+//      bottom_bdr[x][NW] =lattice[(x == 0) ? nx - 1 : x - 1][SE];
+//      top_bdr[x][SE] = lattice[(x == nx - 1) ? n : x + n + 1][NW];
+//      bottom_bdr[x][NE] = lattice[(x == nx - 1) ? 0 : x + 1][SW];
+//    }  // x
+//    // mixture of boundaries (bounce-back) at the corners
+//    corner_bdr[0][NE] = lattice[0][SW];
+//    corner_bdr[1][NW] = lattice[nx - 1][SE];
+//    corner_bdr[2][SE] = lattice[(ny - 1) * nx][NW];
+//    corner_bdr[3][SW] = lattice[ny * nx - 1][NE];
+//  }
   // append the boundaries of different edges to the main boundary vector
   auto boundary(left_bdr);
   boundary.insert(end(boundary), begin(right_bdr), end(right_bdr));
@@ -335,69 +315,42 @@ std::vector<std::vector<double>> LatticeBoltzmann::StreamImmersed(
 
 void LatticeBoltzmann::TakeStep()
 {
-  if (is_ns_) {
-    if (is_lid_) {
+//  if (is_ns_) {
+//    if (is_lid_) {
 //      ns_.CollideLid(f);
-    }
-    else {
+//    }
+//    else {
 //      ns_.Collide(f);
-    }
+//    }
 //    if (has_obstacles_) LatticeBoltzmann::Obstacles(f);
-    if (is_lid_) {
+//    if (is_lid_) {
 //      LatticeBoltzmann::BoundaryLid(f);
 //      f = LatticeBoltzmann::StreamImmersed(f);
-    }
-    else {
+//    }
+//    else {
 //      f = LatticeBoltzmann::Stream(f, LatticeBoltzmann::BoundaryCondition(f));
-    }
+//    }
 //    ns_.rho = lm_.ComputeRho(f);
-    if (is_lid_) {
+//    if (is_lid_) {
 //      lm_.u = lm_.ComputeULid(f, ns_.rho, ns_.source, u_lid_);
-    }
-    else {
+//    }
+//    else {
 //      lm_.u = lm_.ComputeU(f, ns_.rho, ns_.source);
-    }
+//    }
 //    ns_.ComputeEq();
-  }
-  if (is_cd_) {
+//  }
+//  if (is_cd_) {
 //    cd_.Collide(g);
 //    if (is_instant_) cd_.KillSource();
 //    if (has_obstacles_) LatticeBoltzmann::Obstacles(g);
-    if (is_lid_) {
+//    if (is_lid_) {
 //      LatticeBoltzmann::BoundaryLid(g);
 //      g = LatticeBoltzmann::StreamImmersed(g);
-    }
-    else {
+//    }
+//    else {
 //      g = LatticeBoltzmann::Stream(g, LatticeBoltzmann::BoundaryCondition(g));
-    }
+//    }
 //    cd_.rho = lm_.ComputeRho(g);
 //    cd_.ComputeEq();
-  }
-}
-
-void LatticeBoltzmann::RunSim()
-{
-  auto dt = lm_.GetTimeStep();
-  for (auto t = 0.0; t < total_time_; t += dt) LatticeBoltzmann::TakeStep();
-}
-
-void LatticeBoltzmann::RunSim(std::vector<std::vector<double>> &lattice)
-{
-  auto dt = lm_.GetTimeStep();
-  auto nx = lm_.GetNumberOfColumns();
-  auto ny = lm_.GetNumberOfRows();
-  auto t_count = 0u;
-  WriteResultsCmgui(lattice, nx, ny, t_count);
-  for (auto t = 0.0; t < total_time_; t += dt) {
-    LatticeBoltzmann::TakeStep();
-    if (std::fmod(t, 0.002) < 1e-3) {
-      WriteResultsCmgui(lattice, nx, ny, ++t_count);
-      std::cout << t_count << " " << t << std::endl;
-    }
-  }
-}
-
-bool LatticeBoltzmann::CheckParameters()
-{
-  return total_time_ < 1e-20 || !(is_ns_ || is_cd_);
+//  }
 }

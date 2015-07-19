@@ -35,6 +35,16 @@ class CollisionNSF: public CollisionNS {
     , const std::vector<std::vector<double>> &source_strength);
 
   /**
+   * Calculated velocity for NS equation based on formula in
+   * Guo2002
+   * \param df 2D vector containing distribution functions of the NS
+   *        equation
+   * \return 2D vector containing velocity at each node of lattice
+   */
+  std::vector<std::vector<double>> ComputeU(
+      const std::vector<std::vector<double>> &df);
+
+  /**
    * Collides and applies force according to Guo2002
    * \param lattice 2D vector containing distribution functions
    */

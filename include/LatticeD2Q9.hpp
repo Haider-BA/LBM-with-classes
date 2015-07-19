@@ -40,27 +40,6 @@ class LatticeD2Q9: public LatticeModel {
    */
   virtual ~LatticeD2Q9() = default;
 
-  /**
-   * Compute density at each node by summing up its distribution functions
-   * \param lattice 2D vector containing distribution functions
-   * \return density of lattice stored row-wise in a 1D vector
-   */
-  std::vector<double> ComputeRho(
-      const std::vector<std::vector<double>> &lattice);
-
-  /**
-   * Calculated velocity for NS equation based on formula in Guo2002
-   * \param lattice 2D vector containing distribution functions of the NS
-   *        equation
-   * \param rho 1D vector containing the density at each node of lattice
-   * \param src 2D vector containing body force density at each node of lattice
-   * \return 2D vector containing velocity at each node of lattice
-   */
-  std::vector<std::vector<double>> ComputeU(
-      const std::vector<std::vector<double>> &lattice
-    , const std::vector<double> &rho
-    , const std::vector<std::vector<double>> &src);
-
   std::vector<std::vector<double>> ComputeULid(
       const std::vector<std::vector<double>> &lattice
     , const std::vector<double> &rho

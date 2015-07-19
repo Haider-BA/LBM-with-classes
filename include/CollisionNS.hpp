@@ -18,7 +18,7 @@ class CollisionNS: public CollisionModel {
     , double initial_density_f);
 
   /**
-   * Destructor
+   * Virtual destructor since we may be deriving from this class
    */
   virtual ~CollisionNS() = default;
 

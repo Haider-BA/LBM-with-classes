@@ -60,33 +60,6 @@ LatticeD2Q9::LatticeD2Q9(std::size_t num_rows
            1.0 / 36.0, 1.0 / 36.0, 1.0 / 36.0, 1.0 / 36.0};
 }
 
-std::vector<double> LatticeD2Q9::ComputeRho(
-    const std::vector<std::vector<double>> &lattice)
-{
-  std::vector<double> result(lattice.size(), 0.0);
-  auto it_result = begin(result);
-  for (auto node : lattice) (*it_result++) = GetZerothMoment(node);
-  return result;
-}
-
-std::vector<std::vector<double>> LatticeD2Q9::ComputeU(
-    const std::vector<std::vector<double>> &lattice
-  , const std::vector<double> &rho
-  , const std::vector<std::vector<double>> &src)
-{
-  std::vector<std::vector<double>> result;
-  auto index = 0u;
-  for (auto node : lattice) {
-    result.push_back(GetFirstMoment(node, e));
-    result[index][0] += 0.5 * time_step_ * src[index][0] * rho[index];
-    result[index][0] /= rho[index];
-    result[index][1] += 0.5 * time_step_ * src[index][1] * rho[index];
-    result[index][1] /= rho[index];
-    ++index;
-  }
-  return result;
-}
-
 std::vector<std::vector<double>> LatticeD2Q9::ComputeULid(
     const std::vector<std::vector<double>> &lattice
   , const std::vector<double> &rho

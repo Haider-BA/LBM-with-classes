@@ -44,7 +44,7 @@ class LatticeModel {
    * Virtual destructor since we deriving from this class, see Collision.hpp
    */
    // temporary workaround due to MinGW bug
-  virtual ~LatticeModel(){};// = default;
+  virtual ~LatticeModel() = default;
 
   /**
    * Get the number of dimensions of the lattice. 2 for 2D and 3 for 3D.
@@ -88,28 +88,6 @@ class LatticeModel {
    * \return lattice speed of the model
    */
   double GetLatticeSpeed() const;
-
-  /**
-   * Pure virtual function that compute the density of the lattice, derived
-   * classes will use their own get moments function to compute density
-   * \param lattice 2D vector containing distribution functions
-   * \return density of the lattice stored row-wise
-   */
-  virtual std::vector<double> ComputeRho(
-      const std::vector<std::vector<double>> &lattice) = 0;
-
-  /**
-   * Pure virtual function that compute the velocity of the lattice, derived
-   * classes will use their own get moments function to compute velocity
-   * \param lattice 2D vector containing distribution functions
-   * \param rho density of the lattice stored row-wise
-   * \param src source term of the lattice stored row-wise
-   * \return density of the lattice stored row-wise
-   */
-  virtual std::vector<std::vector<double>> ComputeU(
-      const std::vector<std::vector<double>> &lattice
-    , const std::vector<double> &rho
-    , const std::vector<std::vector<double>> &src) = 0;
 
   virtual std::vector<std::vector<double>> ComputeULid(
       const std::vector<std::vector<double>> &lattice

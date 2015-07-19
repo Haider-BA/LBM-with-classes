@@ -60,6 +60,7 @@
 			<Add directory="UnitTest++/lib/Debug" />
 		</Linker>
 		<Unit filename="include/Algorithm.hpp" />
+		<Unit filename="include/CollisionCD.hpp" />
 		<Unit filename="include/CollisionModel.hpp" />
 		<Unit filename="include/CollisionNS.hpp" />
 		<Unit filename="include/CollisionNSF.hpp" />
@@ -68,6 +69,7 @@
 		<Unit filename="include/LatticeModel.hpp" />
 		<Unit filename="include/Printing.hpp" />
 		<Unit filename="include/WriteResultsCmgui.hpp" />
+		<Unit filename="src/CollisionCD.cpp" />
 		<Unit filename="src/CollisionModel.cpp" />
 		<Unit filename="src/CollisionNS.cpp" />
 		<Unit filename="src/CollisionNSF.cpp" />

@@ -54,5 +54,4 @@ T GetFirstMoment(const T &node
   }  // d
   return result;
 }
-
 #endif  // ALGORITHM_HPP_
