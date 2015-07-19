@@ -2,11 +2,9 @@
 #include <stdexcept>  // runtime_error
 #include <vector>
 #include "Algorithm.hpp"
-#include "CollisionCD.hpp"
 #include "CollisionNS.hpp"
 #include "LatticeBoltzmann.hpp"
 #include "LatticeD2Q9.hpp"
-#include "LatticeModel.hpp"
 #include "Printing.hpp"
 #include "UnitTest++.h"
 
@@ -58,44 +56,7 @@ static const bool g_is_taylor = true;
 static const bool g_is_lid = true;
 static const bool g_is_instant = true;
 static const bool g_no_obstacles = false;
-
-TEST(Constructor)
-{
-  // formatting function calling like this because input parameters may still
-  // change and it's easier to edit this way
-  LatticeD2Q9 lm(g_ny
-    , g_nx
-    , g_dx
-    , g_dt
-    , g_u0);
-  CollisionNS ns(lm
-    , g_src_pos_f
-    , g_src_str_f
-    , g_k_visco
-    , g_rho0_f);
-  CollisionCD cd(lm
-    , g_src_pos_g
-    , g_src_str_g
-    , g_d_coeff
-    , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
-    , g_no_obstacles
-    , lm
-    , ns
-    , cd);
-//  cd.Collide();
-//  cd.ApplyForce();
-//  lbm.Print(cd.source);
-//  lbm.Print(1, ns.source);
-}
-
+/*
 TEST(InitObstacles)
 {
   std::vector<bool> obstacle(g_nx * g_ny, false);
@@ -140,7 +101,7 @@ TEST(InitObstacles)
     ++counter;
   }  // obs
 }
-
+*/
 TEST(InitDensity)
 {
   LatticeD2Q9 lm(g_ny
@@ -149,15 +110,13 @@ TEST(InitDensity)
     , g_dt
     , g_u0);
   CollisionNS ns(lm
-    , g_src_pos_f
-    , g_src_str_f
     , g_k_visco
     , g_rho0_f);
-  CollisionCD cd(lm
-    , g_src_pos_g
-    , g_src_str_g
-    , g_d_coeff
-    , g_rho0_g);
+//  CollisionCD cd(lm
+//    , g_src_pos_g
+//    , g_src_str_g
+//    , g_d_coeff
+//    , g_rho0_g);
   LatticeBoltzmann lbm(g_t_total
     , g_u_lid
     , g_obs_pos
@@ -168,14 +127,13 @@ TEST(InitDensity)
     , g_is_instant
     , g_no_obstacles
     , lm
-    , ns
-    , cd);
+    , ns);
   for (auto n = 0u; n < ns.rho.size(); ++n) {
     CHECK_CLOSE(g_rho0_f, ns.rho[n], zero_tol);
-    CHECK_CLOSE(g_rho0_g, cd.rho[n], zero_tol);
+//    CHECK_CLOSE(g_rho0_g, cd.rho[n], zero_tol);
   }  // n
 }
-
+/*
 TEST(InitVelocity)
 {
   LatticeD2Q9 lm(g_ny
@@ -1842,4 +1800,5 @@ TEST(InstantSourceToggle)
     }
   }  // n
 }
+*/
 }

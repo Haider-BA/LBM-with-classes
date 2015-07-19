@@ -1,5 +1,5 @@
-#ifndef LATTICEMODEL_HPP_
-#define LATTICEMODEL_HPP_
+#ifndef LATTICE_MODEL_HPP_
+#define LATTICE_MODEL_HPP_
 #include <vector>
 
 class LatticeModel {
@@ -142,4 +142,4 @@ class LatticeModel {
   double time_step_;
   double c_ = space_step_ / time_step_;
 };
-#endif  // LATTICEMODEL_HPP_
+#endif  // LATTICE_MODEL_HPP_

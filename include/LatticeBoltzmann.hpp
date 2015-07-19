@@ -1,20 +1,11 @@
-#ifndef LATTICEBOLTZMANN_HPP_
-#define LATTICEBOLTZMANN_HPP_
+#ifndef LATTICE_BOLTZMANN_HPP_
+#define LATTICE_BOLTZMANN_HPP_
 #include <vector>
-#include "CollisionCD.hpp"
-#include "CollisionNS.hpp"
+#include "CollisionModel.hpp"
 #include "LatticeModel.hpp"
 
 class LatticeBoltzmann {
  public:
-  /**
-   * Constructor: (default) Override default constructor to throw exception to
-   * to forbid declaring uninitialized
-   * Does not work because of uninitialized reference member error (lm_)
-   * Can try calling intializing lm with 0's
-   */
-//  LatticeBoltzmann();
-
   /**
    * Constructor: Creates lattice
    * \param t_total total time of simulation
@@ -41,59 +32,11 @@ class LatticeBoltzmann {
     , bool is_instant
     , bool has_obstacles
     , LatticeModel &lm
-    , CollisionNS &ns
-    , CollisionCD &cd);
+    , CollisionModel &cm);
 
   ~LatticeBoltzmann() = default;
 
   LatticeBoltzmann(const LatticeBoltzmann&) = default;
-
-   /**
-   * Get the number of dimensions of the lattice. 2 for 2D and 3 for 3D.
-   *
-   * \return number of dimensions of the lattice
-   */
-  std::size_t GetNumberOfDimensions() const;
-
-  /**
-   * Get the number of discrete velocities of the lattice, specified by the
-   * model used. 9 for Q9.
-   *
-   * \return number of discrete velocities of the lattice
-   */
-  std::size_t GetNumberOfDirections() const;
-
-  /**
-   * Get the number of rows of the lattice, will be 2 smaller than the
-   * actual number of rows created due to additional boundary layer.
-   *
-   * \return number of rows of the lattice
-   */
-  std::size_t GetNumberOfRows() const;
-
-  /**
-   * Get the number of columns of the lattice, will be 2 smaller than
-   * the actual number of columns created due to additional boundary layer.
-   *
-   * \return number of columns of the lattice
-   */
-  std::size_t GetNumberOfColumns() const;
-
-  /**
-   * Initializes obstacle lattice
-   * \param lattice obstacles at each node stored row-wise
-   * \param position 2D vector containing position information of the obstacles
-   */
-  void Init(std::vector<bool> &lattice
-    , const std::vector<std::vector<std::size_t>> &position);
-
-  /**
-   * Reflects distribution functions on obstacle nodes, checks if node is not at
-   * edges of the reflecting direction and if node in the reflecting direction
-   * is not an obstacle node before reflecting
-   * \param lattice 2D vector containing distribution functions
-   */
-  void Obstacles(std::vector<std::vector<double>> &lattice);
 
   /**
    * Computes boundary condition for the lattice, bounceback for top and bottom
@@ -150,22 +93,12 @@ class LatticeBoltzmann {
   /**
    * NS distribution function stored row-wise in a 2D vector.
    */
-  std::vector<std::vector<double>> f;
+  std::vector<std::vector<double>> df;
 
   /**
    * Boundary nodes for NS lattice
    */
   std::vector<std::vector<double>> boundary_f;
-
-  /**
-   * CDE distribution function stored row-wise in a 2D vector.
-   */
-  std::vector<std::vector<double>> g;
-
-  /**
-   * Boundary nodes for CDE lattice
-   */
-  std::vector<std::vector<double>> boundary_g;
 
   /**
    * Lattice containing obstacles
@@ -209,8 +142,9 @@ class LatticeBoltzmann {
   // https://stackoverflow.com/questions/9285627/is-it-possible-to-pass-derived-
   // classes-by-reference-to-a-function-taking-base-cl
   LatticeModel &lm_;
+  CollisionModel &cm_;
   // Collision models to take care of eq, rho, source
-  CollisionNS &ns_;
-  CollisionCD &cd_;
+//  CollisionNS &ns_;
+//  CollisionCD &cd_;
 };
-#endif  // LATTICEBOLTZMANN_HPP_
+#endif  // LATTICE_BOLTZMANN_HPP_

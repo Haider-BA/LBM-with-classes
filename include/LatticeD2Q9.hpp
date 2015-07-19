@@ -1,5 +1,5 @@
-#ifndef LATTICED2Q9_HPP_
-#define LATTICED2Q9_HPP_
+#ifndef LATTICE_D2Q9_HPP_
+#define LATTICE_D2Q9_HPP_
 #include <vector>
 #include "LatticeModel.hpp"
 
@@ -66,9 +66,5 @@ class LatticeD2Q9: public LatticeModel {
     , const std::vector<double> &rho
     , const std::vector<std::vector<double>> &src
     , double u_lid);
-
-//  std::vector<std::vector<double>> e_d2q9 = {{0, 0},
-//      {1, 0}, {0, 1}, {-1, 0}, {0, -1},
-//      {1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
 };
-#endif  // LATTICED2Q9_HPP_
+#endif  // LATTICE_D2Q9_HPP_
