@@ -4,8 +4,8 @@
 
 class BoundaryNodes {
  public:
-  BoundaryNodes(LatticeModel &lm
-    , bool is_prestream);
+  BoundaryNodes(bool is_prestream
+    , LatticeModel &lm);
 
   virtual ~BoundaryNodes() = default;
 
@@ -14,6 +14,19 @@ class BoundaryNodes {
   bool prestream;
 
  protected:
+  enum Directions {
+    E = 1,
+    N,
+    W,
+    S,
+    NE,
+    NW,
+    SW,
+    SE
+  };
+
   LatticeModel &lm_;
+
+  std::vector<std::size_t> coordinates_;
 };
 #endif // BOUNDARY_NODES_HPP_

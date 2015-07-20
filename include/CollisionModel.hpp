@@ -50,6 +50,14 @@ class CollisionModel {
    */
   virtual void Collide(std::vector<std::vector<double>> &lattice) = 0;
 
+  /** \brief
+   *
+   * \param n std::size_t
+   * \return void
+   *
+   */
+  void AddNodeToSkip(std::size_t n);
+
   /**
    * Equilibrium distribution function stored row-wise in a 2D vector
    */
@@ -60,10 +68,50 @@ class CollisionModel {
    */
   std::vector<double> rho;
 
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
+  std::vector<bool> skip;
+
  protected:
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
   LatticeModel &lm_;
+
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
   double tau_;
+
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
   double c_;
+
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
   double cs_sqr_ = c_ * c_ / 3.0;
 };
 #endif // COLLISION_MODEL_HPP_

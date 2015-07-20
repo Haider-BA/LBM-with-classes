@@ -43,7 +43,6 @@ class LatticeModel {
   /**
    * Virtual destructor since we deriving from this class, see Collision.hpp
    */
-   // temporary workaround due to MinGW bug
   virtual ~LatticeModel() = default;
 
   /**

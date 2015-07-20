@@ -2,6 +2,7 @@
 #include <stdexcept>  // runtime_error
 #include <vector>
 #include "Algorithm.hpp"
+#include "BounceBackNodes.hpp"
 #include "CollisionCD.hpp"
 #include "CollisionNS.hpp"
 #include "CollisionNSF.hpp"
@@ -52,6 +53,7 @@ static const std::vector<std::vector<std::size_t>> g_src_pos_g = {{2, 2},
 static const std::vector<double> g_src_str_g = {1.9, 2.0};
 static const std::vector<std::vector<std::size_t>> g_obs_pos;
 static const double g_u_lid = 0.01;
+static const bool g_is_prestream = true;
 static const bool g_is_ns = true;
 static const bool g_is_cd = true;
 static const bool g_is_taylor = true;
@@ -587,7 +589,7 @@ TEST(BoundaryPeriodicTaylor)
     CHECK_CLOSE(lbm.f[n + x][NE], lbm.boundary_f[bottom + x][NE], zero_tol);
   }  // y
 }
-
+*/
 TEST(BoundaryBounceback)
 {
   LatticeD2Q9 lm(g_ny
@@ -596,6 +598,9 @@ TEST(BoundaryBounceback)
     , g_dt
     , g_u0);
   CollisionNS ns(lm
+    , g_k_visco
+    , g_rho0_f);
+  CollisionNSF nsf(lm
     , g_src_pos_f
     , g_src_str_f
     , g_k_visco
@@ -605,48 +610,48 @@ TEST(BoundaryBounceback)
     , g_src_str_g
     , g_d_coeff
     , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
+  BounceBackNodes bbns(g_is_prestream
+    , ns
+    , lm);
+  BounceBackNodes bbnsf(g_is_prestream
+    , nsf
+    , lm);
+  BounceBackNodes bbcd(g_is_prestream
+    , cd
+    , lm);
+  LatticeBoltzmann f(g_obs_pos
     , g_no_obstacles
     , lm
-    , ns
+    , ns);
+  LatticeBoltzmann ff(g_obs_pos
+    , g_no_obstacles
+    , lm
+    , nsf);
+  LatticeBoltzmann g(g_obs_pos
+    , g_no_obstacles
+    , lm
     , cd);
-  double value = 0;
-  for (auto &node : lbm.f) node = std::vector<double>(9, value++);
-  lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
-  auto top = 2 * g_ny;
-  auto bottom = 2 * g_ny + g_nx;
+  std::vector<double> nums = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+  std::vector<double> bb_nums = {0, 3, 4, 1, 2, 7, 8, 5, 6};
+  for (auto &node : f.df) node = nums;
+  for (auto &node : ff.df) node = nums;
+  for (auto &node : g.df) node = nums;
   for (auto x = 0u; x < g_nx; ++x) {
-    auto n = (g_ny - 1) * g_nx;
-    CHECK_CLOSE(lbm.f[x + n][N], lbm.boundary_f[top + x][S], zero_tol);
-    CHECK_CLOSE(lbm.f[x][S], lbm.boundary_f[bottom + x][N], zero_tol);
-    if (x == 0) {
-      CHECK_CLOSE(lbm.f[n + g_nx - 1][NE], lbm.boundary_f[top + x][SW],
-          zero_tol);
-      CHECK_CLOSE(lbm.f[g_nx - 1][SE], lbm.boundary_f[bottom + x][NW],
-          zero_tol);
-    }
-    else {
-      CHECK_CLOSE(lbm.f[x + n - 1][NE], lbm.boundary_f[top + x][SW], zero_tol);
-      CHECK_CLOSE(lbm.f[x - 1][SE], lbm.boundary_f[bottom + x][NW], zero_tol);
-    }
-    if (x == g_nx - 1) {
-      CHECK_CLOSE(lbm.f[n][NW], lbm.boundary_f[top + x][SE], zero_tol);
-      CHECK_CLOSE(lbm.f[0][SW], lbm.boundary_f[bottom + x][NE], zero_tol);
-    }
-    else {
-      CHECK_CLOSE(lbm.f[x + n + 1][NW], lbm.boundary_f[top + x][SE], zero_tol);
-      CHECK_CLOSE(lbm.f[x + 1][SW], lbm.boundary_f[bottom + x][NE], zero_tol);
-    }
-  }  // x
-}
+    bbns.AddNode(x, 0);
+    bbnsf.AddNode(x, 1);
+    bbcd.AddNode(x, g_ny - 1);
+  }
+  bbns.UpdateNodes(f.df);
+  bbnsf.UpdateNodes(ff.df);
+  bbcd.UpdateNodes(g.df);
 
+  for (auto n = 0u; n < g_nx * g_ny; ++n) {
+    CHECK_CLOSE(ns.skip[n] ? bb_nums[0] : nums[0], f.df[n][0], zero_tol);
+    CHECK_CLOSE(nsf.skip[n] ? bb_nums[0] : nums[0], ff.df[n][0], zero_tol);
+    CHECK_CLOSE(cd.skip[n] ? bb_nums[0] : nums[0], g.df[n][0], zero_tol);
+  }
+}
+/*
 TEST(BoundaryCorner)
 {
   LatticeD2Q9 lm(g_ny

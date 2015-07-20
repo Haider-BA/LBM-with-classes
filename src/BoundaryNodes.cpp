@@ -1,8 +1,9 @@
 #include "BoundaryNodes.hpp"
 #include "LatticeModel.hpp"
 
-BoundaryNodes::BoundaryNodes(LatticeModel &lm
-  , bool is_prestream)
+BoundaryNodes::BoundaryNodes(bool is_prestream
+  , LatticeModel &lm)
   : prestream {is_prestream},
-    lm_ (lm)
+    lm_ (lm),
+    coordinates_ {}
 {}

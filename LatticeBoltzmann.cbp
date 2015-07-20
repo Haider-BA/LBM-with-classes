@@ -56,10 +56,11 @@
 		</Compiler>
 		<Linker>
 			<Add option="--coverage" />
-			<Add library="UnitTest++\lib\Debug\libUnitTest++.a" />
+			<Add library="UnitTest++/lib/Debug/libUnitTest++.a" />
 			<Add directory="UnitTest++/lib/Debug" />
 		</Linker>
 		<Unit filename="include/Algorithm.hpp" />
+		<Unit filename="include/BounceBackNodes.hpp" />
 		<Unit filename="include/BoundaryNodes.hpp" />
 		<Unit filename="include/CollisionCD.hpp" />
 		<Unit filename="include/CollisionModel.hpp" />
@@ -70,6 +71,7 @@
 		<Unit filename="include/LatticeModel.hpp" />
 		<Unit filename="include/Printing.hpp" />
 		<Unit filename="include/WriteResultsCmgui.hpp" />
+		<Unit filename="src/BounceBackNodes.cpp" />
 		<Unit filename="src/BoundaryNodes.cpp" />
 		<Unit filename="src/CollisionCD.cpp" />
 		<Unit filename="src/CollisionModel.cpp" />

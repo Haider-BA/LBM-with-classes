@@ -9,6 +9,7 @@ CollisionModel::CollisionModel(LatticeModel &lm
   , double initial_density)
   : edf {},
     rho {},
+    skip {},
     lm_ (lm),
     tau_ {0},
     c_ {lm.GetLatticeSpeed()}
@@ -17,8 +18,9 @@ CollisionModel::CollisionModel(LatticeModel &lm
   auto ny = lm_.GetNumberOfRows();
   auto nc = lm_.GetNumberOfDirections();
   auto lat_size = nx * ny;
-  rho.assign(lat_size, initial_density);
   edf.assign(lat_size, std::vector<double>(nc, 0.0));
+  rho.assign(lat_size, initial_density);
+  skip.assign(lat_size, false);
   ComputeEq();
 }
 
@@ -59,4 +61,9 @@ std::vector<std::vector<double>> CollisionModel::ComputeU(
     ++ index;
   }  // node
   return result;
+}
+
+void CollisionModel::AddNodeToSkip(std::size_t n)
+{
+  skip[n] = true;
 }
