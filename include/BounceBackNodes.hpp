@@ -21,6 +21,7 @@ class BounceBackNodes: public BoundaryNodes {
   void AddNode(std::size_t x, std::size_t y);
 
   void UpdateNodes(std::vector<std::vector<double>> &df);
+
  protected:
   CollisionModel &cm_;
 };
