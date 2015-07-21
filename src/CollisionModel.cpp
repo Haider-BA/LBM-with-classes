@@ -24,6 +24,24 @@ CollisionModel::CollisionModel(LatticeModel &lm
   ComputeEq();
 }
 
+CollisionModel::CollisionModel(LatticeModel &lm
+  , const std::vector<double> &initial_density)
+  : edf {},
+    rho {initial_density},
+    skip {},
+    lm_ (lm),
+    tau_ {0},
+    c_ {lm.GetLatticeSpeed()}
+{
+  auto nx = lm_.GetNumberOfColumns();
+  auto ny = lm_.GetNumberOfRows();
+  auto nc = lm_.GetNumberOfDirections();
+  auto lat_size = nx * ny;
+  edf.assign(lat_size, std::vector<double>(nc, 0.0));
+  skip.assign(lat_size, false);
+  ComputeEq();
+}
+
 void CollisionModel::ComputeEq()
 {
   auto nc = lm_.GetNumberOfDirections();

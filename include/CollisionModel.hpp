@@ -13,6 +13,14 @@ class CollisionModel {
   CollisionModel(LatticeModel &lm
     , double initial_density);
 
+  /**
+   * Constructor: Creates collision model with the same density at each node
+   * \param lm lattice model used for simulation
+   * \param initial_density initial density of the lattice
+   */
+  CollisionModel(LatticeModel &lm
+    , const std::vector<double> &initial_density);
+
   // https://stackoverflow.com/questions/353817/should-every-class-have-a-
   // virtual-destructor
   /**

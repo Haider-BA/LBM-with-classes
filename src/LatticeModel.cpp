@@ -30,7 +30,7 @@ LatticeModel::LatticeModel(std::size_t num_dims
   , double dt
   , const std::vector<std::vector<double>> &initial_velocity)
   : u {initial_velocity},
-    e {},  // cannot pass in LatticeD2Q9 public member e_d2q9
+    e {},
     omega {},
     number_of_dimensions_ {num_dims},
     number_of_directions_ {num_dirs},
