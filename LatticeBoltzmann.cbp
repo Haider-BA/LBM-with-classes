@@ -59,6 +59,7 @@
 			<Add library="UnitTest++/lib/Debug/libUnitTest++.a" />
 			<Add directory="UnitTest++/lib/Debug" />
 		</Linker>
+		<Unit filename="examples/SimulationDemo.cpp" />
 		<Unit filename="include/Algorithm.hpp" />
 		<Unit filename="include/BounceBackNodes.hpp" />
 		<Unit filename="include/BoundaryNodes.hpp" />
@@ -69,6 +70,7 @@
 		<Unit filename="include/LatticeBoltzmann.hpp" />
 		<Unit filename="include/LatticeD2Q9.hpp" />
 		<Unit filename="include/LatticeModel.hpp" />
+		<Unit filename="include/PeriodicNodes.hpp" />
 		<Unit filename="include/Printing.hpp" />
 		<Unit filename="include/StreamModel.hpp" />
 		<Unit filename="include/StreamPeriodic.hpp" />
@@ -82,10 +84,12 @@
 		<Unit filename="src/LatticeBoltzmann.cpp" />
 		<Unit filename="src/LatticeD2Q9.cpp" />
 		<Unit filename="src/LatticeModel.cpp" />
+		<Unit filename="src/PeriodicNodes.cpp" />
 		<Unit filename="src/StreamModel.cpp" />
 		<Unit filename="src/StreamPeriodic.cpp" />
 		<Unit filename="src/WriteResultsCmgui.cpp" />
 		<Unit filename="src/main-devel.cpp" />
+		<Unit filename="unittests/TestAnalyticalSolution.cpp" />
 		<Unit filename="unittests/TestLatticeBoltzmann.cpp" />
 		<Unit filename="unittests/UnitTestCustomUtilities.hpp" />
 		<Extensions>

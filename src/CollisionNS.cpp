@@ -20,14 +20,36 @@ CollisionNS::CollisionNS(LatticeModel &lm
   tau_ = 0.5 + kinematic_viscosity / cs_sqr_ / dt;
 }
 
+std::vector<std::vector<double>> CollisionNS::ComputeU(
+    const std::vector<std::vector<double>> &df)
+{
+  std::vector<std::vector<double>> result;
+  auto index = 0u;
+  for (auto node : df) result.push_back(GetFirstMoment(node, lm_.e));
+  for (auto &node : result) {
+    for (auto &d : node) d /= rho[index];
+    ++ index;
+  }  // node
+  return result;
+}
+
+void CollisionNS::ComputeMacroscopicProperties(
+      const std::vector<std::vector<double>> &df)
+{
+  rho = CollisionNS::ComputeRho(df);
+  lm_.u = CollisionNS::ComputeU(df);
+}
+
 void CollisionNS::Collide(std::vector<std::vector<double>> &lattice)
 {
   auto nc = lm_.GetNumberOfDirections();
   auto nx = lm_.GetNumberOfColumns();
   auto ny = lm_.GetNumberOfRows();
   for (auto n = 0u; n < nx * ny; ++n) {
-    for (auto i = 0u; i < nc; ++i) {
-      lattice[n][i] += (edf[n][i] - lattice[n][i]) / tau_;
-    }  // i
+    if (!skip[n]) {
+      for (auto i = 0u; i < nc; ++i) {
+        lattice[n][i] += (edf[n][i] - lattice[n][i]) / tau_;
+      }  // i
+    }
   }  // n
 }

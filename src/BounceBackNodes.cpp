@@ -1,4 +1,5 @@
 #include "BounceBackNodes.hpp"
+#include <iostream>
 #include <vector>
 #include "BoundaryNodes.hpp"
 #include "CollisionModel.hpp"

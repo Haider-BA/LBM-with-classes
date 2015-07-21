@@ -32,15 +32,8 @@ class CollisionModel {
    */
   std::vector<double> ComputeRho(const std::vector<std::vector<double>> &df);
 
-  /**
-   * Calculated velocity for NS equation without body force based on formula in
-   * Guo2002
-   * \param df 2D vector containing distribution functions of the NS
-   *        equation
-   * \return 2D vector containing velocity at each node of lattice
-   */
-  virtual std::vector<std::vector<double>> ComputeU(
-      const std::vector<std::vector<double>> &df);
+  virtual void ComputeMacroscopicProperties(
+      const std::vector<std::vector<double>> &df) = 0;
 
   /**
    * Pure virtual function to compute collision step and apply force step

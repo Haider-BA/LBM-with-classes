@@ -12,9 +12,11 @@ CollisionCD::CollisionCD(LatticeModel &lm
   , const std::vector<std::vector<std::size_t>> &source_position
   , const std::vector<double> &source_strength
   , double diffusion_coefficient
-  , double initial_density_g)
+  , double initial_density_g
+  , bool is_instant)
   : CollisionModel(lm, initial_density_g),
-    source {}
+    source {},
+    is_instant_ {is_instant}
 {
   auto dt = lm.GetTimeStep();
   // tau_ formula from "A new scheme for source term in LBGK model for
@@ -42,6 +44,12 @@ void CollisionCD::InitSource(
   }  // pos
 }
 
+void CollisionCD::ComputeMacroscopicProperties(
+      const std::vector<std::vector<double>> &df)
+{
+  rho = CollisionCD::ComputeRho(df);
+}
+
 void CollisionCD::Collide(std::vector<std::vector<double>> &df)
 {
   auto nc = lm_.GetNumberOfDirections();
@@ -49,15 +57,18 @@ void CollisionCD::Collide(std::vector<std::vector<double>> &df)
   auto ny = lm_.GetNumberOfRows();
   auto dt = lm_.GetTimeStep();
   for (auto n = 0u; n < nx * ny; ++n) {
-    for (auto i = 0u; i < nc; ++i) {
-      double c_dot_u = InnerProduct(lm_.e[i], lm_.u[n]);
-      c_dot_u /= cs_sqr_;
-      // source term using forward scheme, theta = 0
-      auto src_i = lm_.omega[i] * source[n] * (1.0 + (1.0 - 0.5 / tau_) *
-          c_dot_u);
-      df[n][i] += (edf[n][i] - df[n][i]) / tau_ + dt * src_i;
-    }  // i
+    if (!skip[n]) {
+      for (auto i = 0u; i < nc; ++i) {
+        double c_dot_u = InnerProduct(lm_.e[i], lm_.u[n]);
+        c_dot_u /= cs_sqr_;
+        // source term using forward scheme, theta = 0
+        auto src_i = lm_.omega[i] * source[n] * (1.0 + (1.0 - 0.5 / tau_) *
+            c_dot_u);
+        df[n][i] += (edf[n][i] - df[n][i]) / tau_ + dt * src_i;
+      }  // i
+    }
   }  // n
+  if (is_instant_) CollisionCD::KillSource();
 }
 
 void CollisionCD::KillSource()

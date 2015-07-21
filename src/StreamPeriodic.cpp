@@ -43,6 +43,6 @@ std::vector<std::vector<double>> StreamPeriodic::Stream(
       temp_df[n][NW] = df[bottom ? n + 1 + height : n + 1 - nx][NW];
       temp_df[n][SW] = df[top ? n + 1 - height : n + 1 + nx][SW];
     }
-  }
+  }  // n
   return temp_df;
 }

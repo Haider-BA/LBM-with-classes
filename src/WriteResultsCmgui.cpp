@@ -16,16 +16,16 @@ void WriteResultsCmgui(
 
   // Calculate the solute density
   auto depth = lattice[0].size();
-//  for (auto n = 0; n < num_nodes; ++n) {
-//    double rho = 0.0;
-//    for (auto i = 0u; i < depth; ++i) rho += lattice[n][i];
-//    solute_conc[n] = rho;
-//  }
   for (auto n = 0; n < num_nodes; ++n) {
     double rho = 0.0;
-    for (auto i = 0u; i < depth; ++i) rho += lattice[n][i] * lattice[n][i];
-    solute_conc[n] = sqrt(rho);
+    for (auto i = 0u; i < depth; ++i) rho += lattice[n][i];
+    solute_conc[n] = rho;
   }
+//  for (auto n = 0; n < num_nodes; ++n) {
+//    double rho = 0.0;
+//    for (auto i = 0u; i < depth; ++i) rho += lattice[n][i] * lattice[n][i];
+//    solute_conc[n] = sqrt(rho);
+//  }
 //  for (auto n = 0; n < num_nodes; ++n) {
 //    solute_conc[n] = lattice[n][0];
 //  }

@@ -44,6 +44,16 @@ class CollisionNSF: public CollisionNS {
   std::vector<std::vector<double>> ComputeU(
       const std::vector<std::vector<double>> &df);
 
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
+  void ComputeMacroscopicProperties(
+      const std::vector<std::vector<double>> &df);
+
   /**
    * Collides and applies force according to Guo2002
    * \param lattice 2D vector containing distribution functions

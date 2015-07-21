@@ -2,6 +2,7 @@
 #include <stdexcept>  // runtime_error
 #include <vector>
 #include "Algorithm.hpp"
+#include "BoundaryNodes.hpp"
 #include "BounceBackNodes.hpp"
 #include "CollisionCD.hpp"
 #include "CollisionNS.hpp"
@@ -126,7 +127,8 @@ TEST(InitDensity)
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g);
+    , g_rho0_g
+    , !g_is_instant);
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     CHECK_CLOSE(g_rho0_f, ns.rho[n], zero_tol);
     CHECK_CLOSE(g_rho0_f, nsf.rho[n], zero_tol);
@@ -166,7 +168,8 @@ TEST(ComputeEq)
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g);
+    , g_rho0_g
+    , !g_is_instant);
   std::vector<double> expected_cd = {0.53041,
                                      0.15007, 0.15150, 0.11716, 0.11606,
                                      0.04279, 0.03347, 0.02570, 0.03284};
@@ -191,6 +194,7 @@ TEST(InitDistributionFunctionLattice)
     , g_dx
     , g_dt
     , g_u0);
+  StreamPeriodic sp(lm);
   CollisionNS ns(lm
     , g_k_visco
     , g_rho0_f);
@@ -203,19 +207,17 @@ TEST(InitDistributionFunctionLattice)
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g);
-  LatticeBoltzmann f(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , ns);
-  LatticeBoltzmann ff(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , nsf);
-  LatticeBoltzmann g(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , cd);
+    , g_rho0_g
+    , !g_is_instant);
+  LatticeBoltzmann f(lm
+    , ns
+    , sp);
+  LatticeBoltzmann ff(lm
+    , nsf
+    , sp);
+  LatticeBoltzmann g(lm
+    , cd
+    , sp);
   std::vector<double> expected_cd = {0.53041,
                                      0.15007, 0.15150, 0.11716, 0.11606,
                                      0.04279, 0.03347, 0.02570, 0.03284};
@@ -247,7 +249,8 @@ TEST(InitSourceMultiplePosition)
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g);
+    , g_rho0_g
+    , !g_is_instant);
   std::size_t i_ns = 0;
   std::size_t i_cd = 0;
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
@@ -280,6 +283,7 @@ TEST(CollideWithMixedSource)
     , g_dx
     , g_dt
     , g_u0);
+  StreamPeriodic sp(lm);
   CollisionNS ns(lm
     , g_k_visco
     , g_rho0_f);
@@ -292,19 +296,17 @@ TEST(CollideWithMixedSource)
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g);
-  LatticeBoltzmann f(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , ns);
-  LatticeBoltzmann ff(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , nsf);
-  LatticeBoltzmann g(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , cd);
+    , g_rho0_g
+    , !g_is_instant);
+  LatticeBoltzmann f(lm
+    , ns
+    , sp);
+  LatticeBoltzmann ff(lm
+    , nsf
+    , sp);
+  LatticeBoltzmann g(lm
+    , cd
+    , sp);
   // checks collision result for both cd and ns
   // in expected, index 0 for first source strength, 1 for second source
   // strength (since global pos has 2 positions), 2 for no source (so that it
@@ -421,6 +423,7 @@ TEST(ComputeU)
     , g_dx
     , g_dt
     , g_u0);
+  StreamPeriodic sp(lm);
   CollisionNS ns(lm
     , g_k_visco
     , g_rho0_f);
@@ -429,14 +432,12 @@ TEST(ComputeU)
     , g_src_str_f
     , g_k_visco
     , g_rho0_f);
-  LatticeBoltzmann f(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , ns);
-  LatticeBoltzmann ff(g_obs_pos
-    , g_no_obstacles
-    , lmf
-    , nsf);
+  LatticeBoltzmann f(lm
+    , ns
+    , sp);
+  LatticeBoltzmann ff(lm
+    , nsf
+    , sp);
   f.df.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
   ff.df.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
   lm.u = ns.ComputeU(f.df);
@@ -466,6 +467,7 @@ TEST(ComputeRho)
     , g_dx
     , g_dt
     , g_u0);
+  StreamPeriodic sp(lm);
   CollisionNS ns(lm
     , g_k_visco
     , g_rho0_f);
@@ -478,19 +480,17 @@ TEST(ComputeRho)
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g);
-  LatticeBoltzmann f(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , ns);
-  LatticeBoltzmann ff(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , nsf);
-  LatticeBoltzmann g(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , cd);
+    , g_rho0_g
+    , !g_is_instant);
+  LatticeBoltzmann f(lm
+    , ns
+    , sp);
+  LatticeBoltzmann ff(lm
+    , nsf
+    , sp);
+  LatticeBoltzmann g(lm
+    , cd
+    , sp);
   f.df.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
   ff.df.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
   g.df.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
@@ -598,6 +598,7 @@ TEST(BoundaryBounceback)
     , g_dx
     , g_dt
     , g_u0);
+  StreamPeriodic sp(lm);
   CollisionNS ns(lm
     , g_k_visco
     , g_rho0_f);
@@ -610,7 +611,8 @@ TEST(BoundaryBounceback)
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g);
+    , g_rho0_g
+    , !g_is_instant);
   BounceBackNodes bbns(g_is_prestream
     , ns
     , lm);
@@ -620,18 +622,15 @@ TEST(BoundaryBounceback)
   BounceBackNodes bbcd(g_is_prestream
     , cd
     , lm);
-  LatticeBoltzmann f(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , ns);
-  LatticeBoltzmann ff(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , nsf);
-  LatticeBoltzmann g(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , cd);
+  LatticeBoltzmann f(lm
+    , ns
+    , sp);
+  LatticeBoltzmann ff(lm
+    , nsf
+    , sp);
+  LatticeBoltzmann g(lm
+    , cd
+    , sp);
   std::vector<double> nums = {0, 1, 2, 3, 4, 5, 6, 7, 8};
   std::vector<double> bb_nums = {0, 3, 4, 1, 2, 7, 8, 5, 6};
   for (auto &node : f.df) node = nums;
@@ -704,10 +703,9 @@ TEST(StreamPeriodicHorizontal)
     , g_k_visco
     , g_rho0_f);
   StreamPeriodic sp(lm);
-  LatticeBoltzmann f(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , ns);
+  LatticeBoltzmann f(lm
+    , ns
+    , sp);
   std::vector<double> first_three = {1, 2, 1, 0, 1, 2, 0, 0, 2};
   std::vector<double> second_three = {4, 5, 4, 3, 4, 5, 3, 3, 5};
   std::vector<std::vector<double>> nodes = {first_three, second_three};
@@ -741,10 +739,9 @@ TEST(StreamPeriodicVertical)
     , g_k_visco
     , g_rho0_f);
   StreamPeriodic sp(lm);
-  LatticeBoltzmann f(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , ns);
+  LatticeBoltzmann f(lm
+    , ns
+    , sp);
   std::vector<double> first_three = {1, 1, 0, 1, 2, 0, 0, 2, 2};
   std::vector<double> second_three = {4, 4, 3, 4, 5, 3, 3, 5, 5};
   std::vector<std::vector<double>> nodes = {first_three, second_three};
@@ -776,10 +773,9 @@ TEST(StreamPeriodicDiagonalNESW)
     , g_k_visco
     , g_rho0_f);
   StreamPeriodic sp(lm);
-  LatticeBoltzmann f(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , ns);
+  LatticeBoltzmann f(lm
+    , ns
+    , sp);
   std::vector<double> zeroes(9, 0);
   std::vector<double> ones(9, 1);
   std::vector<double> twos(9, 2);
@@ -814,10 +810,9 @@ TEST(StreamPeriodicDiagonalNWSE)
     , g_k_visco
     , g_rho0_f);
   StreamPeriodic sp(lm);
-  LatticeBoltzmann f(g_obs_pos
-    , g_no_obstacles
-    , lm
-    , ns);
+  LatticeBoltzmann f(lm
+    , ns
+    , sp);
   std::vector<double> zeroes(9, 0);
   std::vector<double> ones(9, 1);
   std::vector<double> twos(9, 2);
@@ -969,267 +964,6 @@ TEST(BoundaryCornerZouHeLid)
   CHECK_CLOSE(-0.00083333, lbm.f[top_right][NW], loose_tol);
   CHECK_CLOSE(0.00083333, lbm.f[top_right][SE], loose_tol);
   CHECK_CLOSE(1127.00833, lbm.f[top_right][0], loose_tol);
-}
-
-TEST(StreamHorizontalImmersed)
-{
-  LatticeD2Q9 lm(g_ny
-    , g_nx
-    , g_dx
-    , g_dt
-    , g_u0);
-  CollisionNS ns(lm
-    , g_src_pos_f
-    , g_src_str_f
-    , g_k_visco
-    , g_rho0_f);
-  CollisionCD cd(lm
-    , g_src_pos_g
-    , g_src_str_g
-    , g_d_coeff
-    , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
-    , g_no_obstacles
-    , lm
-    , ns
-    , cd);
-  std::vector<double> first_three = {1, 2, 1, 0, 1, 2, 0, 0, 2};
-  std::vector<double> second_three = {4, 5, 4, 3, 4, 5, 3, 3, 5};
-  std::vector<std::vector<double>> nodes = {first_three, second_three};
-  std::vector<double> first_result = {1, 5, 1, 3, 1, 5, 3, 3, 5};
-  std::vector<double> second_result = {4, 2, 4, 0, 4, 2, 0, 0, 2};
-  int counter = 0;
-  for (auto &node : lbm.f) {
-    node = nodes[(counter / g_nx + counter) % 2];
-    ++counter;
-  }  // node
-  lbm.f = lbm.StreamImmersed(lbm.f);
-  for (auto n = 0u; n < g_nx * g_ny; ++n) {
-    if ((lbm.f[n][0] - 1) < zero_tol) {
-      CHECK_CLOSE((n % g_nx == 0) ? first_three[E] : first_result[E],
-          lbm.f[n][E], zero_tol);
-      CHECK_CLOSE((n / g_nx == 0) ? first_three[N] : first_result[N],
-          lbm.f[n][N], zero_tol);
-      CHECK_CLOSE((n % g_nx == g_nx - 1) ? first_three[W] : first_result[W],
-          lbm.f[n][W], zero_tol);
-      CHECK_CLOSE((n / g_nx == g_ny - 1) ? first_three[S] : first_result[S],
-          lbm.f[n][S], zero_tol);
-      CHECK_CLOSE((n % g_nx == 0 || n / g_nx == 0) ? first_three[NE] :
-          first_result[NE], lbm.f[n][NE], zero_tol);
-      CHECK_CLOSE((n % g_nx == g_nx - 1 || n / g_nx == 0) ? first_three[NW] :
-          first_result[NW], lbm.f[n][NW], zero_tol);
-      CHECK_CLOSE((n % g_nx == g_nx - 1 || n / g_nx == g_ny - 1) ?
-          first_three[SW] : first_result[SW], lbm.f[n][SW], zero_tol);
-      CHECK_CLOSE((n % g_nx == 0 || n / g_nx == g_ny - 1) ?
-          first_three[SE] : first_result[SE], lbm.f[n][SE], zero_tol);
-    }
-    else {
-      CHECK_CLOSE((n % g_nx == 0) ? second_three[E] : second_result[E],
-          lbm.f[n][E], zero_tol);
-      CHECK_CLOSE((n / g_nx == 0) ? second_three[N] : second_result[N],
-          lbm.f[n][N], zero_tol);
-      CHECK_CLOSE((n % g_nx == g_nx - 1) ? second_three[W] : second_result[W],
-          lbm.f[n][W], zero_tol);
-      CHECK_CLOSE((n / g_nx == g_ny - 1) ? second_three[S] : second_result[S],
-          lbm.f[n][S], zero_tol);
-      CHECK_CLOSE((n % g_nx == 0 || n / g_nx == 0) ? second_three[NE] :
-          second_result[NE], lbm.f[n][NE], zero_tol);
-      CHECK_CLOSE((n % g_nx == g_nx - 1 || n / g_nx == 0) ? second_three[NW] :
-          second_result[NW], lbm.f[n][NW], zero_tol);
-      CHECK_CLOSE((n % g_nx == g_nx - 1 || n / g_nx == g_ny - 1) ?
-          second_three[SW] : second_result[SW], lbm.f[n][SW], zero_tol);
-      CHECK_CLOSE((n % g_nx == 0 || n / g_nx == g_ny - 1) ?
-          second_three[SE] : second_result[SE], lbm.f[n][SE], zero_tol);
-    }
-  }  // n
-}
-
-TEST(StreamVerticalImmersed)
-{
-  LatticeD2Q9 lm(g_ny
-    , g_nx
-    , g_dx
-    , g_dt
-    , g_u0);
-  CollisionNS ns(lm
-    , g_src_pos_f
-    , g_src_str_f
-    , g_k_visco
-    , g_rho0_f);
-  CollisionCD cd(lm
-    , g_src_pos_g
-    , g_src_str_g
-    , g_d_coeff
-    , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
-    , g_no_obstacles
-    , lm
-    , ns
-    , cd);
-  std::vector<double> first_three = {1, 1, 0, 1, 2, 0, 0, 2, 2};
-  std::vector<double> second_three = {4, 4, 3, 4, 5, 3, 3, 5, 5};
-  std::vector<std::vector<double>> nodes = {first_three, second_three};
-  std::vector<double> first_result = {1, 1, 3, 1, 5, 3, 3, 5, 5};
-  std::vector<double> second_result = {4, 4, 0, 4, 2, 0, 0, 2, 2};
-  int counter = 0;
-  for (auto &node : lbm.f) node = nodes[(counter++ / g_nx) % 2];
-  lbm.f = lbm.StreamImmersed(lbm.f);
-  for (auto n = 0u; n < g_nx * g_ny; ++n) {
-    if ((lbm.f[n][0] - 1) < zero_tol) {
-      CHECK_CLOSE((n % g_nx == 0) ? first_three[E] : first_result[E],
-          lbm.f[n][E], zero_tol);
-      CHECK_CLOSE((n / g_nx == 0) ? first_three[N] : first_result[N],
-          lbm.f[n][N], zero_tol);
-      CHECK_CLOSE((n % g_nx == g_nx - 1) ? first_three[W] : first_result[W],
-          lbm.f[n][W], zero_tol);
-      CHECK_CLOSE((n / g_nx == g_ny - 1) ? first_three[S] : first_result[S],
-          lbm.f[n][S], zero_tol);
-      CHECK_CLOSE((n % g_nx == 0 || n / g_nx == 0) ? first_three[NE] :
-          first_result[NE], lbm.f[n][NE], zero_tol);
-      CHECK_CLOSE((n % g_nx == g_nx - 1 || n / g_nx == 0) ? first_three[NW] :
-          first_result[NW], lbm.f[n][NW], zero_tol);
-      CHECK_CLOSE((n % g_nx == g_nx - 1 || n / g_nx == g_ny - 1) ?
-          first_three[SW] : first_result[SW], lbm.f[n][SW], zero_tol);
-      CHECK_CLOSE((n % g_nx == 0 || n / g_nx == g_ny - 1) ?
-          first_three[SE] : first_result[SE], lbm.f[n][SE], zero_tol);
-    }
-    else {
-      CHECK_CLOSE((n % g_nx == 0) ? second_three[E] : second_result[E],
-          lbm.f[n][E], zero_tol);
-      CHECK_CLOSE((n / g_nx == 0) ? second_three[N] : second_result[N],
-          lbm.f[n][N], zero_tol);
-      CHECK_CLOSE((n % g_nx == g_nx - 1) ? second_three[W] : second_result[W],
-          lbm.f[n][W], zero_tol);
-      CHECK_CLOSE((n / g_nx == g_ny - 1) ? second_three[S] : second_result[S],
-          lbm.f[n][S], zero_tol);
-      CHECK_CLOSE((n % g_nx == 0 || n / g_nx == 0) ? second_three[NE] :
-          second_result[NE], lbm.f[n][NE], zero_tol);
-      CHECK_CLOSE((n % g_nx == g_nx - 1 || n / g_nx == 0) ? second_three[NW] :
-          second_result[NW], lbm.f[n][NW], zero_tol);
-      CHECK_CLOSE((n % g_nx == g_nx - 1 || n / g_nx == g_ny - 1) ?
-          second_three[SW] : second_result[SW], lbm.f[n][SW], zero_tol);
-      CHECK_CLOSE((n % g_nx == 0 || n / g_nx == g_ny - 1) ?
-          second_three[SE] : second_result[SE], lbm.f[n][SE], zero_tol);
-    }
-  }  // n
-}
-
-TEST(StreamDiagonalNESWImmersed)
-{
-  LatticeD2Q9 lm(g_ny
-    , g_nx
-    , g_dx
-    , g_dt
-    , g_u0);
-  CollisionNS ns(lm
-    , g_src_pos_f
-    , g_src_str_f
-    , g_k_visco
-    , g_rho0_f);
-  CollisionCD cd(lm
-    , g_src_pos_g
-    , g_src_str_g
-    , g_d_coeff
-    , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
-    , g_no_obstacles
-    , lm
-    , ns
-    , cd);
-  std::vector<double> ones(9, 1);
-  std::vector<double> twos(9, 2);
-  std::vector<double> threes(9, 3);
-  std::vector<std::vector<double>> nodes = {ones, twos, threes};
-  std::vector<double> result = {1, 2, 3};
-  for (auto y = 0u; y < g_ny; ++y) {
-    for (auto x = 0u; x < g_nx; ++x) {
-      auto n = y * g_nx + x;
-      lbm.f[n] = nodes[(x % 3 + (y + 2) % 3) % 3];
-    }  // x
-  }  // y
-  lbm.f = lbm.StreamImmersed(lbm.f);
-  for (auto y = 0u; y < g_ny; ++y) {
-    for (auto x = 0u; x < g_nx; ++x) {
-      auto n = y * g_nx + x;
-      CHECK_CLOSE((n % g_nx == 0 || n / g_nx == 0) ? lbm.f[n][0] :
-          result[(x % 3 + y % 3) % 3], lbm.f[n][NE], zero_tol);
-      CHECK_CLOSE((n % g_nx == g_nx - 1 || n / g_nx == g_ny - 1) ? lbm.f[n][0] :
-          result[(x % 3 + y % 3 + 1) % 3], lbm.f[n][SW], zero_tol);
-    }  // x
-  }  // y
-}
-
-TEST(StreamDiagonalNWSEImmerse)
-{
-  LatticeD2Q9 lm(g_ny
-    , g_nx
-    , g_dx
-    , g_dt
-    , g_u0);
-  CollisionNS ns(lm
-    , g_src_pos_f
-    , g_src_str_f
-    , g_k_visco
-    , g_rho0_f);
-  CollisionCD cd(lm
-    , g_src_pos_g
-    , g_src_str_g
-    , g_d_coeff
-    , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
-    , g_no_obstacles
-    , lm
-    , ns
-    , cd);
-  std::vector<double> ones(9, 1);
-  std::vector<double> twos(9, 2);
-  std::vector<double> threes(9, 3);
-  std::vector<std::vector<double>> nodes = {ones, twos, threes};
-  std::vector<double> result = {1, 2, 3};
-  for (auto y = 0u; y < g_ny; ++y) {
-    for (auto x = 0u; x < g_nx; ++x) {
-      auto n = y * g_nx + x;
-      lbm.f[n] = nodes[(2 - x % 3 + (y + 2) % 3) % 3];
-    }  // x
-  }  // y
-  lbm.f = lbm.StreamImmersed(lbm.f);
-  for (auto y = 0u; y < g_ny; ++y) {
-    for (auto x = 0u; x < g_nx; ++x) {
-      auto n = y * g_nx + x;
-      CHECK_CLOSE((n % g_nx == g_nx - 1 || n / g_nx == 0) ? lbm.f[n][0] :
-          result[(2 - x % 3 + y % 3) % 3], lbm.f[n][NW], zero_tol);
-      CHECK_CLOSE((n % g_nx == 0 || n / g_nx == g_ny - 1) ? lbm.f[n][0] :
-          result[(3 - x % 3 + y % 3) % 3], lbm.f[n][SE], zero_tol);
-    }  // x
-  }  // y
 }
 
 TEST(ObstaclesDoNotReflectIntoObstacles)
@@ -1606,7 +1340,7 @@ TEST(ObstaclesNormalReflect)
     cd.ComputeEq();
   }  // t
 }
-
+*/
 TEST(InstantSourceToggle)
 {
   LatticeD2Q9 lm(g_ny
@@ -1614,44 +1348,40 @@ TEST(InstantSourceToggle)
     , g_dx
     , g_dt
     , g_u0);
-  CollisionNS ns(lm
-    , g_src_pos_f
-    , g_src_str_f
-    , g_k_visco
-    , g_rho0_f);
+  StreamPeriodic sp(lm);
   CollisionCD cd(lm
     , g_src_pos_g
     , g_src_str_g
     , g_d_coeff
-    , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
-    , g_no_obstacles
-    , lm
-    , ns
-    , cd);
-  lbm.RunSim();
+    , g_rho0_g
+    , g_is_instant);
+  LatticeBoltzmann g(lm
+    , cd
+    , sp);
+  cd.Collide(g.df);
   // check cd source is zero
   for (auto node : cd.source) CHECK_CLOSE(0.0, node, zero_tol);
-  // check ns source is unchanged
-  std::size_t i_ns = 0;
-  for (auto n = 0u; n < g_nx * g_ny; ++n) {
-    if (n == g_src_pos_f[i_ns][1] * g_nx + g_src_pos_f[i_ns][0]) {
-      CHECK_CLOSE(g_src_str_f[i_ns][0], ns.source[n][0], zero_tol);
-      CHECK_CLOSE(g_src_str_f[i_ns][1], ns.source[n][1], zero_tol);
-      if (i_ns < g_src_pos_f.size() - 1) ++i_ns;
-    }
-    else {
-      CHECK_CLOSE(0.0, ns.source[n][0], zero_tol);
-      CHECK_CLOSE(0.0, ns.source[n][1], zero_tol);
-    }
-  }  // n
 }
-*/
+
+TEST(InstantPointer)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  StreamPeriodic sp(lm);
+  CollisionCD cd(lm
+    , g_src_pos_g
+    , g_src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , g_is_instant);
+  LatticeBoltzmann g(lm
+    , cd
+    , sp);
+  g.TakeStep();
+  // check cd source is zero
+  for (auto node : cd.source) CHECK_CLOSE(0.0, node, zero_tol);
+}
 }

@@ -50,19 +50,6 @@ std::vector<double> CollisionModel::ComputeRho(
   return result;
 }
 
-std::vector<std::vector<double>> CollisionModel::ComputeU(
-    const std::vector<std::vector<double>> &df)
-{
-  std::vector<std::vector<double>> result;
-  auto index = 0u;
-  for (auto node : df) result.push_back(GetFirstMoment(node, lm_.e));
-  for (auto &node : result) {
-    for (auto &d : node) d /= rho[index];
-    ++ index;
-  }  // node
-  return result;
-}
-
 void CollisionModel::AddNodeToSkip(std::size_t n)
 {
   skip[n] = true;

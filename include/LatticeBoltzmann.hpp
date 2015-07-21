@@ -1,8 +1,10 @@
 #ifndef LATTICE_BOLTZMANN_HPP_
 #define LATTICE_BOLTZMANN_HPP_
 #include <vector>
+#include "BoundaryNodes.hpp"
 #include "CollisionModel.hpp"
 #include "LatticeModel.hpp"
+#include "StreamModel.hpp"
 
 class LatticeBoltzmann {
  public:
@@ -22,45 +24,15 @@ class LatticeBoltzmann {
    * \param ns Collision model for NS equation
    * \param cd Collision model for CD equation
    */
-  LatticeBoltzmann(
-      const std::vector<std::vector<std::size_t>> &obstacles_pos
-    , bool has_obstacles
-    , LatticeModel &lm
-    , CollisionModel &cm);
+  LatticeBoltzmann(LatticeModel &lm
+    , CollisionModel &cm
+    , StreamModel &sm);
 
   ~LatticeBoltzmann() = default;
 
   LatticeBoltzmann(const LatticeBoltzmann&) = default;
 
-  /**
-   * Computes boundary condition for the lattice, bounceback for top and bottom
-   * edge, periodic for left and right edge.
-   * \param lattice 2D vector containing distribution functions
-   * \return 2D vector containing the boundary nodes in the order: left, right,
-   *         top, bottom, corners
-   */
-  std::vector<std::vector<double>> BoundaryCondition(
-      const std::vector<std::vector<double>> &lattice);
-
-  /**
-   * Assembles lattice and boundary nodes into a bigger lattice with border,
-   * then performs streaming step.
-   * \param lattice 2D vector containing distribution functions
-   * \param boundary 2D vector containing boundary nodes
-   * \return post-stream lattice (no border)
-   */
-  std::vector<std::vector<double>> Stream(
-      const std::vector<std::vector<double>> &lattice
-    , const std::vector<std::vector<double>> &boundary);
-
-  /**
-   * Does Zou-He velocity BC for lid-driven flow
-   * \param lattice 2D vector containing distribution functions
-   */
-  void BoundaryLid(std::vector<std::vector<double>> &lattice);
-
-  std::vector<std::vector<double>> StreamImmersed(
-      const std::vector<std::vector<double>> &lattice);
+  void AddBoundaryNodes(BoundaryNodes *bn);
 
   /**
    * Performs one cycle of evolution equation, computes the relevant macroscopic
@@ -72,16 +44,6 @@ class LatticeBoltzmann {
    * NS distribution function stored row-wise in a 2D vector.
    */
   std::vector<std::vector<double>> df;
-
-  /**
-   * Boundary nodes for NS lattice
-   */
-  std::vector<std::vector<double>> boundary_f;
-
-  /**
-   * Lattice containing obstacles
-   */
-  std::vector<bool> obstacles;
 
  private:
   // 6  2  5  ^
@@ -101,15 +63,18 @@ class LatticeBoltzmann {
   };
 
   // input parameters
-  bool has_obstacles_;
   // LatticeModel to take care of dims, dirs, rows, cols and discrete e vectors
   // by reference, similar to by pointer
   // https://stackoverflow.com/questions/9285627/is-it-possible-to-pass-derived-
   // classes-by-reference-to-a-function-taking-base-cl
   LatticeModel &lm_;
-  CollisionModel &cm_;
+
   // Collision models to take care of eq, rho, source
-//  CollisionNS &ns_;
-//  CollisionCD &cd_;
+  CollisionModel &cm_;
+
+  StreamModel &sm_;
+
+  // vector of boundary nodes pointer
+  std::vector<BoundaryNodes*> bn_;
 };
 #endif  // LATTICE_BOLTZMANN_HPP_

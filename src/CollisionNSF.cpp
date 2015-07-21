@@ -58,6 +58,13 @@ std::vector<std::vector<double>> CollisionNSF::ComputeU(
   return result;
 }
 
+void CollisionNSF::ComputeMacroscopicProperties(
+      const std::vector<std::vector<double>> &df)
+{
+  rho = CollisionNSF::ComputeRho(df);
+  lm_.u = CollisionNSF::ComputeU(df);
+}
+
 void CollisionNSF::Collide(std::vector<std::vector<double>> &lattice)
 {
   auto nc = lm_.GetNumberOfDirections();
@@ -66,17 +73,19 @@ void CollisionNSF::Collide(std::vector<std::vector<double>> &lattice)
   auto ny = lm_.GetNumberOfRows();
   auto dt = lm_.GetTimeStep();
   for (auto n = 0u; n < nx * ny; ++n) {
-    for (auto i = 0u; i < nc; ++i) {
-      double c_dot_u = InnerProduct(lm_.e[i], lm_.u[n]);
-      c_dot_u /= cs_sqr_;
-      double src_dot_product = 0.0;
-      for (auto d = 0u; d < nd; ++d) {
-        src_dot_product += (lm_.e[i][d] - lm_.u[n][d] + c_dot_u * lm_.e[i][d]) *
-            source[n][d];
-      }  // d
-      src_dot_product /= cs_sqr_ / rho[n];
-      auto src_i = (1.0 - 0.5 / tau_) * lm_.omega[i] * src_dot_product;
-      lattice[n][i] += (edf[n][i] - lattice[n][i]) / tau_ + dt * src_i;
-    }  // i
+    if (!skip[n]) {
+      for (auto i = 0u; i < nc; ++i) {
+        double c_dot_u = InnerProduct(lm_.e[i], lm_.u[n]);
+        c_dot_u /= cs_sqr_;
+        double src_dot_product = 0.0;
+        for (auto d = 0u; d < nd; ++d) {
+          src_dot_product += (lm_.e[i][d] - lm_.u[n][d] + c_dot_u *
+              lm_.e[i][d]) * source[n][d];
+        }  // d
+        src_dot_product /= cs_sqr_ / rho[n];
+        auto src_i = (1.0 - 0.5 / tau_) * lm_.omega[i] * src_dot_product;
+        lattice[n][i] += (edf[n][i] - lattice[n][i]) / tau_ + dt * src_i;
+      }  // i
+    }
   }  // n
 }

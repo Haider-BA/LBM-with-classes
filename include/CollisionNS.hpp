@@ -23,6 +23,26 @@ class CollisionNS: public CollisionModel {
   virtual ~CollisionNS() = default;
 
   /**
+   * Calculated velocity for NS equation without body force based on formula in
+   * Guo2002
+   * \param df 2D vector containing distribution functions of the NS
+   *        equation
+   * \return 2D vector containing velocity at each node of lattice
+   */
+  virtual std::vector<std::vector<double>> ComputeU(
+      const std::vector<std::vector<double>> &df);
+
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
+  void ComputeMacroscopicProperties(
+      const std::vector<std::vector<double>> &df);
+
+  /**
    * Collides according to Guo2002
    * \param lattice 2D vector containing distribution functions
    */

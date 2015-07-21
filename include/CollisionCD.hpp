@@ -17,7 +17,8 @@ class CollisionCD: public CollisionModel {
     , const std::vector<std::vector<std::size_t>> &source_position
     , const std::vector<double> &source_strength
     , double diffusion_coefficient
-    , double initial_density_g);
+    , double initial_density_g
+    , bool is_instant);
 
   /**
    * Destructor
@@ -32,6 +33,16 @@ class CollisionCD: public CollisionModel {
   void InitSource(
       const std::vector<std::vector<std::size_t>> &source_position
     , const std::vector<double> &source_strength);
+
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
+  void ComputeMacroscopicProperties(
+      const std::vector<std::vector<double>> &df);
 
   /**
    * Applies force/source term according to "A new scheme for source term in
@@ -49,5 +60,8 @@ class CollisionCD: public CollisionModel {
    * Source term for CD equation stored row-wise
    */
   std::vector<double> source;
+
+ protected:
+  bool is_instant_;
 };
 #endif  // COLLISION_CD_HPP_
