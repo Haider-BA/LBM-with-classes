@@ -11,9 +11,10 @@ int main()
 //  return Unfit::RunOneTest("SimulatePoiseuilleFlow");
 //  return Unfit::RunOneTest("SimulateNSCDCoupling");
 //  return Unfit::RunOneTest("SimulateNSCDCouplingWithObstacles");
+//  return Unfit::RunOneTest("SimulateTaylorVortex");
 //  return Unfit::RunOneTest("SimulateLidDrivenCavityFlow");
-//  return Unfit::RunOneTest("AnalyticalPoiseuille");
-  return Unfit::RunOneTest("AnalyticalTaylorVortex");
+  return Unfit::RunOneTest("AnalyticalPoiseuille");
+//  return Unfit::RunOneTest("AnalyticalTaylorVortex");
 
   // to run only one suite, uncomment the following line
   // and specify the name of the suite. Also, comment out the RunAllTheTests()

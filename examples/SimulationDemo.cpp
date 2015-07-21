@@ -1,3 +1,4 @@
+#include <cmath>  // cos, sin
 #include <iostream>
 #include <vector>
 #include "BounceBackNodes.hpp"
@@ -15,6 +16,7 @@ SUITE(SimulationDemo)
 {
 const static auto g_dx = 0.0316;
 const static auto g_dt = 0.001;
+static const auto g_cs_sqr = (g_dx / g_dt) * (g_dx / g_dt) / 3.0;
 const static auto g_k_visco = 0.2;
 const static auto g_rho0_f = 1.0;
 const static auto g_d_coeff = 0.2;
@@ -171,6 +173,52 @@ TEST(SimulateNSCDCoupling)
     f.TakeStep();
     g.TakeStep();
     WriteResultsCmgui(g.df, nx, ny, t);
+  }
+}
+
+TEST(SimulateTaylorVortex)
+{
+  // have to use odd number for sizes
+  std::size_t ny = 65;
+  std::size_t nx = 65;
+  double t_total = 1.0;
+  // analytical solution parameters
+  std::vector<std::vector<double>> u_lattice_an;
+  std::vector<double> rho_lattice_an;
+  auto u0_an = 0.001;
+  auto k_visco = 0.25;
+  auto two_pi = 3.1415926 * 2.0;
+  // using one k since it's a square box
+  auto k = two_pi / nx;
+  for (auto n = 0u; n < nx * ny; ++n) {
+    auto x = n % nx;
+    auto y = n / nx;
+    auto x_an = static_cast<double>(x);
+    auto y_an = static_cast<double>(y);
+    // analytical formula from "Interpolation methods and the accuracy of
+    // lattice-Boltzmann mesh refinement" eq17
+    auto u_an = -1.0 * u0_an * cos(k * x_an) * sin(k * y_an);
+    auto v_an = u0_an * sin(k * x_an) * cos(k * y_an);
+    u_lattice_an.push_back({u_an, v_an});
+    auto rho_an = g_rho0_f - 0.25 / g_cs_sqr * u0_an * u0_an *
+        (cos(2.0 * k * x_an) + cos(2.0 * k * y_an));
+    rho_lattice_an.push_back(rho_an);
+  }  // n
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt
+    , u_lattice_an);
+  StreamPeriodic sp(lm);
+  CollisionNS ns(lm
+    , k_visco
+    , rho_lattice_an);
+  LatticeBoltzmann f(lm
+    , ns
+    , sp);
+  for (auto t = 0u; t < 501; ++t) {
+    f.TakeStep();
+    WriteResultsCmgui(lm.u, nx, ny, t);
   }
 }
 }

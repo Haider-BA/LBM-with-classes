@@ -37,9 +37,6 @@ void LatticeBoltzmann::TakeStep()
   }
   df = sm_.Stream(df);
   for (auto bdr : bn_) {
-    if (!bdr->prestream) {
-      bdr->UpdateNodes(df);
-      std::cout << "called";
-    }
+    if (!bdr->prestream) bdr->UpdateNodes(df);
   }
 }
