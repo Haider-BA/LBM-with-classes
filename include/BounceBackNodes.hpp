@@ -2,6 +2,7 @@
 #define BOUNCE_BACK_NODES_HPP_
 #include "BoundaryNodes.hpp"
 #include "CollisionModel.hpp"
+#include "Node.hpp"
 
 class BounceBackNodes: public BoundaryNodes {
  public:
@@ -24,5 +25,7 @@ class BounceBackNodes: public BoundaryNodes {
 
  protected:
   CollisionModel &cm_;
+
+  std::vector<Node> nodes_;
 };
 #endif // BOUNCE_BACK_NODES_HPP_

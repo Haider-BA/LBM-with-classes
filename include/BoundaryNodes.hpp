@@ -26,7 +26,5 @@ class BoundaryNodes {
   };
 
   LatticeModel &lm_;
-
-  std::vector<std::size_t> coordinates_;
 };
 #endif // BOUNDARY_NODES_HPP_

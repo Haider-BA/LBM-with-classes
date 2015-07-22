@@ -12,6 +12,7 @@
 #include "Printing.hpp"
 #include "StreamPeriodic.hpp"
 #include "UnitTest++.h"
+#include "ZouHeNodes.hpp"
 
 SUITE(TestException)
 {
@@ -834,6 +835,29 @@ TEST(StreamPeriodicDiagonalNWSE)
         zero_tol);
     ++n;
   }  // n
+}
+
+TEST(BoundaryZouHeLid)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  CollisionNS ns(lm
+    , g_k_visco
+    , g_rho0_f);
+  ZouHeNodes zhns(!g_is_prestream
+    , ns
+    , lm);
+  StreamPeriodic sp(lm);
+  LatticeBoltzmann f(lm
+    , ns
+    , sp);
+  auto u_lid = 0.01;
+  auto v_lid = 0.01;
+  zhns.AddNode(0, 0, u_lid, v_lid);
+  zhns.UpdateNodes(f.df);
 }
 /*
 TEST(BoundaryLidLid)

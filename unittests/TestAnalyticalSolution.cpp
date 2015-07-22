@@ -70,13 +70,13 @@ TEST(AnalyticalDiffusion)
 
 TEST(AnalyticalPoiseuille)
 {
-  std::size_t ny = 18;
+  std::size_t ny = 20;
   std::size_t nx = 34;
   double body_force = 10.0;
   std::vector<std::vector<std::size_t>> src_pos_f;
   std::vector<std::vector<double>> src_str_f(nx * ny, {body_force, 0});
   std::vector<double> u0 = {0, 0};
-  auto time_steps = 1000;
+  auto time_steps = 2000;
   for (auto n = 0u; n < nx * ny; ++n) src_pos_f.push_back({n % nx, n / nx});
   LatticeD2Q9 lm(ny
     , nx
@@ -100,22 +100,19 @@ TEST(AnalyticalPoiseuille)
     bbnsf.AddNode(x, ny - 1);
   }
   f.AddBoundaryNodes(&bbnsf);
-  for (auto t = 0; t < 2000; ++t) {
-    f.TakeStep();
-  }
+  for (auto t = 0; t < time_steps; ++t) f.TakeStep();
   // calculation of analytical u_max according to formula in Guo2002 after
   auto length = static_cast<double>(ny / 2) - 1.0;
   double u_max = body_force / 1000 * length * length / 2 / g_k_visco;
   for (auto x = 0u; x < 1; ++x) {
-    double y_an = 0.5;
     for (auto y = 1u; y < ny - 1; ++y) {
       auto n = y * nx + x;
-      double u_an = u_max * (1.0 - (y_an - length) * (y_an - length) /
-          (length * length));
+      auto y_an = static_cast<double>(y) - length - 0.5;
+      double u_an = u_max * (1.0 - y_an * y_an / (length * length));
       auto u_sim = lm.u[n][0] + lm.u[n][1];
-      CHECK_CLOSE(u_an, u_sim, u_an * 0.03);
-      if (y < 8) ++y_an;
-      if (y > 8) --y_an;
+      CHECK_CLOSE(u_an, u_sim, u_an * 0.025);
+      if (y < 9) ++y_an;
+      if (y > 9) --y_an;
     }  // y
   }  // x
 }
@@ -125,7 +122,7 @@ TEST(AnalyticalTaylorVortex)
   // have to use odd number for sizes
   std::size_t ny = 65;
   std::size_t nx = 65;
-  double t_total = 1.0;
+  auto time_steps = 300;
   // analytical solution parameters
   std::vector<std::vector<double>> u_lattice_an;
   std::vector<double> rho_lattice_an;
@@ -134,17 +131,15 @@ TEST(AnalyticalTaylorVortex)
   // using one k since it's a square box
   auto k = g_2pi / nx;
   for (auto n = 0u; n < nx * ny; ++n) {
-    auto x = n % nx;
-    auto y = n / nx;
-    auto x_an = static_cast<double>(x);
-    auto y_an = static_cast<double>(y);
+    auto x_an = static_cast<double>(n % nx) * k;
+    auto y_an = static_cast<double>(n / nx) * k;
     // analytical formula from "Interpolation methods and the accuracy of
     // lattice-Boltzmann mesh refinement" eq17
-    auto u_an = -1.0 * u0_an * cos(k * x_an) * sin(k * y_an);
-    auto v_an = u0_an * sin(k * x_an) * cos(k * y_an);
+    auto u_an = -1.0 * u0_an * cos(x_an) * sin(y_an);
+    auto v_an = u0_an * sin(x_an) * cos(y_an);
     u_lattice_an.push_back({u_an, v_an});
     auto rho_an = g_rho0_f - 0.25 / g_cs_sqr * u0_an * u0_an *
-        (cos(2.0 * k * x_an) + cos(2.0 * k * y_an));
+        (cos(2.0 * x_an) + cos(2.0 * y_an));
     rho_lattice_an.push_back(rho_an);
   }  // n
   LatticeD2Q9 lm(ny
@@ -161,20 +156,21 @@ TEST(AnalyticalTaylorVortex)
     , sp);
   // According to t_c formula in Guo2002 pg5, checks simulation results against
   // analytical result until velocity is 25% of initial value
-  for (auto t = 0u; t < 300; ++t) {
-    std::cout << t << std::endl;
+  for (auto t = 0; t < time_steps; ++t) {
     f.TakeStep();
     for (auto n = 0u; n < nx * ny; ++n) {
-        auto x_an = static_cast<double>(n % nx);
-        auto y_an = static_cast<double>(n / nx);
-        auto u_an = -1.0 * u0_an * cos(k * x_an) * sin(k * y_an) *
+        auto x_an = static_cast<double>(n % nx) * k;
+        auto y_an = static_cast<double>(n / nx) * k;
+        auto u_an = -1.0 * u0_an * cos(x_an) * sin(y_an) *
             exp(-2.0 * k_visco * k * k * t);
-        auto v_an = u0_an * sin(k * x_an) * cos(k * y_an) *
+        auto v_an = u0_an * sin(x_an) * cos(y_an) *
             exp(-2.0 * k_visco * k * k * t);
       // checks that simulation is within 1% of analytical value if analytical
-      // value is not zero
-      if (fabs(u_an) > 1e-20) CHECK_CLOSE(u_an, lm.u[n][0], fabs(u_an) * 0.01);
-      if (fabs(v_an) > 1e-20) CHECK_CLOSE(v_an, lm.u[n][1], fabs(v_an) * 0.01);
+      // value is not zero, else check they are less than 1e-8
+      CHECK_CLOSE(u_an, lm.u[n][0], (fabs(u_an) > 1e-20) ? fabs(u_an) * 0.01 :
+          1e-8);
+      CHECK_CLOSE(v_an, lm.u[n][1], (fabs(v_an) > 1e-20) ? fabs(v_an) * 0.01 :
+          1e-8);
     }  // y
   }  // t
 }
