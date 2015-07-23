@@ -13,8 +13,6 @@ std::vector<std::vector<double>> StreamD2Q9::Stream(
 {
   auto nx = lm_.GetNumberOfColumns();
   auto ny = lm_.GetNumberOfRows();
-  auto width = nx - 1;
-  auto height = (ny - 1) * nx;
   auto temp_df = df;
   // Streaming
   for (auto n = 0u; n < nx * ny; ++n) {

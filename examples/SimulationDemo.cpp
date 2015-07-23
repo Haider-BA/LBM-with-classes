@@ -136,6 +136,7 @@ TEST(SimulateDevelopingPoiseuilleFlow)
     , g_dt
     , u0);
   StreamD2Q9 sd(lm);
+  StreamPeriodic sp(lm);
 //  CollisionNSF nsf(lm
 //    , src_pos_f
 //    , src_str_f
@@ -144,25 +145,26 @@ TEST(SimulateDevelopingPoiseuilleFlow)
   CollisionNS nsf(lm
     , g_k_visco
     , g_rho0_f);
-//  BounceBackNodes bbnsf(g_is_prestream
-//    , nsf
-//    , lm);
+  BounceBackNodes bbnsf(g_is_prestream
+    , nsf
+    , lm);
   ZouHeNodes zhnsf(!g_is_prestream
     , nsf
     , lm);
   LatticeBoltzmann f(lm
     , nsf
-    , sd);
+    , sp);
   for (auto x = 0u; x < nx; ++x) {
-    zhnsf.AddNode(x, 0, 0.0, 0.0);
-    zhnsf.AddNode(x, ny - 1, 0.0, 0.0);
+    bbnsf.AddNode(x, 0);
+    bbnsf.AddNode(x, ny - 1);
   }
   for (auto y = 1u; y < ny - 1; ++y) {
-    zhnsf.AddNode(0, y, 10.0, 0.0);
-    zhnsf.AddNode(nx - 1, y, 0.0, 0.0);
+    zhnsf.AddNode(0, y, 0.1, 0.0);
+    zhnsf.AddNode(nx - 1, y, 0.1, 0.0);
   }
   f.AddBoundaryNodes(&zhnsf);
-  for (auto t = 0u; t < 15; ++t) {
+  f.AddBoundaryNodes(&bbnsf);
+  for (auto t = 0u; t < 501; ++t) {
     f.TakeStep();
     WriteResultsCmgui(lm.u, nx, ny, t);
   }
@@ -266,6 +268,55 @@ TEST(SimulateTaylorVortex)
   for (auto t = 0u; t < 501; ++t) {
     f.TakeStep();
     WriteResultsCmgui(lm.u, nx, ny, t);
+  }
+}
+
+TEST(SimulateLidDrivenCavityFlow)
+{
+  // Reynolds number = velocity * length / viscosity
+  std::size_t ny = 64;
+  std::size_t nx = 64;
+  std::vector<double> u0 = {0.0, 0.0};
+  auto k_visco = 0.2;
+  auto u_lid = 0.316;
+  auto v_lid = 0.0;
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt
+    , u0);
+  StreamD2Q9 sd(lm);
+  CollisionNS ns(lm
+    , k_visco
+    , g_rho0_f);
+  BounceBackNodes bbns(g_is_prestream
+    , ns
+    , lm);
+  ZouHeNodes zhns(!g_is_prestream
+    , ns
+    , lm);
+  LatticeBoltzmann f(lm
+    , ns
+    , sd);
+  for (auto y = 0u; y < ny; ++y) {
+    bbns.AddNode(0, y);
+    bbns.AddNode(nx - 1, y);
+  }
+  for (auto x = 0u; x < nx; ++x) {
+    bbns.AddNode(x, 0);
+    if (x != 0 && x != nx - 1) {
+      zhns.AddNode(x, ny - 1, u_lid, v_lid);
+    }
+    else {
+      bbns.AddNode(x, ny - 1);
+    }
+  }
+  f.AddBoundaryNodes(&bbns);
+  f.AddBoundaryNodes(&zhns);
+  for (auto t = 0u; t < 2001; ++t) {
+    f.TakeStep();
+    if (t % 4 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 4);
+    std::cout << t << std::endl;
   }
 }
 }

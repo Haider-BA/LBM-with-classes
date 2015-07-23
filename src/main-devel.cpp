@@ -13,10 +13,10 @@ int main()
 //  return Unfit::RunOneTest("SimulateNSCDCoupling");
 //  return Unfit::RunOneTest("SimulateNSCDCouplingWithObstacles");
 //  return Unfit::RunOneTest("SimulateTaylorVortex");
-//  return Unfit::RunOneTest("SimulateLidDrivenCavityFlow");
+  return Unfit::RunOneTest("SimulateLidDrivenCavityFlow");
 //  return Unfit::RunOneTest("AnalyticalPoiseuille");
 //  return Unfit::RunOneTest("AnalyticalTaylorVortex");
-  return Unfit::RunOneTest("BoundaryZouHeSide");
+//  return Unfit::RunOneTest("BoundaryZouHeSide");
 //  return Unfit::RunOneTest("BoundaryZouHeCorner");
 
   // to run only one suite, uncomment the following line

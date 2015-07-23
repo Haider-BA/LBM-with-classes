@@ -17,7 +17,6 @@ void ZouHeNodes::AddNode(std::size_t x
   , double u_lid
   , double v_lid)
 {
-  // should just try to implement normally using switch statement first
   auto nx = lm_.GetNumberOfColumns();
   auto ny = lm_.GetNumberOfRows();
   auto left = x == 0;
@@ -115,8 +114,8 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
   auto nc = lm_.GetNumberOfDirections();
   switch (node.i1) {
     case 0: {
-      auto rho_node = cm_.rho[n + nx];
-      std::cout << rho_node << std::endl;
+      auto rho_node = 0.5 * (cm_.rho[n + nx] + cm_.rho[n + 1]);
+      for (auto &u : vel) u *= rho_node;
       df[n][E] = df[n][W] + 2.0 / 3.0 * vel[0];
       df[n][N] = df[n][S] + 2.0 / 3.0 * vel[1];
       df[n][NE] = df[n][SW] + vel[0] / 6.0 + vel[1] / 6.0;
@@ -127,7 +126,8 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
       break;
     }
     case 1: {
-      auto rho_node = cm_.rho[n + nx];
+      auto rho_node = 0.5 * (cm_.rho[n + nx] + cm_.rho[n - 1]);
+      for (auto &u : vel) u *= rho_node;
       df[n][W] = df[n][E] - 2.0 / 3.0 * vel[0];
       df[n][N] = df[n][S] + 2.0 / 3.0 * vel[1];
       df[n][NW] = df[n][SE] - vel[0] / 6.0 + vel[1] / 6.0;
@@ -138,7 +138,8 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
       break;
     }
     case 2: {
-      auto rho_node = cm_.rho[n - nx];
+      auto rho_node = 0.5 * (cm_.rho[n - nx] + cm_.rho[n + 1]);
+      for (auto &u : vel) u *= rho_node;
       df[n][E] = df[n][W] + 2.0 / 3.0 * vel[0];
       df[n][S] = df[n][N] - 2.0 / 3.0 * vel[1];
       df[n][SE] = df[n][NW] + vel[0] / 6.0 - vel[1] / 6.0;
@@ -149,7 +150,8 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
       break;
     }
     case 3: {
-      auto rho_node = cm_.rho[n - nx];
+      auto rho_node = 0.5 * (cm_.rho[n - nx] + cm_.rho[n - 1]);
+      for (auto &u : vel) u *= rho_node;
       df[n][W] = df[n][E] - 2.0 / 3.0 * vel[0];
       df[n][S] = df[n][N] - 2.0 / 3.0 * vel[1];
       df[n][SW] = df[n][NE] - vel[0] / 6.0 - vel[1] / 6.0;
