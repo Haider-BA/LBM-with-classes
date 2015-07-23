@@ -8,9 +8,11 @@
 #include "LatticeBoltzmann.hpp"
 #include "LatticeD2Q9.hpp"
 #include "Printing.hpp"
+#include "StreamD2Q9.hpp"
 #include "StreamPeriodic.hpp"
 #include "UnitTest++.h"
 #include "WriteResultsCmgui.hpp"
+#include "ZouHeNodes.hpp"
 
 SUITE(SimulationDemo)
 {
@@ -120,6 +122,52 @@ TEST(SimulatePoiseuilleFlow)
   }
 }
 
+TEST(SimulateDevelopingPoiseuilleFlow)
+{
+  std::size_t ny = 21;
+  std::size_t nx = 31;
+  std::vector<std::vector<std::size_t>> src_pos_f;
+  std::vector<std::vector<double>> src_str_f(nx * ny, {10.0, 0.0});
+  std::vector<double> u0 = {0.0, 0.0};
+  for (auto n = 0u; n < nx * ny; ++n) src_pos_f.push_back({n % nx, n / nx});
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt
+    , u0);
+  StreamD2Q9 sd(lm);
+//  CollisionNSF nsf(lm
+//    , src_pos_f
+//    , src_str_f
+//    , g_k_visco
+//    , g_rho0_f);
+  CollisionNS nsf(lm
+    , g_k_visco
+    , g_rho0_f);
+//  BounceBackNodes bbnsf(g_is_prestream
+//    , nsf
+//    , lm);
+  ZouHeNodes zhnsf(!g_is_prestream
+    , nsf
+    , lm);
+  LatticeBoltzmann f(lm
+    , nsf
+    , sd);
+  for (auto x = 0u; x < nx; ++x) {
+    zhnsf.AddNode(x, 0, 0.0, 0.0);
+    zhnsf.AddNode(x, ny - 1, 0.0, 0.0);
+  }
+  for (auto y = 1u; y < ny - 1; ++y) {
+    zhnsf.AddNode(0, y, 10.0, 0.0);
+    zhnsf.AddNode(nx - 1, y, 0.0, 0.0);
+  }
+  f.AddBoundaryNodes(&zhnsf);
+  for (auto t = 0u; t < 15; ++t) {
+    f.TakeStep();
+    WriteResultsCmgui(lm.u, nx, ny, t);
+  }
+}
+
 TEST(SimulateNSCDCoupling)
 {
   std::size_t ny = 21;
@@ -181,7 +229,6 @@ TEST(SimulateTaylorVortex)
   // have to use odd number for sizes
   std::size_t ny = 65;
   std::size_t nx = 65;
-  double t_total = 1.0;
   // analytical solution parameters
   std::vector<std::vector<double>> u_lattice_an;
   std::vector<double> rho_lattice_an;

@@ -19,7 +19,8 @@ LatticeBoltzmann::LatticeBoltzmann(LatticeModel &lm
   : df {cm.edf},
     lm_ (lm),
     cm_ (cm),
-    sm_ (sm)
+    sm_ (sm),
+    bn_ {}
 {}
 
 void LatticeBoltzmann::AddBoundaryNodes(BoundaryNodes *bn)

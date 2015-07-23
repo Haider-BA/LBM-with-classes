@@ -23,10 +23,11 @@ class ZouHeNodes: public BoundaryNodes {
     , ValueNode &node);
 
   void UpdateCorner(std::vector<std::vector<double>> &df
-    , std::size_t n);
+    , ValueNode &node);
 
  protected:
   std::vector<ValueNode> nodes_;
+  CollisionModel &cm_;
 //  std::vector<bool> is_corner_;
 //  std::vector<bool> knowns_;
 

@@ -56,7 +56,7 @@
 		</Compiler>
 		<Linker>
 			<Add option="--coverage" />
-			<Add library="UnitTest++\lib\Debug\libUnitTest++.a" />
+			<Add library="UnitTest++/lib/Debug/libUnitTest++.a" />
 			<Add directory="UnitTest++/lib/Debug" />
 		</Linker>
 		<Unit filename="examples/SimulationDemo.cpp" />
@@ -72,6 +72,7 @@
 		<Unit filename="include/LatticeModel.hpp" />
 		<Unit filename="include/Node.hpp" />
 		<Unit filename="include/Printing.hpp" />
+		<Unit filename="include/StreamD2Q9.hpp" />
 		<Unit filename="include/StreamModel.hpp" />
 		<Unit filename="include/StreamPeriodic.hpp" />
 		<Unit filename="include/ValueNode.hpp" />
@@ -87,6 +88,7 @@
 		<Unit filename="src/LatticeD2Q9.cpp" />
 		<Unit filename="src/LatticeModel.cpp" />
 		<Unit filename="src/Node.cpp" />
+		<Unit filename="src/StreamD2Q9.cpp" />
 		<Unit filename="src/StreamModel.cpp" />
 		<Unit filename="src/StreamPeriodic.cpp" />
 		<Unit filename="src/ValueNode.cpp" />
