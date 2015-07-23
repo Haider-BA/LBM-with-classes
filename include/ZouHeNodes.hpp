@@ -27,8 +27,8 @@ class ZouHeNodes: public BoundaryNodes {
 
  protected:
   std::vector<ValueNode> nodes_;
-  std::vector<bool> is_corner_;
-  std::vector<bool> knowns_;
+//  std::vector<bool> is_corner_;
+//  std::vector<bool> knowns_;
 
 };
 

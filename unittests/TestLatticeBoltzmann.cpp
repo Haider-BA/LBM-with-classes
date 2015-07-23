@@ -854,10 +854,50 @@ TEST(BoundaryZouHeLid)
   LatticeBoltzmann f(lm
     , ns
     , sp);
-  auto u_lid = 0.01;
-  auto v_lid = 0.01;
-  zhns.AddNode(0, 0, u_lid, v_lid);
+  auto u_lid = 0.1;
+  auto v_lid = 0.1;
+  std::vector<double> nums = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+  std::vector<double> right_ans = {1,
+                                   2, 3, 1.933333, 5,
+                                   6, 10.03333, 4.933333, 9};
+  std::vector<double> top_ans = {1,
+                                 2, 3, 4, 2.933333,
+                                 6, 7, 4.933333, 8.033333};
+  std::vector<double> left_ans = {1,
+                                  4.066667, 3, 4, 5,
+                                  9.066667, 7, 8, 5.966667};
+  std::vector<double> bottom_ans = {1,
+                                    2, 5.066667, 4, 5,
+                                    9.066667, 8.033333, 8, 9};
+  for (auto y = 1u; y < g_ny - 1; ++y) {
+    auto left = y * g_nx;
+    auto right = left + g_nx - 1;
+    zhns.AddNode(g_nx - 1, y, u_lid, v_lid);
+    zhns.AddNode(0, y, u_lid, v_lid);
+    f.df[right] = nums;
+    f.df[left] = nums;
+  }  // y
+  for (auto x = 1u; x < g_nx - 1; ++x) {
+    auto top = (g_ny - 1) * g_nx + x;
+    zhns.AddNode(x, g_ny - 1, u_lid, v_lid);
+    zhns.AddNode(x, 0, u_lid, v_lid);
+    f.df[top] = nums;
+    f.df[x] = nums;
+  }  // x
   zhns.UpdateNodes(f.df);
+  for (auto i = 0; i < 9; ++i) {
+    for (auto y = 1u; y < g_ny - 1; ++y) {
+      auto left = y * g_nx;
+      auto right = left + g_nx - 1;
+      CHECK_CLOSE(right_ans[i], f.df[right][i], loose_tol);
+      CHECK_CLOSE(left_ans[i], f.df[left][i], loose_tol);
+    }  // y
+    for (auto x = 1u; x < g_nx - 1; ++x) {
+      auto top = (g_ny - 1) * g_nx + x;
+      CHECK_CLOSE(top_ans[i], f.df[top][i], loose_tol);
+      CHECK_CLOSE(bottom_ans[i], f.df[x][i], loose_tol);
+    }  // x
+  }  // i
 }
 /*
 TEST(BoundaryLidLid)

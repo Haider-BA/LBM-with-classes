@@ -9,15 +9,16 @@ class ValueNode: public Node {
     , std::size_t nx
     , double d_1
     , double d_2
-    , bool b_1);
+    , bool b_1
+    , int i_1);
 
   ~ValueNode() = default;
 
-  double d1;
-  double d2;
-  double d3;
-  bool b1;
+//  double d1;
+//  double d2;
+//  double d3;
   std::vector<double> v1;
+  bool b1;
   int i1;
 };
 
