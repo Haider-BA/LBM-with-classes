@@ -71,6 +71,7 @@
 		<Unit filename="include/LatticeD2Q9.hpp" />
 		<Unit filename="include/LatticeModel.hpp" />
 		<Unit filename="include/Node.hpp" />
+		<Unit filename="include/OnGridBounceBackNodes.hpp" />
 		<Unit filename="include/Printing.hpp" />
 		<Unit filename="include/StreamD2Q9.hpp" />
 		<Unit filename="include/StreamModel.hpp" />
@@ -88,6 +89,7 @@
 		<Unit filename="src/LatticeD2Q9.cpp" />
 		<Unit filename="src/LatticeModel.cpp" />
 		<Unit filename="src/Node.cpp" />
+		<Unit filename="src/OnGridBounceBackNodes.cpp" />
 		<Unit filename="src/StreamD2Q9.cpp" />
 		<Unit filename="src/StreamModel.cpp" />
 		<Unit filename="src/StreamPeriodic.cpp" />

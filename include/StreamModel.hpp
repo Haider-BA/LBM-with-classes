@@ -1,5 +1,6 @@
 #ifndef STREAM_MODEL_CPP_
 #define STREAM_MODEL_CPP_
+#include <vector>
 #include "LatticeModel.hpp"
 
 class StreamModel {
@@ -8,8 +9,12 @@ class StreamModel {
 
   virtual ~StreamModel() = default;
 
+  void AddNodeToBounceBack(std::size_t n);
+
   virtual std::vector<std::vector<double>> Stream(
       const std::vector<std::vector<double>> &df) = 0;
+
+  std::vector<bool> bounce_back;
 
  protected:
   enum Directions {
@@ -22,6 +27,7 @@ class StreamModel {
     SW,
     SE
   };
+
   LatticeModel &lm_;
 };
 #endif // STREAM_MODEL_CPP_

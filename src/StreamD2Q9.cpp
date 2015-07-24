@@ -21,14 +21,26 @@ std::vector<std::vector<double>> StreamD2Q9::Stream(
     auto bottom = n / nx == 0;
     auto top = n / nx == ny - 1;
 
-    temp_df[n][E] = df[left ? n : n - 1][E];
-    temp_df[n][N] = df[bottom ? n : n - nx][N];
-    temp_df[n][W] = df[right ? n : n + 1][W];
-    temp_df[n][S] = df[top ? n : n + nx][S];
-    temp_df[n][NE] = df[(bottom || left)? n: n - nx - 1][NE];
-    temp_df[n][NW] = df[(bottom || right) ? n : n -nx + 1][NW];
-    temp_df[n][SW] = df[(top || right) ? n : n + nx + 1][SW];
-    temp_df[n][SE] = df[(top || left) ? n : n + nx - 1][SE];
+    if (bounce_back[n]) {
+      temp_df[n][E] = left ? df[n][W] : df[n - 1][E];
+      temp_df[n][N] = bottom ? df[n][S] : df[n - nx][N];
+      temp_df[n][W] = right ? df[n][E] : df[n + 1][W];
+      temp_df[n][S] = top ? df[n][N] : df[n + nx][S];
+      temp_df[n][NE] = bottom || left ? df[n][SW] : df[n - nx - 1][NE];
+      temp_df[n][NW] = bottom || right ? df[n][SE] : df[n - nx + 1][NW];
+      temp_df[n][SW] = top || right ? df[n][NE] : df[n + nx + 1][SW];
+      temp_df[n][SE] = top || left ? df[n][NW] : df[n + nx - 1][SE];
+    }
+    else {
+      temp_df[n][E] = df[left ? n : n - 1][E];
+      temp_df[n][N] = df[bottom ? n : n - nx][N];
+      temp_df[n][W] = df[right ? n : n + 1][W];
+      temp_df[n][S] = df[top ? n : n + nx][S];
+      temp_df[n][NE] = df[bottom || left ? n: n - nx - 1][NE];
+      temp_df[n][NW] = df[bottom || right ? n : n - nx + 1][NW];
+      temp_df[n][SW] = df[top || right ? n : n + nx + 1][SW];
+      temp_df[n][SE] = df[top || left ? n : n + nx - 1][SE];
+    }
   }  // n
   return temp_df;
 }
