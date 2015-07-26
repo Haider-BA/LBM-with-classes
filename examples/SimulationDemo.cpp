@@ -324,9 +324,9 @@ TEST(SimulateLidDrivenCavityFlow)
   }
 //  f.AddBoundaryNodes(&bbns);
   f.AddBoundaryNodes(&zhns);
-  for (auto t = 0u; t < 16001; ++t) {
+  for (auto t = 0u; t < 32001; ++t) {
     f.TakeStep();
-    if (t % 32 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 32);
+    if (t % 65 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 64);
     std::cout << t << std::endl;
   }
   std::ofstream myfile;
