@@ -1,4 +1,5 @@
 #include <cmath>  // cos, sin
+#include <fstream>
 #include <iostream>
 #include <vector>
 #include "BounceBackNodes.hpp"
@@ -7,6 +8,7 @@
 #include "CollisionNSF.hpp"
 #include "LatticeBoltzmann.hpp"
 #include "LatticeD2Q9.hpp"
+#include "OnGridBounceBackNodes.hpp"
 #include "Printing.hpp"
 #include "StreamD2Q9.hpp"
 #include "StreamPeriodic.hpp"
@@ -274,16 +276,18 @@ TEST(SimulateTaylorVortex)
 TEST(SimulateLidDrivenCavityFlow)
 {
   // Reynolds number = velocity * length / viscosity
-  std::size_t ny = 64;
-  std::size_t nx = 64;
+  std::size_t ny = 256;
+  std::size_t nx = 256;
+  auto dt = 0.0001;
+  auto dx = sqrt(dt);
   std::vector<double> u0 = {0.0, 0.0};
-  auto k_visco = 0.2;
+  auto k_visco = 0.080896;
   auto u_lid = 0.316;
   auto v_lid = 0.0;
   LatticeD2Q9 lm(ny
     , nx
-    , g_dx
-    , g_dt
+    , dx
+    , dt
     , u0);
   StreamD2Q9 sd(lm);
   CollisionNS ns(lm
@@ -292,6 +296,9 @@ TEST(SimulateLidDrivenCavityFlow)
   BounceBackNodes bbns(g_is_prestream
     , ns
     , lm);
+  OnGridBounceBackNodes ogbb(g_is_prestream
+    , lm
+    , sd);
   ZouHeNodes zhns(!g_is_prestream
     , ns
     , lm);
@@ -299,24 +306,37 @@ TEST(SimulateLidDrivenCavityFlow)
     , ns
     , sd);
   for (auto y = 0u; y < ny; ++y) {
-    bbns.AddNode(0, y);
-    bbns.AddNode(nx - 1, y);
+    ogbb.AddNode(0, y);
+    ogbb.AddNode(nx - 1, y);
+//    bbns.AddNode(0, y);
+//    bbns.AddNode(nx - 1, y);
   }
   for (auto x = 0u; x < nx; ++x) {
-    bbns.AddNode(x, 0);
+    ogbb.AddNode(x, 0);
+//    bbns.AddNode(x, 0);
     if (x != 0 && x != nx - 1) {
       zhns.AddNode(x, ny - 1, u_lid, v_lid);
     }
     else {
-      bbns.AddNode(x, ny - 1);
+      ogbb.AddNode(x, ny - 1);
+//      bbns.AddNode(x, ny - 1);
     }
   }
-  f.AddBoundaryNodes(&bbns);
+//  f.AddBoundaryNodes(&bbns);
   f.AddBoundaryNodes(&zhns);
-  for (auto t = 0u; t < 2001; ++t) {
+  for (auto t = 0u; t < 16001; ++t) {
     f.TakeStep();
-    if (t % 4 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 4);
+    if (t % 32 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 32);
     std::cout << t << std::endl;
   }
+  std::ofstream myfile;
+  myfile.open ("velocities.csv");
+  myfile << "u_y,u_x" << std::endl;
+  for (auto i = 0u; i < 256; ++i) {
+    auto y = 128 * nx + i;
+    auto x = i * nx + 128;
+    myfile << lm.u[y][1] << "," << lm.u[x][0] << std::endl;
+  }
+  myfile.close();
 }
 }

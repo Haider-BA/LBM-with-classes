@@ -4,7 +4,7 @@
 int main()
 {
 //  return Unfit::RunAllTheTests();
-  return Unfit::RunOneSuite("TestFunctionality");
+//  return Unfit::RunOneSuite("TestFunctionality");
 //  return Unfit::RunOneSuite("TestAnalyticalSolutions");
 //  return Unfit::RunOneTest("SimulateDiffusion");
 //  return Unfit::RunOneTest("SimulateConvectionDiffusion");
@@ -13,7 +13,7 @@ int main()
 //  return Unfit::RunOneTest("SimulateNSCDCoupling");
 //  return Unfit::RunOneTest("SimulateNSCDCouplingWithObstacles");
 //  return Unfit::RunOneTest("SimulateTaylorVortex");
-//  return Unfit::RunOneTest("SimulateLidDrivenCavityFlow");
+  return Unfit::RunOneTest("SimulateLidDrivenCavityFlow");
 //  return Unfit::RunOneTest("AnalyticalPoiseuille");
 //  return Unfit::RunOneTest("AnalyticalTaylorVortex");
 //  return Unfit::RunOneTest("BoundaryZouHeSide");
