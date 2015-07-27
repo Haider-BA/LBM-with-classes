@@ -2,8 +2,8 @@
 #include "LatticeModel.hpp"
 
 StreamModel::StreamModel(LatticeModel &lm)
-  : lm_ (lm),
-    bounce_back {}
+  : bounce_back {},
+    lm_ (lm)
 {
   auto nx = lm_.GetNumberOfColumns();
   auto ny = lm_.GetNumberOfRows();

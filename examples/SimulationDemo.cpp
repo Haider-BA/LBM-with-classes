@@ -8,7 +8,6 @@
 #include "CollisionNSF.hpp"
 #include "LatticeBoltzmann.hpp"
 #include "LatticeD2Q9.hpp"
-#include "OnGridBouncebackNodes.hpp"
 #include "Printing.hpp"
 #include "StreamD2Q9.hpp"
 #include "StreamPeriodic.hpp"
@@ -296,10 +295,6 @@ TEST(SimulateLidDrivenCavityFlow)
   BouncebackNodes bbns(g_is_prestream
     , lm
     , &ns);
-  OnGridBouncebackNodes ogbb(g_is_prestream
-    , lm
-    , sd
-    , ns);
   ZouHeNodes zhns(!g_is_prestream
     , ns
     , lm);
@@ -307,23 +302,19 @@ TEST(SimulateLidDrivenCavityFlow)
     , ns
     , sd);
   for (auto y = 0u; y < ny; ++y) {
-    ogbb.AddNode(0, y);
-    ogbb.AddNode(nx - 1, y);
-//    bbns.AddNode(0, y);
-//    bbns.AddNode(nx - 1, y);
+    bbns.AddNode(0, y);
+    bbns.AddNode(nx - 1, y);
   }
   for (auto x = 0u; x < nx; ++x) {
-    ogbb.AddNode(x, 0);
-//    bbns.AddNode(x, 0);
+    bbns.AddNode(x, 0);
     if (x != 0 && x != nx - 1) {
       zhns.AddNode(x, ny - 1, u_lid, v_lid);
     }
     else {
-      ogbb.AddNode(x, ny - 1);
-//      bbns.AddNode(x, ny - 1);
+      bbns.AddNode(x, ny - 1);
     }
   }
-//  f.AddBoundaryNodes(&bbns);
+  f.AddBoundaryNodes(&bbns);
   f.AddBoundaryNodes(&zhns);
   for (auto t = 0u; t < 32001; ++t) {
     f.TakeStep();

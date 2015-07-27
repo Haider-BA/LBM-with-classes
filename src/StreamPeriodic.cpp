@@ -22,27 +22,32 @@ std::vector<std::vector<double>> StreamPeriodic::Stream(
     auto right = n % nx == nx - 1;
     auto bottom = n / nx == 0;
     auto top = n / nx == ny - 1;
+
     if (bounce_back[n]) {
-      temp_df[n][E] = left ? df[n][W] : df[n - 1][E];
-      temp_df[n][N] = bottom ? df[n][S] : df[n - nx][N];
-      temp_df[n][W] = right ? df[n][E] : df[n + 1][W];
-      temp_df[n][S] = top ? df[n][N] : df[n + nx][S];
-      if (bottom) {
-        temp_df[n][NE] = df[n][SW];
-        temp_df[n][NW] = df[n][SE];
+      auto adjacent_bb_vertical = ((!bottom && bounce_back[n - nx]) || (!top &&
+          bounce_back[n + nx]));
+      auto adjacent_bb_horizontal = ((!left && bounce_back[n - 1]) || (!right &&
+          bounce_back[n + 1]));
+      if (adjacent_bb_vertical) {
+        temp_df[n][E] = left ? df[n][W] : df[n - 1][E];
+        temp_df[n][W] = right ? df[n][E] : df[n + 1][W];
       }
       else {
-        temp_df[n][NE] = df[left ? n + width - nx : n - 1 - nx][NE];
-        temp_df[n][NW] = df[right ? n - width - nx : n + 1 - nx][NW];
+        temp_df[n][E] = df[left ? n + width : n - 1][E];
+        temp_df[n][W] = df[right ? n - width : n + 1][W];
       }
-      if (top) {
-        temp_df[n][SE] = df[n][NW];
-        temp_df[n][SW] = df[n][NE];
+      if (adjacent_bb_horizontal) {
+        temp_df[n][N] = bottom ? df[n][S] : df[n - nx][N];
+        temp_df[n][S] = top ? df[n][N] : df[n + nx][S];
       }
       else {
-        temp_df[n][SE] = df[left ? n + width + nx : n - 1 + nx][SE];
-        temp_df[n][SW] = df[right ? n - width + nx : n + 1 + nx][SW];
+        temp_df[n][N] = df[bottom ? n + height : n - nx][N];
+        temp_df[n][S] = df[top ? n - height : n + nx][S];
       }
+      temp_df[n][NE] = bottom || left ? df[n][SW] : df[n - nx - 1][NE];
+      temp_df[n][NW] = bottom || right ? df[n][SE] : df[n -nx + 1][NW];
+      temp_df[n][SE] = top || left ? df[n][NW] : df[n + nx - 1][SE];
+      temp_df[n][SW] = top || right ? df[n][NE] : df[n + nx + 1][SW];
     }
     else {
       temp_df[n][E] = df[left ? n + width : n - 1][E];

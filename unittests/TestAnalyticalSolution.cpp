@@ -8,7 +8,6 @@
 #include "CollisionNSF.hpp"
 #include "LatticeBoltzmann.hpp"
 #include "LatticeD2Q9.hpp"
-#include "OnGridBouncebackNodes.hpp"
 #include "StreamPeriodic.hpp"
 #include "UnitTest++.h"
 #include "WriteResultsCmgui.hpp"
@@ -92,19 +91,13 @@ TEST(AnalyticalPoiseuille)
     , g_rho0_f);
   BouncebackNodes bbnsf(g_is_prestream
     , lm
-    , &nsf);
-  OnGridBouncebackNodes ogbb(g_is_prestream
-    , lm
-    , sp
-    , nsf);
+    , &sp);
   LatticeBoltzmann f(lm
     , nsf
     , sp);
   for (auto x = 0u; x < nx; ++x) {
-//    bbnsf.AddNode(x, 0);
-//    bbnsf.AddNode(x, ny - 1);
-    ogbb.AddNode(x, 0);
-    ogbb.AddNode(x, ny - 1);
+    bbnsf.AddNode(x, 0);
+    bbnsf.AddNode(x, ny - 1);
   }
   f.AddBoundaryNodes(&bbnsf);
   for (auto t = 0; t < time_steps; ++t) f.TakeStep();

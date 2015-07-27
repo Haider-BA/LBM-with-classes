@@ -6,9 +6,13 @@ class Node {
   Node(std::size_t x_position
     , std::size_t y_position
     , std::size_t nx);
+
   virtual ~Node() = default;
+
   std::size_t x;
+
   std::size_t y;
+
   std::size_t n;
 };
 #endif // NODE_HPP_

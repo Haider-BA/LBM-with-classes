@@ -27,12 +27,12 @@ class BouncebackNodes: public BoundaryNodes {
     , StreamModel *sm);
 
   /**
-   * Override copy constructor due to -Weffc warnings
+   * Override copy constructor due to -Weffc++ warnings
    */
   BouncebackNodes(const BouncebackNodes&) = default;
 
   /**
-   * Override copy assignment due to -Weffc warnings
+   * Override copy assignment due to -Weffc++ warnings
    */
   BouncebackNodes& operator= (const BouncebackNodes&) = default;
 

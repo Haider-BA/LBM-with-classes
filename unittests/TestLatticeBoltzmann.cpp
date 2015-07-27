@@ -949,7 +949,7 @@ TEST(BoundaryZouHeSide)
 //  }
 //}
 
-TEST(StreamHorizontalOnGridBounceback)
+TEST(StreamHorizontalHalfwayBounceback)
 {
   LatticeD2Q9 lm(g_ny
     , g_nx
@@ -960,77 +960,91 @@ TEST(StreamHorizontalOnGridBounceback)
     , g_k_visco
     , g_rho0_f);
   StreamD2Q9 sd(lm);
-  OnGridBouncebackNodes ogbb(g_is_prestream
+  StreamPeriodic sp(lm);
+  BouncebackNodes hwbb(g_is_prestream
     , lm
-    , sd
-    , ns);
+    , &sd);
+  BouncebackNodes hwbbsp(g_is_prestream
+    , lm
+    , &sp);
   LatticeBoltzmann f(lm
     , ns
     , sd);
+  LatticeBoltzmann ff(lm
+    , ns
+    , sp);
   for (auto y = 0u; y < g_ny; ++y) {
-    ogbb.AddNode(0, y);
-    ogbb.AddNode(g_nx - 1, y);
+    hwbb.AddNode(0, y);
+    hwbb.AddNode(g_nx - 1, y);
+    hwbbsp.AddNode(0, y);
+    hwbbsp.AddNode(g_nx - 1, y);
   }
   std::vector<double> first_three = {1, 2, 1, 0, 1, 2, 0, 0, 2};
   std::vector<double> second_three = {4, 5, 4, 3, 4, 5, 3, 3, 5};
   std::vector<std::vector<double>> nodes = {first_three, second_three};
+  std::vector<double> first_result = {1, 5, 1, 3, 1, 5, 3, 3, 5};
+  std::vector<double> second_result = {4, 2, 4, 0, 4, 2, 0, 0, 2};
+  std::vector<double> first_top_result = {1, 5, 1, 3, 1, 5, 3, 0, 2};
+  std::vector<double> second_top_result = {4, 2, 4, 0, 4, 2, 0, 3, 5};
+  std::vector<double> first_bottom_result = {1, 5, 1, 3, 1, 2, 0, 3, 5};
+  std::vector<double> second_bottom_result = {4, 2, 4, 0, 4, 5, 3, 0, 2};
+  std::vector<double> left_result = {1, 0, 1, 3, 1, 0, 3, 3, 0};
+  std::vector<double> right_result = {4, 2, 4, 5, 4, 2, 5, 5, 2};
+  std::vector<double> bottom_left_result = {1, 0, 1, 3, 1, 0, 2, 3, 0};
+  std::vector<double> bottom_right_result = {4, 2, 4, 5, 4, 3, 5, 5, 2};
+  std::vector<double> top_left_result = {1, 0, 1, 3, 1, 0, 3, 2, 0};
+  std::vector<double> top_right_result = {4, 2, 4, 5, 4, 2, 5, 5, 3};
   int counter = 0;
   for (auto &node : f.df) node = nodes[counter++ % 2];
+  counter = 0;
+  for (auto &node : ff.df) node = nodes[counter++ % 2];
   f.df = sd.Stream(f.df);
+  ff.df = sp.Stream(ff.df);
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
-    auto left = n % g_nx == 0;
-    auto right = n % g_nx == g_nx - 1;
     auto bottom = n / g_nx == 0;
     auto top = n / g_nx == g_ny - 1;
-
-    if (sd.bounce_back[n]) {
-      if ((f.df[n][0] - 1) < zero_tol) {
-        CHECK_CLOSE(left ? 0 : 5, f.df[n][E], zero_tol);
-        CHECK_CLOSE(1, f.df[n][N], zero_tol);
-        CHECK_CLOSE(right ? 2 : 3, f.df[n][W], zero_tol);
-        CHECK_CLOSE(1, f.df[n][S], zero_tol);
-        CHECK_CLOSE(bottom || left ? 0 : 5, f.df[n][NE], zero_tol);
-        CHECK_CLOSE(bottom || right ? 2 : 3, f.df[n][NW], zero_tol);
-        CHECK_CLOSE(top || right ? 2 : 3, f.df[n][SW], zero_tol);
-        CHECK_CLOSE(top || left ? 0 : 5, f.df[n][SE], zero_tol);
+    for (auto i = 0u; i < 9; ++i) {
+      if (sd.bounce_back[n]) {
+        if (top) {
+          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? top_left_result[i] :
+              top_right_result[i], f.df[n][i], zero_tol);
+          CHECK_CLOSE(ff.df[n][0] - 1.0 < zero_tol ? top_left_result[i] :
+              top_right_result[i], ff.df[n][i], zero_tol);
+        }
+        else if (bottom) {
+          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? bottom_left_result[i] :
+              bottom_right_result[i], f.df[n][i], zero_tol);
+          CHECK_CLOSE(ff.df[n][0] - 1.0 < zero_tol ? bottom_left_result[i] :
+              bottom_right_result[i], ff.df[n][i], zero_tol);
+        }
+        else {
+          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? left_result[i] :
+              right_result[i], f.df[n][i], zero_tol);
+          CHECK_CLOSE(ff.df[n][0] - 1.0 < zero_tol ? left_result[i] :
+              right_result[i], ff.df[n][i], zero_tol);
+        }
       }
       else {
-        CHECK_CLOSE(left ? 3 : 2, f.df[n][E], zero_tol);
-        CHECK_CLOSE(4, f.df[n][N], zero_tol);
-        CHECK_CLOSE(right ? 5 : 0, f.df[n][W], zero_tol);
-        CHECK_CLOSE(4, f.df[n][S], zero_tol);
-        CHECK_CLOSE(bottom || left ? 3 : 2, f.df[n][NE], zero_tol);
-        CHECK_CLOSE(bottom || right ? 5 : 0, f.df[n][NW], zero_tol);
-        CHECK_CLOSE(top || right ? 5 : 0, f.df[n][SW], zero_tol);
-        CHECK_CLOSE(top || left ? 3 : 2, f.df[n][SE], zero_tol);
+        if (top) {
+          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? first_top_result[i] :
+              second_top_result[i], f.df[n][i], zero_tol);
+        }
+        else if (bottom) {
+          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? first_bottom_result[i] :
+              second_bottom_result[i], f.df[n][i], zero_tol);
+        }
+        else {
+          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? first_result[i] :
+              second_result[i], f.df[n][i], zero_tol);
+        }
+        CHECK_CLOSE(ff.df[n][0] - 1.0 < zero_tol ? first_result[i] :
+            second_result[i], ff.df[n][i], zero_tol);
       }
-    }
-    else {
-      if ((f.df[n][0] - 1) < zero_tol) {
-        CHECK_CLOSE(left ? 2 : 5, f.df[n][E], zero_tol);
-        CHECK_CLOSE(1, f.df[n][N], zero_tol);
-        CHECK_CLOSE(right ? 0 : 3, f.df[n][W], zero_tol);
-        CHECK_CLOSE(1, f.df[n][S], zero_tol);
-        CHECK_CLOSE(bottom || left ? 2 : 5, f.df[n][NE], zero_tol);
-        CHECK_CLOSE(bottom || right ? 0 : 3, f.df[n][NW], zero_tol);
-        CHECK_CLOSE(top || right ? 0 : 3, f.df[n][SW], zero_tol);
-        CHECK_CLOSE(top || left ? 2 : 5, f.df[n][SE], zero_tol);
-      }
-      else {
-        CHECK_CLOSE(left ? 5 : 2, f.df[n][E], zero_tol);
-        CHECK_CLOSE(4, f.df[n][N], zero_tol);
-        CHECK_CLOSE(right ? 3 : 0, f.df[n][W], zero_tol);
-        CHECK_CLOSE(4, f.df[n][S], zero_tol);
-        CHECK_CLOSE(bottom || left ? 5 : 2, f.df[n][NE], zero_tol);
-        CHECK_CLOSE(bottom || right ? 3 : 0, f.df[n][NW], zero_tol);
-        CHECK_CLOSE(top || right ? 3 : 0, f.df[n][SW], zero_tol);
-        CHECK_CLOSE(top || left ? 5 : 2, f.df[n][SE], zero_tol);
-      }
-    }
+    }  // i
   }  // n
 }
 
-TEST(StreamVerticalOnGridBounceback)
+TEST(StreamVerticalHalfwayBounceback)
 {
   LatticeD2Q9 lm(g_ny
     , g_nx
@@ -1041,73 +1055,88 @@ TEST(StreamVerticalOnGridBounceback)
     , g_k_visco
     , g_rho0_f);
   StreamD2Q9 sd(lm);
-  OnGridBouncebackNodes ogbb(g_is_prestream
+  StreamPeriodic sp(lm);
+  BouncebackNodes hwbb(g_is_prestream
     , lm
-    , sd
-    , ns);
+    , &sd);
+  BouncebackNodes hwbbsp(g_is_prestream
+    , lm
+    , &sp);
   LatticeBoltzmann f(lm
     , ns
     , sd);
+  LatticeBoltzmann ff(lm
+    , ns
+    , sp);
   for (auto x = 0u; x < g_nx; ++x) {
-    ogbb.AddNode(x, 0);
-    ogbb.AddNode(x, g_ny - 1);
+    hwbb.AddNode(x, 0);
+    hwbb.AddNode(x, g_ny - 1);
+    hwbbsp.AddNode(x, 0);
+    hwbbsp.AddNode(x, g_ny - 1);
   }
   std::vector<double> first_three = {1, 1, 0, 1, 2, 0, 0, 2, 2};
   std::vector<double> second_three = {4, 4, 3, 4, 5, 3, 3, 5, 5};
   std::vector<std::vector<double>> nodes = {first_three, second_three};
+  std::vector<double> first_result = {1, 1, 3, 1, 5, 3, 3, 5, 5};
+  std::vector<double> second_result = {4, 4, 0, 4, 2, 0, 0, 2, 2};
+  std::vector<double> first_left_result = {1, 1, 3, 1, 5, 0, 3, 5, 2};
+  std::vector<double> second_left_result = {4, 4, 0, 4, 2, 3, 0, 2, 5};
+  std::vector<double> first_right_result = {1, 1, 3, 1, 5, 3, 0, 2, 5};
+  std::vector<double> second_right_result = {4, 4, 0, 4, 2, 0, 3, 5, 2};
+  std::vector<double> top_result = {4, 4, 0, 4, 3, 0, 0, 3, 3};
+  std::vector<double> bottom_result = {1, 1, 2, 1, 5, 2, 2, 5, 5};
+  std::vector<double> top_left_result = {4, 4, 0, 4, 3, 5, 0, 3, 3};
+  std::vector<double> bottom_left_result = {1, 1, 2, 1, 5, 2, 2, 5, 0};
+  std::vector<double> top_right_result = {4, 4, 0, 4, 3, 0, 5, 3, 3};
+  std::vector<double> bottom_right_result = {1, 1, 2, 1, 5, 2, 2, 0, 5};
   int counter = 0;
   for (auto &node : f.df) node = nodes[(counter++ / g_nx) % 2];
+  counter = 0;
+  for (auto &node : ff.df) node = nodes[(counter++ / g_nx) % 2];
   f.df = sd.Stream(f.df);
+  ff.df = sp.Stream(ff.df);
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     auto left = n % g_nx == 0;
     auto right = n % g_nx == g_nx - 1;
-    auto bottom = n / g_nx == 0;
-    auto top = n / g_nx == g_ny - 1;
 
-    if (sd.bounce_back[n]) {
-      if ((f.df[n][0] - 1) < zero_tol) {
-        CHECK_CLOSE(1, f.df[n][E], zero_tol);
-        CHECK_CLOSE(bottom ? 2 : 3, f.df[n][N], zero_tol);
-        CHECK_CLOSE(1, f.df[n][W], zero_tol);
-        CHECK_CLOSE(top ? 0 : 5, f.df[n][S], zero_tol);
-        CHECK_CLOSE(bottom || left ? 2 : 5, f.df[n][NE], zero_tol);
-        CHECK_CLOSE(bottom || right ? 2 : 3, f.df[n][NW], zero_tol);
-        CHECK_CLOSE(top || right ? 0 : 5, f.df[n][SW], zero_tol);
-        CHECK_CLOSE(top || left ? 0 : 5, f.df[n][SE], zero_tol);
+    for (auto i = 0u; i < 9; ++i) {
+      if (sd.bounce_back[n]) {
+        if (left) {
+          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? bottom_left_result[i] :
+              top_left_result[i], f.df[n][i], zero_tol);
+          CHECK_CLOSE(ff.df[n][0] - 1.0 < zero_tol ? bottom_left_result[i] :
+              top_left_result[i], ff.df[n][i], zero_tol);
+        }
+        else if (right) {
+          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? bottom_right_result[i] :
+              top_right_result[i], f.df[n][i], zero_tol);
+          CHECK_CLOSE(ff.df[n][0] - 1.0 < zero_tol ? bottom_right_result[i] :
+              top_right_result[i], ff.df[n][i], zero_tol);
+        }
+        else {
+          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? bottom_result[i] :
+              top_result[i], f.df[n][i], zero_tol);
+          CHECK_CLOSE(ff.df[n][0] - 1.0 < zero_tol ? bottom_result[i] :
+              top_result[i], ff.df[n][i], zero_tol);
+        }
       }
       else {
-        CHECK_CLOSE(4, f.df[n][E], zero_tol);
-        CHECK_CLOSE(bottom ? 5 : 0, f.df[n][N], zero_tol);
-        CHECK_CLOSE(4, f.df[n][W], zero_tol);
-        CHECK_CLOSE(top ? 3 : 2, f.df[n][S], zero_tol);
-        CHECK_CLOSE(bottom || left ? 5 : 0, f.df[n][NE], zero_tol);
-        CHECK_CLOSE(bottom || right ? 5 : 0, f.df[n][NW], zero_tol);
-        CHECK_CLOSE(top || right ? 3 : 0, f.df[n][SW], zero_tol);
-        CHECK_CLOSE(top || left ? 3 : 2, f.df[n][SE], zero_tol);
+        if (left) {
+          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? first_left_result[i] :
+              second_left_result[i], f.df[n][i], zero_tol);
+        }
+        else if (right) {
+          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? first_right_result[i] :
+              second_right_result[i], f.df[n][i], zero_tol);
+        }
+        else {
+          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? first_result[i] :
+              second_result[i], f.df[n][i], zero_tol);
+        }
+        CHECK_CLOSE(ff.df[n][0] - 1.0 < zero_tol ? first_result[i] :
+              second_result[i], ff.df[n][i], zero_tol);
       }
-    }
-    else {
-      if ((f.df[n][0] - 1) < zero_tol) {
-        CHECK_CLOSE(1, f.df[n][E], zero_tol);
-        CHECK_CLOSE(bottom ? 0 : 3, f.df[n][N], zero_tol);
-        CHECK_CLOSE(1, f.df[n][W], zero_tol);
-        CHECK_CLOSE(top ? 2 : 5, f.df[n][S], zero_tol);
-        CHECK_CLOSE(bottom || left ? 0 : 3, f.df[n][NE], zero_tol);
-        CHECK_CLOSE(bottom || right ? 0 : 3, f.df[n][NW], zero_tol);
-        CHECK_CLOSE(top || right ? 2 : 5, f.df[n][SW], zero_tol);
-        CHECK_CLOSE(top || left ? 2 : 5, f.df[n][SE], zero_tol);
-      }
-      else {
-        CHECK_CLOSE(4, f.df[n][E], zero_tol);
-        CHECK_CLOSE(bottom ? 3 : 0, f.df[n][N], zero_tol);
-        CHECK_CLOSE(4, f.df[n][W], zero_tol);
-        CHECK_CLOSE(top ? 5 : 2, f.df[n][S], zero_tol);
-        CHECK_CLOSE(bottom || left ? 3 : 0, f.df[n][NE], zero_tol);
-        CHECK_CLOSE(bottom || right ? 3 : 0, f.df[n][NW], zero_tol);
-        CHECK_CLOSE(top || right ? 5 : 2, f.df[n][SW], zero_tol);
-        CHECK_CLOSE(top || left ? 5 : 2, f.df[n][SE], zero_tol);
-      }
-    }
+    }  // i
   }  // n
 }
 
@@ -1122,45 +1151,127 @@ TEST(StreamDiagonalNESWOnGridBounceback)
     , g_k_visco
     , g_rho0_f);
   StreamD2Q9 sd(lm);
-  OnGridBouncebackNodes ogbb(g_is_prestream
+  StreamD2Q9 sd2(lm);
+  StreamPeriodic sp(lm);
+  StreamPeriodic sp2(lm);
+  BouncebackNodes hwbb(g_is_prestream
     , lm
-    , sd
-    , ns);
+    , &sd);
+  BouncebackNodes hwbb2(g_is_prestream
+    , lm
+    , &sd2);
+  BouncebackNodes hwbbsp(g_is_prestream
+    , lm
+    , &sp);
+  BouncebackNodes hwbbsp2(g_is_prestream
+    , lm
+    , &sp2);
   LatticeBoltzmann f(lm
     , ns
     , sd);
-  // same results for OnGridBounceback on top & bottom and left & right
-  for (auto x = 0u; x < g_nx; ++x) {
-    ogbb.AddNode(x, 0);
-    ogbb.AddNode(x, g_ny - 1);
+  LatticeBoltzmann f2(lm
+    , ns
+    , sd2);
+  LatticeBoltzmann ff(lm
+    , ns
+    , sp);
+  LatticeBoltzmann ff2(lm
+    , ns
+    , sp2);
+  // same results for half-way bounceback with StreamD2Q9 on top & bottom and
+  // left & right
+  for (auto y = 0u; y < g_ny; ++y) {
+    hwbb.AddNode(0, y);
+    hwbb.AddNode(g_nx - 1, y);
+    hwbbsp.AddNode(0, y);
+    hwbbsp.AddNode(g_nx - 1, y);
   }
+  for (auto x = 0u; x < g_nx; ++x) {
+    hwbb2.AddNode(x, 0);
+    hwbb2.AddNode(x, g_ny - 1);
+    hwbbsp2.AddNode(x, 0);
+    hwbbsp2.AddNode(x, g_ny - 1);
+  }
+  auto width = g_nx - 1;
+  auto height = (g_ny - 1) * g_nx;
   std::vector<double> zeroes(9, 0);
   std::vector<double> ones(9, 1);
   std::vector<double> twos(9, 2);
   std::vector<std::vector<double>> nodes = {zeroes, ones, twos};
   std::vector<double> result_ne = {1, 2, 0};
-  std::vector<double> bb_ne = {0, 1, 2};
   std::vector<double> result_sw = {2, 0, 1};
-  std::vector<double> bb_sw = {0, 1, 2};
   for (auto y = 0u; y < g_ny; ++y) {
     for (auto x = 0u; x < g_nx; ++x) {
       auto n = y * g_nx + x;
       f.df[n] = nodes[(x % 3 + (y + 2) % 3) % 3];
+      f2.df[n] = nodes[(x % 3 + (y + 2) % 3) % 3];
+      ff.df[n] = nodes[(x % 3 + (y + 2) % 3) % 3];
+      ff2.df[n] = nodes[(x % 3 + (y + 2) % 3) % 3];
     }  // x
   }  // y
   f.df = sd.Stream(f.df);
+  f2.df = sd2.Stream(f2.df);
+  ff.df = sp.Stream(ff.df);
+  ff2.df = sp2.Stream(ff2.df);
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     auto left = n % g_nx == 0;
     auto right = n % g_nx == g_nx - 1;
     auto bottom = n / g_nx == 0;
     auto top = n / g_nx == g_ny - 1;
-
-    CHECK_CLOSE(bottom || left ? f.df[n][0] : result_ne[f.df[n][0]],
-        f.df[n][NE], zero_tol);
+    // boundary on left & right
+    if (sd.bounce_back[n]) {
+      CHECK_CLOSE(bottom || left ? f.df[n][0] : result_ne[f.df[n][0]],
+          f.df[n][NE], zero_tol);
+      CHECK_CLOSE(top || right ? f.df[n][0] : result_sw[f.df[n][0]],
+          f.df[n][SW], zero_tol);
+      CHECK_CLOSE(bottom || left ? ff.df[n][0] : result_ne[ff.df[n][0]],
+          ff.df[n][NE], zero_tol);
+      CHECK_CLOSE(top || right ? ff.df[n][0] : result_sw[ff.df[n][0]],
+          ff.df[n][SW], zero_tol);
+      CHECK_CLOSE(ff.df[n][0], ff.df[n][NW], zero_tol);
+      CHECK_CLOSE(ff.df[n][0], ff.df[n][SE], zero_tol);
+    }
+    else {
+      CHECK_CLOSE(bottom ? f.df[n][0] : result_ne[f.df[n][0]], f.df[n][NE],
+          zero_tol);
+      CHECK_CLOSE(top ? f.df[n][0] : result_sw[f.df[n][0]], f.df[n][SW],
+          zero_tol);
+      CHECK_CLOSE(result_ne[ff.df[n][0]], ff.df[n][NE], zero_tol);
+      CHECK_CLOSE(result_sw[ff.df[n][0]], ff.df[n][SW], zero_tol);
+      CHECK_CLOSE(bottom ? ff.df[n + height + 1][NW] : ff.df[n - g_nx + 1][NW],
+          ff.df[n][NW], zero_tol);
+      CHECK_CLOSE(top ? ff.df[n - height - 1][SE] : ff.df[n + g_nx - 1][SE],
+          ff.df[n][SE], zero_tol);
+    }
     CHECK_CLOSE(f.df[n][0], f.df[n][NW], zero_tol);
-    CHECK_CLOSE(top || right ? f.df[n][0] : result_sw[f.df[n][0]],
-        f.df[n][SW], zero_tol);
     CHECK_CLOSE(f.df[n][0], f.df[n][SE], zero_tol);
+    // boundary on top & bottom
+    if (sd2.bounce_back[n]) {
+      CHECK_CLOSE(bottom || left ? f2.df[n][0] : result_ne[f2.df[n][0]],
+          f2.df[n][NE], zero_tol);
+      CHECK_CLOSE(top || right ? f2.df[n][0] : result_sw[f2.df[n][0]],
+          f2.df[n][SW], zero_tol);
+      CHECK_CLOSE(bottom || left ? ff2.df[n][0] : result_ne[ff2.df[n][0]],
+          ff2.df[n][NE], zero_tol);
+      CHECK_CLOSE(top || right ? ff2.df[n][0] : result_sw[ff2.df[n][0]],
+          ff2.df[n][SW], zero_tol);
+    }
+    else {
+      CHECK_CLOSE(left ? f2.df[n][0] : result_ne[f2.df[n][0]], f2.df[n][NE],
+          zero_tol);
+      CHECK_CLOSE(right ? f2.df[n][0] : result_sw[f2.df[n][0]], f2.df[n][SW],
+          zero_tol);
+      CHECK_CLOSE(left ? ff2.df[n][0] : result_ne[ff2.df[n][0]], ff2.df[n][NE],
+          zero_tol);
+      CHECK_CLOSE(right ? ff2.df[n][0] : result_sw[ff2.df[n][0]], ff2.df[n][SW],
+          zero_tol);
+      CHECK_CLOSE(right ? ff2.df[n - width - g_nx][NW] : ff2.df[n][0],
+          ff2.df[n][NW], zero_tol);
+      CHECK_CLOSE(left ? ff2.df[n + width + g_nx][SE] : ff2.df[n][0],
+          ff2.df[n][SE], zero_tol);
+    }
+    CHECK_CLOSE(f2.df[n][0], f2.df[n][NW], zero_tol);
+    CHECK_CLOSE(f2.df[n][0], f2.df[n][SE], zero_tol);
   }  // n
 }
 
@@ -1175,17 +1286,49 @@ TEST(StreamDiagonalNWSEOnGridBounceback)
     , g_k_visco
     , g_rho0_f);
   StreamD2Q9 sd(lm);
-  OnGridBouncebackNodes ogbb(g_is_prestream
+  StreamD2Q9 sd2(lm);
+  StreamPeriodic sp(lm);
+  StreamPeriodic sp2(lm);
+  BouncebackNodes hwbb(g_is_prestream
     , lm
-    , sd
-    , ns);
+    , &sd);
+  BouncebackNodes hwbb2(g_is_prestream
+    , lm
+    , &sd2);
+  BouncebackNodes hwbbsp(g_is_prestream
+    , lm
+    , &sp);
+  BouncebackNodes hwbbsp2(g_is_prestream
+    , lm
+    , &sp2);
   LatticeBoltzmann f(lm
     , ns
     , sd);
+  LatticeBoltzmann f2(lm
+    , ns
+    , sd2);
+  LatticeBoltzmann ff(lm
+    , ns
+    , sp);
+  LatticeBoltzmann ff2(lm
+    , ns
+    , sp2);
+  // same results for half-way bounceback with StreamD2Q9 on top & bottom and
+  // left & right
   for (auto y = 0u; y < g_ny; ++y) {
-    ogbb.AddNode(0, y);
-    ogbb.AddNode(g_nx - 1, y);
+    hwbb.AddNode(0, y);
+    hwbb.AddNode(g_nx - 1, y);
+    hwbbsp.AddNode(0, y);
+    hwbbsp.AddNode(g_nx - 1, y);
   }
+  for (auto x = 0u; x < g_nx; ++x) {
+    hwbb2.AddNode(x, 0);
+    hwbb2.AddNode(x, g_ny - 1);
+    hwbbsp2.AddNode(x, 0);
+    hwbbsp2.AddNode(x, g_ny - 1);
+  }
+  auto width = g_nx - 1;
+  auto height = (g_ny - 1) * g_nx;
   std::vector<double> zeroes(9, 0);
   std::vector<double> ones(9, 1);
   std::vector<double> twos(9, 2);
@@ -1196,21 +1339,75 @@ TEST(StreamDiagonalNWSEOnGridBounceback)
     for (auto x = 0u; x < g_nx; ++x) {
       auto n = y * g_nx + x;
       f.df[n] = nodes[(2 - x % 3 + (y + 2) % 3) % 3];
+      f2.df[n] = nodes[(2 - x % 3 + (y + 2) % 3) % 3];
+      ff.df[n] = nodes[(2 - x % 3 + (y + 2) % 3) % 3];
+      ff2.df[n] = nodes[(2 - x % 3 + (y + 2) % 3) % 3];
     }  // x
   }  // y
   f.df = sd.Stream(f.df);
+  f2.df = sd2.Stream(f2.df);
+  ff.df = sp.Stream(ff.df);
+  ff2.df = sp2.Stream(ff2.df);
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     auto left = n % g_nx == 0;
     auto right = n % g_nx == g_nx - 1;
     auto bottom = n / g_nx == 0;
     auto top = n / g_nx == g_ny - 1;
 
+    // boundary on left & right
+    if (sd.bounce_back[n]) {
+      CHECK_CLOSE(bottom || right ? f.df[n][0] : result_nw[f.df[n][0]],
+          f.df[n][NW], zero_tol);
+      CHECK_CLOSE(top || left ? f.df[n][0] : result_se[f.df[n][0]],
+          f.df[n][SE], zero_tol);
+      CHECK_CLOSE(bottom || right ? ff.df[n][0] : result_nw[ff.df[n][0]],
+          ff.df[n][NW], zero_tol);
+      CHECK_CLOSE(top || left ? ff.df[n][0] : result_se[ff.df[n][0]],
+          ff.df[n][SE], zero_tol);
+      CHECK_CLOSE(ff.df[n][0], ff.df[n][NE], zero_tol);
+      CHECK_CLOSE(ff.df[n][0], ff.df[n][SW], zero_tol);
+    }
+    else {
+      CHECK_CLOSE(bottom ? f.df[n][0] : result_nw[f.df[n][0]], f.df[n][NW],
+          zero_tol);
+      CHECK_CLOSE(top ? f.df[n][0] : result_se[f.df[n][0]], f.df[n][SE],
+          zero_tol);
+      CHECK_CLOSE(result_nw[ff.df[n][0]], ff.df[n][NW], zero_tol);
+      CHECK_CLOSE(result_se[ff.df[n][0]], ff.df[n][SE], zero_tol);
+      CHECK_CLOSE(bottom ? ff.df[n + height - 1][NE] : ff.df[n - g_nx - 1][NE],
+          ff.df[n][NE], zero_tol);
+      CHECK_CLOSE(top ? ff.df[n - height + 1][SW] : ff.df[n + g_nx + 1][SW],
+          ff.df[n][SW], zero_tol);
+    }
     CHECK_CLOSE(f.df[n][0], f.df[n][NE], zero_tol);
-    CHECK_CLOSE(bottom || right ? f.df[n][0] : result_nw[f.df[n][0]],
-        f.df[n][NW], zero_tol);
     CHECK_CLOSE(f.df[n][0], f.df[n][SW], zero_tol);
-    CHECK_CLOSE(top || left ? f.df[n][0] : result_se[f.df[n][0]],
-        f.df[n][SE], zero_tol);
+    // boundary on top & bottom
+    if (sd2.bounce_back[n]) {
+      CHECK_CLOSE(bottom || right ? f2.df[n][0] : result_nw[f2.df[n][0]],
+          f2.df[n][NW], zero_tol);
+      CHECK_CLOSE(top || left ? f2.df[n][0] : result_se[f2.df[n][0]],
+          f2.df[n][SE], zero_tol);
+      CHECK_CLOSE(bottom || right ? ff2.df[n][0] : result_nw[ff2.df[n][0]],
+          ff2.df[n][NW], zero_tol);
+      CHECK_CLOSE(top || left ? ff2.df[n][0] : result_se[ff2.df[n][0]],
+          ff2.df[n][SE], zero_tol);
+    }
+    else {
+      CHECK_CLOSE(right ? f2.df[n][0] : result_nw[f2.df[n][0]], f2.df[n][NW],
+          zero_tol);
+      CHECK_CLOSE(left ? f2.df[n][0] : result_se[f2.df[n][0]], f2.df[n][SE],
+          zero_tol);
+      CHECK_CLOSE(right ? ff2.df[n][0] : result_nw[ff2.df[n][0]], ff2.df[n][NW],
+          zero_tol);
+      CHECK_CLOSE(left ? ff2.df[n][0] : result_se[ff2.df[n][0]], ff2.df[n][SE],
+          zero_tol);
+      CHECK_CLOSE(left ? ff2.df[n + width - g_nx][NE] : ff2.df[n][0],
+          ff2.df[n][NE], zero_tol);
+      CHECK_CLOSE(right ? ff2.df[n - width + g_nx][SW] : ff2.df[n][0],
+          ff2.df[n][SW], zero_tol);
+    }
+    CHECK_CLOSE(f2.df[n][0], f2.df[n][NE], zero_tol);
+    CHECK_CLOSE(f2.df[n][0], f2.df[n][SW], zero_tol);
   }  // n
 }
 
