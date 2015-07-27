@@ -3,13 +3,13 @@
 #include <vector>
 #include "Algorithm.hpp"
 #include "BoundaryNodes.hpp"
-#include "BounceBackNodes.hpp"
+#include "BouncebackNodes.hpp"
 #include "CollisionCD.hpp"
 #include "CollisionNS.hpp"
 #include "CollisionNSF.hpp"
 #include "LatticeBoltzmann.hpp"
 #include "LatticeD2Q9.hpp"
-#include "OnGridBounceBackNodes.hpp"
+#include "OnGridBouncebackNodes.hpp"
 #include "Printing.hpp"
 #include "StreamD2Q9.hpp"
 #include "StreamPeriodic.hpp"
@@ -616,15 +616,15 @@ TEST(BoundaryBounceback)
     , g_d_coeff
     , g_rho0_g
     , !g_is_instant);
-  BounceBackNodes bbns(g_is_prestream
-    , ns
-    , lm);
-  BounceBackNodes bbnsf(g_is_prestream
-    , nsf
-    , lm);
-  BounceBackNodes bbcd(g_is_prestream
-    , cd
-    , lm);
+  BouncebackNodes bbns(g_is_prestream
+    , lm
+    , &ns);
+  BouncebackNodes bbnsf(g_is_prestream
+    , lm
+    , &nsf);
+  BouncebackNodes bbcd(g_is_prestream
+    , lm
+    , &cd);
   LatticeBoltzmann f(lm
     , ns
     , sp);
@@ -949,7 +949,7 @@ TEST(BoundaryZouHeSide)
 //  }
 //}
 
-TEST(StreamHorizontalOnGridBounceBack)
+TEST(StreamHorizontalOnGridBounceback)
 {
   LatticeD2Q9 lm(g_ny
     , g_nx
@@ -960,9 +960,10 @@ TEST(StreamHorizontalOnGridBounceBack)
     , g_k_visco
     , g_rho0_f);
   StreamD2Q9 sd(lm);
-  OnGridBounceBackNodes ogbb(g_is_prestream
+  OnGridBouncebackNodes ogbb(g_is_prestream
     , lm
-    , sd);
+    , sd
+    , ns);
   LatticeBoltzmann f(lm
     , ns
     , sd);
@@ -1029,7 +1030,7 @@ TEST(StreamHorizontalOnGridBounceBack)
   }  // n
 }
 
-TEST(StreamVerticalOnGridBounceBack)
+TEST(StreamVerticalOnGridBounceback)
 {
   LatticeD2Q9 lm(g_ny
     , g_nx
@@ -1040,9 +1041,10 @@ TEST(StreamVerticalOnGridBounceBack)
     , g_k_visco
     , g_rho0_f);
   StreamD2Q9 sd(lm);
-  OnGridBounceBackNodes ogbb(g_is_prestream
+  OnGridBouncebackNodes ogbb(g_is_prestream
     , lm
-    , sd);
+    , sd
+    , ns);
   LatticeBoltzmann f(lm
     , ns
     , sd);
@@ -1109,7 +1111,7 @@ TEST(StreamVerticalOnGridBounceBack)
   }  // n
 }
 
-TEST(StreamDiagonalNESWOnGridBounceBack)
+TEST(StreamDiagonalNESWOnGridBounceback)
 {
   LatticeD2Q9 lm(g_ny
     , g_nx
@@ -1120,13 +1122,14 @@ TEST(StreamDiagonalNESWOnGridBounceBack)
     , g_k_visco
     , g_rho0_f);
   StreamD2Q9 sd(lm);
-  OnGridBounceBackNodes ogbb(g_is_prestream
+  OnGridBouncebackNodes ogbb(g_is_prestream
     , lm
-    , sd);
+    , sd
+    , ns);
   LatticeBoltzmann f(lm
     , ns
     , sd);
-  // same results for OnGridBounceBack on top & bottom and left & right
+  // same results for OnGridBounceback on top & bottom and left & right
   for (auto x = 0u; x < g_nx; ++x) {
     ogbb.AddNode(x, 0);
     ogbb.AddNode(x, g_ny - 1);
@@ -1161,7 +1164,7 @@ TEST(StreamDiagonalNESWOnGridBounceBack)
   }  // n
 }
 
-TEST(StreamDiagonalNWSEOnGridBounceBack)
+TEST(StreamDiagonalNWSEOnGridBounceback)
 {
   LatticeD2Q9 lm(g_ny
     , g_nx
@@ -1172,9 +1175,10 @@ TEST(StreamDiagonalNWSEOnGridBounceBack)
     , g_k_visco
     , g_rho0_f);
   StreamD2Q9 sd(lm);
-  OnGridBounceBackNodes ogbb(g_is_prestream
+  OnGridBouncebackNodes ogbb(g_is_prestream
     , lm
-    , sd);
+    , sd
+    , ns);
   LatticeBoltzmann f(lm
     , ns
     , sd);

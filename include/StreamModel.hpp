@@ -9,7 +9,7 @@ class StreamModel {
 
   virtual ~StreamModel() = default;
 
-  void AddNodeToBounceBack(std::size_t n);
+  void AddNodeToBounceback(std::size_t n);
 
   virtual std::vector<std::vector<double>> Stream(
       const std::vector<std::vector<double>> &df) = 0;

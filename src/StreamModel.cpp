@@ -10,7 +10,7 @@ StreamModel::StreamModel(LatticeModel &lm)
   bounce_back.assign(nx * ny, false);
 }
 
-void StreamModel::AddNodeToBounceBack(std::size_t n)
+void StreamModel::AddNodeToBounceback(std::size_t n)
 {
   bounce_back[n] = true;
 }

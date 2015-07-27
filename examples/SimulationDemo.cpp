@@ -2,13 +2,13 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
-#include "BounceBackNodes.hpp"
+#include "BouncebackNodes.hpp"
 #include "CollisionCD.hpp"
 #include "CollisionNS.hpp"
 #include "CollisionNSF.hpp"
 #include "LatticeBoltzmann.hpp"
 #include "LatticeD2Q9.hpp"
-#include "OnGridBounceBackNodes.hpp"
+#include "OnGridBouncebackNodes.hpp"
 #include "Printing.hpp"
 #include "StreamD2Q9.hpp"
 #include "StreamPeriodic.hpp"
@@ -48,9 +48,9 @@ TEST(SimulateDiffusion)
     , g_d_coeff
     , g_rho0_g
     , !g_is_instant);
-  BounceBackNodes bbcd(g_is_prestream
-    , cd
-    , lm);
+  BouncebackNodes bbcd(g_is_prestream
+    , lm
+    , &cd);
   LatticeBoltzmann g(lm
     , cd
     , sp);
@@ -107,9 +107,9 @@ TEST(SimulatePoiseuilleFlow)
     , src_str_f
     , g_k_visco
     , g_rho0_f);
-  BounceBackNodes bbnsf(g_is_prestream
-    , nsf
-    , lm);
+  BouncebackNodes bbnsf(g_is_prestream
+    , lm
+    , &nsf);
   LatticeBoltzmann f(lm
     , nsf
     , sp);
@@ -147,9 +147,9 @@ TEST(SimulateDevelopingPoiseuilleFlow)
   CollisionNS nsf(lm
     , g_k_visco
     , g_rho0_f);
-  BounceBackNodes bbnsf(g_is_prestream
-    , nsf
-    , lm);
+  BouncebackNodes bbnsf(g_is_prestream
+    , lm
+    , &nsf);
   ZouHeNodes zhnsf(!g_is_prestream
     , nsf
     , lm);
@@ -201,12 +201,12 @@ TEST(SimulateNSCDCoupling)
     , g_d_coeff
     , g_rho0_g
     , !g_is_instant);
-  BounceBackNodes bbnsf(g_is_prestream
-    , nsf
-    , lm);
-  BounceBackNodes bbcd(g_is_prestream
-    , cd
-    , lm);
+  BouncebackNodes bbnsf(g_is_prestream
+    , lm
+    , &nsf);
+  BouncebackNodes bbcd(g_is_prestream
+    , lm
+    , &cd);
   LatticeBoltzmann f(lm
     , nsf
     , sp);
@@ -293,12 +293,13 @@ TEST(SimulateLidDrivenCavityFlow)
   CollisionNS ns(lm
     , k_visco
     , g_rho0_f);
-  BounceBackNodes bbns(g_is_prestream
-    , ns
-    , lm);
-  OnGridBounceBackNodes ogbb(g_is_prestream
+  BouncebackNodes bbns(g_is_prestream
     , lm
-    , sd);
+    , &ns);
+  OnGridBouncebackNodes ogbb(g_is_prestream
+    , lm
+    , sd
+    , ns);
   ZouHeNodes zhns(!g_is_prestream
     , ns
     , lm);

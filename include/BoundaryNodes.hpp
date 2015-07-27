@@ -4,6 +4,13 @@
 
 class BoundaryNodes {
  public:
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
   BoundaryNodes(bool is_prestream
     , LatticeModel &lm);
 
