@@ -8,7 +8,7 @@ ZouHeNodes::ZouHeNodes(bool is_prestream
   , CollisionModel &cm
   , LatticeModel &lm)
   : BoundaryNodes(is_prestream, false, lm),
-    nodes_ {},
+    nodes {},
     cm_ (cm)
 {}
 
@@ -32,12 +32,14 @@ void ZouHeNodes::AddNode(std::size_t x
   if (top) side = 1;
   if (left) side = 2;
   if (bottom) side = 3;
+  // adds a corner node
   if ((top || bottom) && (left || right)) {
     side = right * 1 + top * 2;
-    nodes_.push_back(ValueNode(x, y, nx, u_lid, v_lid, true, side));
+    nodes.push_back(ValueNode(x, y, nx, u_lid, v_lid, true, side));
   }
+  // adds a side node
   else {
-    nodes_.push_back(ValueNode(x, y, nx, u_lid, v_lid, false, side));
+    nodes.push_back(ValueNode(x, y, nx, u_lid, v_lid, false, side));
   }
 }
 
@@ -45,12 +47,12 @@ void ZouHeNodes::UpdateNodes(std::vector<std::vector<double>> &df
   , bool is_modify_stream)
 {
   if (!is_modify_stream) {
-    for (auto n = 0u; n < nodes_.size(); ++n) {
-      if (nodes_[n].b1) {
-        ZouHeNodes::UpdateCorner(df, nodes_[n]);
+    for (auto n = 0u; n < nodes.size(); ++n) {
+      if (nodes[n].b1) {
+        ZouHeNodes::UpdateCorner(df, nodes[n]);
       }
       else {
-        ZouHeNodes::UpdateSide(df, nodes_[n]);
+        ZouHeNodes::UpdateSide(df, nodes[n]);
       }
     }  // n
   }

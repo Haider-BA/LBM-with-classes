@@ -125,10 +125,7 @@ TEST(SimulateDevelopingPoiseuilleFlow)
 {
   std::size_t ny = 21;
   std::size_t nx = 31;
-  std::vector<std::vector<std::size_t>> src_pos_f;
-  std::vector<std::vector<double>> src_str_f(nx * ny, {10.0, 0.0});
   std::vector<double> u0 = {0.0, 0.0};
-  for (auto n = 0u; n < nx * ny; ++n) src_pos_f.push_back({n % nx, n / nx});
   LatticeD2Q9 lm(ny
     , nx
     , g_dx
@@ -136,34 +133,44 @@ TEST(SimulateDevelopingPoiseuilleFlow)
     , u0);
   StreamD2Q9 sd(lm);
   StreamPeriodic sp(lm);
-//  CollisionNSF nsf(lm
-//    , src_pos_f
-//    , src_str_f
-//    , g_k_visco
-//    , g_rho0_f);
-  CollisionNS nsf(lm
+  CollisionNS ns(lm
     , g_k_visco
     , g_rho0_f);
-  BouncebackNodes bbnsf(lm
-    , &nsf);
-  ZouHeNodes zhnsf(!g_is_prestream
-    , nsf
+  BouncebackNodes hwbb(lm
+    , &sp);
+  ZouHeNodes inlet(!g_is_prestream
+    , ns
+    , lm);
+  ZouHeNodes outlet(!g_is_prestream
+    , ns
     , lm);
   LatticeBoltzmann f(lm
-    , nsf
+    , ns
     , sp);
   for (auto x = 0u; x < nx; ++x) {
-    bbnsf.AddNode(x, 0);
-    bbnsf.AddNode(x, ny - 1);
+    hwbb.AddNode(x, 0);
+    hwbb.AddNode(x, ny - 1);
   }
   for (auto y = 1u; y < ny - 1; ++y) {
-    zhnsf.AddNode(0, y, 0.1, 0.0);
-    zhnsf.AddNode(nx - 1, y, 0.1, 0.0);
+    inlet.AddNode(0, y, 0.05, 0.0);
+    outlet.AddNode(nx - 1, y, 0.0, 0.0);
   }
-  f.AddBoundaryNodes(&zhnsf);
-  f.AddBoundaryNodes(&bbnsf);
+  f.AddBoundaryNodes(&inlet);
+  f.AddBoundaryNodes(&outlet);
+  f.AddBoundaryNodes(&hwbb);
   for (auto t = 0u; t < 501; ++t) {
-    f.TakeStep();
+    ns.ComputeMacroscopicProperties(f.df);
+    ns.ComputeEq();
+    ns.Collide(f.df);
+    hwbb.UpdateNodes(f.df, false);
+    f.df = sp.Stream(f.df);
+    hwbb.UpdateNodes(f.df, true);
+    inlet.UpdateNodes(f.df, false);
+    // extrapolate outlet velocity (1st order)
+    for (auto &node : outlet.nodes)
+        node.v1[0] = lm.u[node.n - 1][0] / g_dx * g_dt;
+    outlet.UpdateNodes(f.df, false);
+//    f.TakeStep();
     WriteResultsCmgui(lm.u, nx, ny, t);
   }
 }

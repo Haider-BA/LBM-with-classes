@@ -11,6 +11,7 @@
 #include "StreamPeriodic.hpp"
 #include "UnitTest++.h"
 #include "WriteResultsCmgui.hpp"
+#include "ZouHeNodes.hpp"
 
 SUITE(TestAnalyticalSolutions)
 {
@@ -101,18 +102,18 @@ TEST(AnalyticalPoiseuille)
   f.AddBoundaryNodes(&bbnsf);
   for (auto t = 0; t < time_steps; ++t) f.TakeStep();
   // calculation of analytical u_max according to formula in Guo2002 after
-  auto length = static_cast<double>(ny / 2) - 1.0;
+  auto length = static_cast<double>(ny / 2);
   double u_max = body_force / 1000 * length * length / 2 / g_k_visco;
-  for (auto x = 14u; x < 15; ++x) {
+  // check against velocities in the middle of the channel
+  for (auto x = 5u; x < nx - 5; ++x) {
     for (auto y = 0u; y < ny; ++y) {
       auto n = y * nx + x;
-      auto y_an = static_cast<double>(y) - length - 0.5;
+      auto y_an = static_cast<double>(y) - length + 0.5;
       double u_an = u_max * (1.0 - y_an * y_an / (length * length));
       auto u_sim = lm.u[n][0] + lm.u[n][1];
-      std::cout << u_sim << std::endl;
-//      CHECK_CLOSE(u_an, u_sim, u_an * 0.025);
-      if (y < 9) ++y_an;
-      if (y > 9) --y_an;
+      CHECK_CLOSE(u_an, u_sim, u_an * 0.02);
+      if (y < 8) ++y_an;
+      if (y > 8) --y_an;
     }  // y
   }  // x
 }
