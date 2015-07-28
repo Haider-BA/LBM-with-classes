@@ -9,12 +9,8 @@ class StreamModel {
 
   virtual ~StreamModel() = default;
 
-  void AddNodeToBounceback(std::size_t n);
-
   virtual std::vector<std::vector<double>> Stream(
       const std::vector<std::vector<double>> &df) = 0;
-
-  std::vector<bool> bounce_back;
 
  protected:
   enum Directions {

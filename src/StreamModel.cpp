@@ -2,15 +2,5 @@
 #include "LatticeModel.hpp"
 
 StreamModel::StreamModel(LatticeModel &lm)
-  : bounce_back {},
-    lm_ (lm)
-{
-  auto nx = lm_.GetNumberOfColumns();
-  auto ny = lm_.GetNumberOfRows();
-  bounce_back.assign(nx * ny, false);
-}
-
-void StreamModel::AddNodeToBounceback(std::size_t n)
-{
-  bounce_back[n] = true;
-}
+  : lm_ (lm)
+{}

@@ -13,8 +13,7 @@ class BouncebackNodes: public BoundaryNodes {
    * \param
    * \return
    */
-  BouncebackNodes(bool is_prestream
-    , LatticeModel &lm
+  BouncebackNodes(LatticeModel &lm
     , CollisionModel *cm);
 
   /**
@@ -22,8 +21,7 @@ class BouncebackNodes: public BoundaryNodes {
    * \param
    * \param
    */
-  BouncebackNodes(bool is_prestream
-    , LatticeModel &lm
+  BouncebackNodes(LatticeModel &lm
     , StreamModel *sm);
 
   /**
@@ -40,15 +38,16 @@ class BouncebackNodes: public BoundaryNodes {
 
   void AddNode(std::size_t x, std::size_t y);
 
-  void UpdateNodes(std::vector<std::vector<double>> &df);
+  void UpdateNodes(std::vector<std::vector<double>> &df
+    , bool is_modify_stream);
+
+  std::vector<bool> FindNeighbourNode(Node &node);
+
+  std::vector<Node> nodes;
 
  protected:
   CollisionModel* cm_ = nullptr;
 
   StreamModel* sm_ = nullptr;
-
-  std::vector<Node> nodes_;
-
-  bool update_nodes;
 };
 #endif // BOUNCE_BACK_NODES_HPP_

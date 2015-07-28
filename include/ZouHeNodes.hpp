@@ -17,7 +17,8 @@ class ZouHeNodes: public BoundaryNodes {
     , double u_lid
     , double v_lid);
 
-  void UpdateNodes(std::vector<std::vector<double>> &df);
+  void UpdateNodes(std::vector<std::vector<double>> &df
+    , bool is_modify_stream);
 
   void UpdateSide(std::vector<std::vector<double>> &df
     , ValueNode &node);

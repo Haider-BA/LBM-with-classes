@@ -89,8 +89,7 @@ TEST(AnalyticalPoiseuille)
     , src_str_f
     , g_k_visco
     , g_rho0_f);
-  BouncebackNodes bbnsf(g_is_prestream
-    , lm
+  BouncebackNodes bbnsf(lm
     , &sp);
   LatticeBoltzmann f(lm
     , nsf

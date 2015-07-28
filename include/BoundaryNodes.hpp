@@ -12,13 +12,17 @@ class BoundaryNodes {
    *
    */
   BoundaryNodes(bool is_prestream
+    , bool is_during_stream
     , LatticeModel &lm);
 
   virtual ~BoundaryNodes() = default;
 
-  virtual void UpdateNodes(std::vector<std::vector<double>> &df) = 0;
+  virtual void UpdateNodes(std::vector<std::vector<double>> &df
+    , bool is_modify_stream) = 0;
 
   bool prestream;
+
+  bool during_stream;
 
  protected:
   enum Directions {

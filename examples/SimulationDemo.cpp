@@ -47,8 +47,7 @@ TEST(SimulateDiffusion)
     , g_d_coeff
     , g_rho0_g
     , !g_is_instant);
-  BouncebackNodes bbcd(g_is_prestream
-    , lm
+  BouncebackNodes bbcd(lm
     , &cd);
   LatticeBoltzmann g(lm
     , cd
@@ -106,8 +105,7 @@ TEST(SimulatePoiseuilleFlow)
     , src_str_f
     , g_k_visco
     , g_rho0_f);
-  BouncebackNodes bbnsf(g_is_prestream
-    , lm
+  BouncebackNodes bbnsf(lm
     , &nsf);
   LatticeBoltzmann f(lm
     , nsf
@@ -146,8 +144,7 @@ TEST(SimulateDevelopingPoiseuilleFlow)
   CollisionNS nsf(lm
     , g_k_visco
     , g_rho0_f);
-  BouncebackNodes bbnsf(g_is_prestream
-    , lm
+  BouncebackNodes bbnsf(lm
     , &nsf);
   ZouHeNodes zhnsf(!g_is_prestream
     , nsf
@@ -200,11 +197,9 @@ TEST(SimulateNSCDCoupling)
     , g_d_coeff
     , g_rho0_g
     , !g_is_instant);
-  BouncebackNodes bbnsf(g_is_prestream
-    , lm
+  BouncebackNodes bbnsf(lm
     , &nsf);
-  BouncebackNodes bbcd(g_is_prestream
-    , lm
+  BouncebackNodes bbcd(lm
     , &cd);
   LatticeBoltzmann f(lm
     , nsf
@@ -292,8 +287,7 @@ TEST(SimulateLidDrivenCavityFlow)
   CollisionNS ns(lm
     , k_visco
     , g_rho0_f);
-  BouncebackNodes bbns(g_is_prestream
-    , lm
+  BouncebackNodes bbns(lm
     , &ns);
   ZouHeNodes zhns(!g_is_prestream
     , ns

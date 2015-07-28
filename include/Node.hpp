@@ -14,5 +14,9 @@ class Node {
   std::size_t y;
 
   std::size_t n;
+
+  std::vector<double> df_node;
+
+  std::vector<bool> neighbours;
 };
 #endif // NODE_HPP_

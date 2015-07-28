@@ -34,10 +34,11 @@ void LatticeBoltzmann::TakeStep()
   cm_.ComputeEq();
   cm_.Collide(df);
   for (auto bdr : bn_) {
-    if (bdr->prestream) bdr->UpdateNodes(df);
-  }
+    if (bdr->prestream) bdr->UpdateNodes(df, false);
+  }  // bdr
   df = sm_.Stream(df);
   for (auto bdr : bn_) {
-    if (!bdr->prestream) bdr->UpdateNodes(df);
-  }
+    if (bdr-> during_stream) bdr->UpdateNodes(df, true);
+    if (!bdr->prestream) bdr->UpdateNodes(df, false);
+  }  // bdr
 }

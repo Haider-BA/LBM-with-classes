@@ -59,6 +59,7 @@ static const std::vector<double> g_src_str_g = {1.9, 2.0};
 static const std::vector<std::vector<std::size_t>> g_obs_pos;
 static const double g_u_lid = 0.01;
 static const bool g_is_prestream = true;
+static const bool g_is_modify_stream = true;
 static const bool g_is_ns = true;
 static const bool g_is_cd = true;
 static const bool g_is_taylor = true;
@@ -616,14 +617,11 @@ TEST(BoundaryBounceback)
     , g_d_coeff
     , g_rho0_g
     , !g_is_instant);
-  BouncebackNodes bbns(g_is_prestream
-    , lm
+  BouncebackNodes bbns(lm
     , &ns);
-  BouncebackNodes bbnsf(g_is_prestream
-    , lm
+  BouncebackNodes bbnsf(lm
     , &nsf);
-  BouncebackNodes bbcd(g_is_prestream
-    , lm
+  BouncebackNodes bbcd(lm
     , &cd);
   LatticeBoltzmann f(lm
     , ns
@@ -644,9 +642,12 @@ TEST(BoundaryBounceback)
     bbnsf.AddNode(x, 1);
     bbcd.AddNode(x, g_ny - 1);
   }
-  bbns.UpdateNodes(f.df);
-  bbnsf.UpdateNodes(ff.df);
-  bbcd.UpdateNodes(g.df);
+  bbns.UpdateNodes(f.df
+    , !g_is_modify_stream);
+  bbnsf.UpdateNodes(ff.df
+    , !g_is_modify_stream);
+  bbcd.UpdateNodes(g.df
+    , !g_is_modify_stream);
 
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     CHECK_CLOSE(ns.skip[n] ? bb_nums[0] : nums[0], f.df[n][0], zero_tol);
@@ -886,7 +887,7 @@ TEST(BoundaryZouHeSide)
     f.df[top] = nums;
     f.df[x] = nums;
   }  // x
-  zhns.UpdateNodes(f.df);
+  zhns.UpdateNodes(f.df, !g_is_modify_stream);
   for (auto i = 0; i < 9; ++i) {
     for (auto y = 1u; y < g_ny - 1; ++y) {
       auto left = y * g_nx;
@@ -961,11 +962,9 @@ TEST(StreamHorizontalHalfwayBounceback)
     , g_rho0_f);
   StreamD2Q9 sd(lm);
   StreamPeriodic sp(lm);
-  BouncebackNodes hwbb(g_is_prestream
-    , lm
+  BouncebackNodes hwbb(lm
     , &sd);
-  BouncebackNodes hwbbsp(g_is_prestream
-    , lm
+  BouncebackNodes hwbbsp(lm
     , &sp);
   LatticeBoltzmann f(lm
     , ns
@@ -973,11 +972,14 @@ TEST(StreamHorizontalHalfwayBounceback)
   LatticeBoltzmann ff(lm
     , ns
     , sp);
+  std::vector<bool> bounce_back(g_nx * g_ny, false);
   for (auto y = 0u; y < g_ny; ++y) {
     hwbb.AddNode(0, y);
     hwbb.AddNode(g_nx - 1, y);
     hwbbsp.AddNode(0, y);
     hwbbsp.AddNode(g_nx - 1, y);
+    bounce_back[y * g_nx] = true;
+    bounce_back[y * g_nx + g_nx - 1] = true;
   }
   std::vector<double> first_three = {1, 2, 1, 0, 1, 2, 0, 0, 2};
   std::vector<double> second_three = {4, 5, 4, 3, 4, 5, 3, 3, 5};
@@ -998,13 +1000,21 @@ TEST(StreamHorizontalHalfwayBounceback)
   for (auto &node : f.df) node = nodes[counter++ % 2];
   counter = 0;
   for (auto &node : ff.df) node = nodes[counter++ % 2];
+  hwbb.UpdateNodes(f.df
+    , !g_is_modify_stream);
+  hwbbsp.UpdateNodes(ff.df
+    , !g_is_modify_stream);
   f.df = sd.Stream(f.df);
   ff.df = sp.Stream(ff.df);
+  hwbb.UpdateNodes(f.df
+    , g_is_modify_stream);
+  hwbbsp.UpdateNodes(ff.df
+    , g_is_modify_stream);
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     auto bottom = n / g_nx == 0;
     auto top = n / g_nx == g_ny - 1;
     for (auto i = 0u; i < 9; ++i) {
-      if (sd.bounce_back[n]) {
+      if (bounce_back[n]) {
         if (top) {
           CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? top_left_result[i] :
               top_right_result[i], f.df[n][i], zero_tol);
@@ -1056,11 +1066,9 @@ TEST(StreamVerticalHalfwayBounceback)
     , g_rho0_f);
   StreamD2Q9 sd(lm);
   StreamPeriodic sp(lm);
-  BouncebackNodes hwbb(g_is_prestream
-    , lm
+  BouncebackNodes hwbb(lm
     , &sd);
-  BouncebackNodes hwbbsp(g_is_prestream
-    , lm
+  BouncebackNodes hwbbsp(lm
     , &sp);
   LatticeBoltzmann f(lm
     , ns
@@ -1068,11 +1076,14 @@ TEST(StreamVerticalHalfwayBounceback)
   LatticeBoltzmann ff(lm
     , ns
     , sp);
+  std::vector<bool> bounce_back(g_nx * g_ny, false);
   for (auto x = 0u; x < g_nx; ++x) {
     hwbb.AddNode(x, 0);
     hwbb.AddNode(x, g_ny - 1);
     hwbbsp.AddNode(x, 0);
     hwbbsp.AddNode(x, g_ny - 1);
+    bounce_back[x] = true;
+    bounce_back[(g_ny - 1) * g_nx + x] = true;
   }
   std::vector<double> first_three = {1, 1, 0, 1, 2, 0, 0, 2, 2};
   std::vector<double> second_three = {4, 4, 3, 4, 5, 3, 3, 5, 5};
@@ -1093,14 +1104,21 @@ TEST(StreamVerticalHalfwayBounceback)
   for (auto &node : f.df) node = nodes[(counter++ / g_nx) % 2];
   counter = 0;
   for (auto &node : ff.df) node = nodes[(counter++ / g_nx) % 2];
+  hwbb.UpdateNodes(f.df
+    , !g_is_modify_stream);
+  hwbbsp.UpdateNodes(ff.df
+    , !g_is_modify_stream);
   f.df = sd.Stream(f.df);
   ff.df = sp.Stream(ff.df);
+  hwbb.UpdateNodes(f.df
+    , g_is_modify_stream);
+  hwbbsp.UpdateNodes(ff.df
+    , g_is_modify_stream);
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     auto left = n % g_nx == 0;
     auto right = n % g_nx == g_nx - 1;
-
     for (auto i = 0u; i < 9; ++i) {
-      if (sd.bounce_back[n]) {
+      if (bounce_back[n]) {
         if (left) {
           CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? bottom_left_result[i] :
               top_left_result[i], f.df[n][i], zero_tol);
@@ -1154,17 +1172,13 @@ TEST(StreamDiagonalNESWOnGridBounceback)
   StreamD2Q9 sd2(lm);
   StreamPeriodic sp(lm);
   StreamPeriodic sp2(lm);
-  BouncebackNodes hwbb(g_is_prestream
-    , lm
+  BouncebackNodes hwbb(lm
     , &sd);
-  BouncebackNodes hwbb2(g_is_prestream
-    , lm
+  BouncebackNodes hwbb2(lm
     , &sd2);
-  BouncebackNodes hwbbsp(g_is_prestream
-    , lm
+  BouncebackNodes hwbbsp(lm
     , &sp);
-  BouncebackNodes hwbbsp2(g_is_prestream
-    , lm
+  BouncebackNodes hwbbsp2(lm
     , &sp2);
   LatticeBoltzmann f(lm
     , ns
@@ -1180,17 +1194,23 @@ TEST(StreamDiagonalNESWOnGridBounceback)
     , sp2);
   // same results for half-way bounceback with StreamD2Q9 on top & bottom and
   // left & right
+  std::vector<bool> bounce_back(g_nx * g_ny, false);
   for (auto y = 0u; y < g_ny; ++y) {
     hwbb.AddNode(0, y);
     hwbb.AddNode(g_nx - 1, y);
     hwbbsp.AddNode(0, y);
     hwbbsp.AddNode(g_nx - 1, y);
+    bounce_back[y * g_nx] = true;
+    bounce_back[y * g_nx + g_nx - 1] = true;
   }
+  std::vector<bool> bounce_back2(g_nx * g_ny, false);
   for (auto x = 0u; x < g_nx; ++x) {
     hwbb2.AddNode(x, 0);
     hwbb2.AddNode(x, g_ny - 1);
     hwbbsp2.AddNode(x, 0);
     hwbbsp2.AddNode(x, g_ny - 1);
+    bounce_back2[x] = true;
+    bounce_back2[(g_ny - 1) * g_nx + x] = true;
   }
   auto width = g_nx - 1;
   auto height = (g_ny - 1) * g_nx;
@@ -1209,17 +1229,33 @@ TEST(StreamDiagonalNESWOnGridBounceback)
       ff2.df[n] = nodes[(x % 3 + (y + 2) % 3) % 3];
     }  // x
   }  // y
+  hwbb.UpdateNodes(f.df
+    , !g_is_modify_stream);
+  hwbb2.UpdateNodes(f2.df
+    , !g_is_modify_stream);
+  hwbbsp.UpdateNodes(ff.df
+    , !g_is_modify_stream);
+  hwbbsp2.UpdateNodes(ff2.df
+    , !g_is_modify_stream);
   f.df = sd.Stream(f.df);
   f2.df = sd2.Stream(f2.df);
   ff.df = sp.Stream(ff.df);
   ff2.df = sp2.Stream(ff2.df);
+  hwbb.UpdateNodes(f.df
+    , g_is_modify_stream);
+  hwbb2.UpdateNodes(f2.df
+    , g_is_modify_stream);
+  hwbbsp.UpdateNodes(ff.df
+    , g_is_modify_stream);
+  hwbbsp2.UpdateNodes(ff2.df
+    , g_is_modify_stream);
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     auto left = n % g_nx == 0;
     auto right = n % g_nx == g_nx - 1;
     auto bottom = n / g_nx == 0;
     auto top = n / g_nx == g_ny - 1;
     // boundary on left & right
-    if (sd.bounce_back[n]) {
+    if (bounce_back[n]) {
       CHECK_CLOSE(bottom || left ? f.df[n][0] : result_ne[f.df[n][0]],
           f.df[n][NE], zero_tol);
       CHECK_CLOSE(top || right ? f.df[n][0] : result_sw[f.df[n][0]],
@@ -1246,7 +1282,7 @@ TEST(StreamDiagonalNESWOnGridBounceback)
     CHECK_CLOSE(f.df[n][0], f.df[n][NW], zero_tol);
     CHECK_CLOSE(f.df[n][0], f.df[n][SE], zero_tol);
     // boundary on top & bottom
-    if (sd2.bounce_back[n]) {
+    if (bounce_back2[n]) {
       CHECK_CLOSE(bottom || left ? f2.df[n][0] : result_ne[f2.df[n][0]],
           f2.df[n][NE], zero_tol);
       CHECK_CLOSE(top || right ? f2.df[n][0] : result_sw[f2.df[n][0]],
@@ -1289,17 +1325,13 @@ TEST(StreamDiagonalNWSEOnGridBounceback)
   StreamD2Q9 sd2(lm);
   StreamPeriodic sp(lm);
   StreamPeriodic sp2(lm);
-  BouncebackNodes hwbb(g_is_prestream
-    , lm
+  BouncebackNodes hwbb(lm
     , &sd);
-  BouncebackNodes hwbb2(g_is_prestream
-    , lm
+  BouncebackNodes hwbb2(lm
     , &sd2);
-  BouncebackNodes hwbbsp(g_is_prestream
-    , lm
+  BouncebackNodes hwbbsp(lm
     , &sp);
-  BouncebackNodes hwbbsp2(g_is_prestream
-    , lm
+  BouncebackNodes hwbbsp2(lm
     , &sp2);
   LatticeBoltzmann f(lm
     , ns
@@ -1315,17 +1347,23 @@ TEST(StreamDiagonalNWSEOnGridBounceback)
     , sp2);
   // same results for half-way bounceback with StreamD2Q9 on top & bottom and
   // left & right
+  std::vector<bool> bounce_back(g_nx * g_ny, false);
   for (auto y = 0u; y < g_ny; ++y) {
     hwbb.AddNode(0, y);
     hwbb.AddNode(g_nx - 1, y);
     hwbbsp.AddNode(0, y);
     hwbbsp.AddNode(g_nx - 1, y);
+    bounce_back[y * g_nx] = true;
+    bounce_back[y * g_nx + g_nx - 1] = true;
   }
+  std::vector<bool> bounce_back2(g_nx * g_ny, false);
   for (auto x = 0u; x < g_nx; ++x) {
     hwbb2.AddNode(x, 0);
     hwbb2.AddNode(x, g_ny - 1);
     hwbbsp2.AddNode(x, 0);
     hwbbsp2.AddNode(x, g_ny - 1);
+    bounce_back2[x] = true;
+    bounce_back2[(g_ny - 1) * g_nx + x] = true;
   }
   auto width = g_nx - 1;
   auto height = (g_ny - 1) * g_nx;
@@ -1344,10 +1382,26 @@ TEST(StreamDiagonalNWSEOnGridBounceback)
       ff2.df[n] = nodes[(2 - x % 3 + (y + 2) % 3) % 3];
     }  // x
   }  // y
+  hwbb.UpdateNodes(f.df
+    , !g_is_modify_stream);
+  hwbb2.UpdateNodes(f2.df
+    , !g_is_modify_stream);
+  hwbbsp.UpdateNodes(ff.df
+    , !g_is_modify_stream);
+  hwbbsp2.UpdateNodes(ff2.df
+    , !g_is_modify_stream);
   f.df = sd.Stream(f.df);
   f2.df = sd2.Stream(f2.df);
   ff.df = sp.Stream(ff.df);
   ff2.df = sp2.Stream(ff2.df);
+  hwbb.UpdateNodes(f.df
+    , g_is_modify_stream);
+  hwbb2.UpdateNodes(f2.df
+    , g_is_modify_stream);
+  hwbbsp.UpdateNodes(ff.df
+    , g_is_modify_stream);
+  hwbbsp2.UpdateNodes(ff2.df
+    , g_is_modify_stream);
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     auto left = n % g_nx == 0;
     auto right = n % g_nx == g_nx - 1;
@@ -1355,7 +1409,7 @@ TEST(StreamDiagonalNWSEOnGridBounceback)
     auto top = n / g_nx == g_ny - 1;
 
     // boundary on left & right
-    if (sd.bounce_back[n]) {
+    if (bounce_back[n]) {
       CHECK_CLOSE(bottom || right ? f.df[n][0] : result_nw[f.df[n][0]],
           f.df[n][NW], zero_tol);
       CHECK_CLOSE(top || left ? f.df[n][0] : result_se[f.df[n][0]],
@@ -1382,7 +1436,7 @@ TEST(StreamDiagonalNWSEOnGridBounceback)
     CHECK_CLOSE(f.df[n][0], f.df[n][NE], zero_tol);
     CHECK_CLOSE(f.df[n][0], f.df[n][SW], zero_tol);
     // boundary on top & bottom
-    if (sd2.bounce_back[n]) {
+    if (bounce_back2[n]) {
       CHECK_CLOSE(bottom || right ? f2.df[n][0] : result_nw[f2.df[n][0]],
           f2.df[n][NW], zero_tol);
       CHECK_CLOSE(top || left ? f2.df[n][0] : result_se[f2.df[n][0]],
@@ -1453,5 +1507,61 @@ TEST(InstantPointer)
   g.TakeStep();
   // check cd source is zero
   for (auto node : cd.source) CHECK_CLOSE(0.0, node, zero_tol);
+}
+
+TEST(HalfwayBouncebackNodeFindNeighbours)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  CollisionNS ns(lm
+    , g_k_visco
+    , g_rho0_f);
+  StreamD2Q9 sd(lm);
+  BouncebackNodes hwbb(lm
+    , &sd);
+  LatticeBoltzmann f(lm
+    , ns
+    , sd);
+  // add nodes in this configuration (with index in nodes vector):
+  // x (8) x (11) o x (13) x (15) o x (17) x (9)
+  // x (6)                                 x (7)
+  // x (4)                                 x (5)
+  // o                                     o
+  // x (2)                                 x (3)
+  // x (0) x (10) o x (12) x (14) o x (16) x (1)
+  for (auto y = 0u; y < g_ny; ++y) {
+    if (y != 2) {
+      hwbb.AddNode(0, y);
+      hwbb.AddNode(g_nx - 1, y);
+    }
+  }
+  for (auto x = 1u; x < g_nx - 1; ++x) {
+    if (x != 2 && x != 5) {
+      hwbb.AddNode(x, 0);
+      hwbb.AddNode(x, g_ny - 1);
+    }
+  }
+  f.AddBoundaryNodes(&hwbb);
+  hwbb.UpdateNodes(f.df
+    , !g_is_modify_stream);
+  hwbb.UpdateNodes(f.df
+    , g_is_modify_stream);
+  for (auto n = 0u; n < hwbb.nodes.size(); ++n) {
+    if (n > 1 && n < 8) {
+      CHECK_EQUAL(false, hwbb.nodes[n].neighbours[0]);
+      CHECK_EQUAL(true, hwbb.nodes[n].neighbours[1]);
+    }
+    else if (n > 9) {
+      CHECK_EQUAL(true, hwbb.nodes[n].neighbours[0]);
+      CHECK_EQUAL(false, hwbb.nodes[n].neighbours[1]);
+    }
+    else {
+      CHECK_EQUAL(true, hwbb.nodes[n].neighbours[0]);
+      CHECK_EQUAL(true, hwbb.nodes[n].neighbours[1]);
+    }
+  }  // n
 }
 }
