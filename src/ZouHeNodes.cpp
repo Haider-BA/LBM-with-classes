@@ -4,18 +4,17 @@
 #include <vector>
 #include "ValueNode.hpp"
 
-ZouHeNodes::ZouHeNodes(bool is_prestream
-  , CollisionModel &cm
-  , LatticeModel &lm)
-  : BoundaryNodes(is_prestream, false, lm),
+ZouHeNodes::ZouHeNodes(LatticeModel &lm
+  , CollisionModel &cm)
+  : BoundaryNodes(false, false, lm),
     nodes {},
     cm_ (cm)
 {}
 
 void ZouHeNodes::AddNode(std::size_t x
   , std::size_t y
-  , double u_lid
-  , double v_lid)
+  , double u_x
+  , double u_y)
 {
   auto nx = lm_.GetNumberOfColumns();
   auto ny = lm_.GetNumberOfRows();
@@ -35,11 +34,11 @@ void ZouHeNodes::AddNode(std::size_t x
   // adds a corner node
   if ((top || bottom) && (left || right)) {
     side = right * 1 + top * 2;
-    nodes.push_back(ValueNode(x, y, nx, u_lid, v_lid, true, side));
+    nodes.push_back(ValueNode(x, y, nx, u_x, u_y, true, side));
   }
   // adds a side node
   else {
-    nodes.push_back(ValueNode(x, y, nx, u_lid, v_lid, false, side));
+    nodes.push_back(ValueNode(x, y, nx, u_x, u_y, false, side));
   }
 }
 

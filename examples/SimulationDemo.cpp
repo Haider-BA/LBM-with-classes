@@ -138,12 +138,10 @@ TEST(SimulateDevelopingPoiseuilleFlow)
     , g_rho0_f);
   BouncebackNodes hwbb(lm
     , &sp);
-  ZouHeNodes inlet(!g_is_prestream
-    , ns
-    , lm);
-  ZouHeNodes outlet(!g_is_prestream
-    , ns
-    , lm);
+  ZouHeNodes inlet(lm
+    , ns);
+  ZouHeNodes outlet(lm
+    , ns);
   LatticeBoltzmann f(lm
     , ns
     , sp);
@@ -296,9 +294,8 @@ TEST(SimulateLidDrivenCavityFlow)
     , g_rho0_f);
   BouncebackNodes bbns(lm
     , &ns);
-  ZouHeNodes zhns(!g_is_prestream
-    , ns
-    , lm);
+  ZouHeNodes zhns(lm
+    , ns);
   LatticeBoltzmann f(lm
     , ns
     , sd);

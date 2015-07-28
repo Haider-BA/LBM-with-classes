@@ -850,9 +850,8 @@ TEST(BoundaryZouHeSide)
   CollisionNS ns(lm
     , g_k_visco
     , g_rho0_f);
-  ZouHeNodes zhns(!g_is_prestream
-    , ns
-    , lm);
+  ZouHeNodes zhns(lm
+    , ns);
   StreamPeriodic sp(lm);
   LatticeBoltzmann f(lm
     , ns

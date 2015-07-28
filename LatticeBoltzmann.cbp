@@ -78,6 +78,7 @@
 		<Unit filename="include/ValueNode.hpp" />
 		<Unit filename="include/WriteResultsCmgui.hpp" />
 		<Unit filename="include/ZouHeNodes.hpp" />
+		<Unit filename="include/ZouHePressureNodes.hpp" />
 		<Unit filename="src/BouncebackNodes.cpp" />
 		<Unit filename="src/BoundaryNodes.cpp" />
 		<Unit filename="src/CollisionCD.cpp" />
@@ -94,6 +95,7 @@
 		<Unit filename="src/ValueNode.cpp" />
 		<Unit filename="src/WriteResultsCmgui.cpp" />
 		<Unit filename="src/ZouHeNodes.cpp" />
+		<Unit filename="src/ZouHePressureNodes.cpp" />
 		<Unit filename="src/main-devel.cpp" />
 		<Unit filename="unittests/TestAnalyticalSolution.cpp" />
 		<Unit filename="unittests/TestLatticeBoltzmann.cpp" />
