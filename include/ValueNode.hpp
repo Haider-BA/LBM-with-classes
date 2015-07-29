@@ -12,9 +12,16 @@ class ValueNode: public Node {
     , bool b_1
     , int i_1);
 
+  ValueNode(std::size_t x_position
+    , std::size_t y_position
+    , std::size_t nx
+    , double d_1
+    , bool b_1
+    , int i_1);
+
   ~ValueNode() = default;
 
-//  double d1;
+  double d1;
 //  double d2;
 //  double d3;
   std::vector<double> v1;

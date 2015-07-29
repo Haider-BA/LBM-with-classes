@@ -15,6 +15,7 @@
 #include "StreamPeriodic.hpp"
 #include "UnitTest++.h"
 #include "ZouHeNodes.hpp"
+#include "ZouHePressureNodes.hpp"
 
 SUITE(TestException)
 {
@@ -506,95 +507,7 @@ TEST(ComputeRho)
   for (auto rho : nsf.rho) CHECK_CLOSE(expected, rho, loose_tol);
   for (auto rho : cd.rho) CHECK_CLOSE(expected, rho, loose_tol);
 }
-/*
-TEST(BoundaryPeriodic)
-{
-  LatticeD2Q9 lm(g_ny
-    , g_nx
-    , g_dx
-    , g_dt
-    , g_u0);
-  CollisionNS ns(lm
-    , g_src_pos_f
-    , g_src_str_f
-    , g_k_visco
-    , g_rho0_f);
-  CollisionCD cd(lm
-    , g_src_pos_g
-    , g_src_str_g
-    , g_d_coeff
-    , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
-    , g_no_obstacles
-    , lm
-    , ns
-    , cd);
-  lbm.f.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
-  lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
-  for (auto y = 0u; y < g_ny; ++y) {
-    auto n = y * g_nx;
-    CHECK_CLOSE(lbm.f[n + g_nx - 1][E], lbm.boundary_f[y][E], zero_tol);
-    CHECK_CLOSE(lbm.f[n + g_nx - 1][NE], lbm.boundary_f[y][NE],
-        zero_tol);
-    CHECK_CLOSE(lbm.f[n + g_nx - 1][SE], lbm.boundary_f[y][SE],
-        zero_tol);
-    CHECK_CLOSE(lbm.f[n][W], lbm.boundary_f[y + g_ny][W], zero_tol);
-    CHECK_CLOSE(lbm.f[n][NW], lbm.boundary_f[y + g_ny][NW], zero_tol);
-    CHECK_CLOSE(lbm.f[n][SW], lbm.boundary_f[y + g_ny][SW], zero_tol);
-  }  // y
-}
 
-TEST(BoundaryPeriodicTaylor)
-{
-  LatticeD2Q9 lm(g_ny
-    , g_nx
-    , g_dx
-    , g_dt
-    , g_u0);
-  CollisionNS ns(lm
-    , g_src_pos_f
-    , g_src_str_f
-    , g_k_visco
-    , g_rho0_f);
-  CollisionCD cd(lm
-    , g_src_pos_g
-    , g_src_str_g
-    , g_d_coeff
-    , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , g_is_taylor
-    , !g_is_lid
-    , g_is_instant
-    , g_no_obstacles
-    , lm
-    , ns
-    , cd);
-  lbm.f.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
-  lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
-  auto top = 2 * g_ny;
-  auto bottom = 2 * g_ny + g_nx;
-  for (auto x = 0u; x < g_nx; ++x) {
-    auto n = (g_ny - 1) * g_nx;
-    CHECK_CLOSE(lbm.f[x][S], lbm.boundary_f[top + x][S], zero_tol);
-    CHECK_CLOSE(lbm.f[x][SW], lbm.boundary_f[top + x][SW], zero_tol);
-    CHECK_CLOSE(lbm.f[x][SE], lbm.boundary_f[top + x][SE], zero_tol);
-    CHECK_CLOSE(lbm.f[n + x][N], lbm.boundary_f[bottom + x][N], zero_tol);
-    CHECK_CLOSE(lbm.f[n + x][NW], lbm.boundary_f[bottom + x][NW], zero_tol);
-    CHECK_CLOSE(lbm.f[n + x][NE], lbm.boundary_f[bottom + x][NE], zero_tol);
-  }  // y
-}
-*/
 TEST(BoundaryBounceback)
 {
   LatticeD2Q9 lm(g_ny
@@ -655,47 +568,7 @@ TEST(BoundaryBounceback)
     CHECK_CLOSE(cd.skip[n] ? bb_nums[0] : nums[0], g.df[n][0], zero_tol);
   }
 }
-/*
-TEST(BoundaryCorner)
-{
-  LatticeD2Q9 lm(g_ny
-    , g_nx
-    , g_dx
-    , g_dt
-    , g_u0);
-  CollisionNS ns(lm
-    , g_src_pos_f
-    , g_src_str_f
-    , g_k_visco
-    , g_rho0_f);
-  CollisionCD cd(lm
-    , g_src_pos_g
-    , g_src_str_g
-    , g_d_coeff
-    , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , g_obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
-    , g_no_obstacles
-    , lm
-    , ns
-    , cd);
-  lbm.f.assign(g_nx * g_ny, {0, 1, 2, 3, 4, 5, 6, 7, 8});
-  lbm.boundary_f = lbm.BoundaryCondition(lbm.f);
-  auto corner = 2 * g_nx + 2 * g_ny;
-  CHECK_CLOSE(lbm.f[0][SW], lbm.boundary_f[corner][NE], zero_tol);
-  CHECK_CLOSE(lbm.f[g_nx - 1][SE], lbm.boundary_f[corner + 1][NW], zero_tol);
-  CHECK_CLOSE(lbm.f[(g_ny - 1) * g_nx][NW], lbm.boundary_f[corner + 2][SE],
-      zero_tol);
-  CHECK_CLOSE(lbm.f[g_ny * g_nx - 1][NE], lbm.boundary_f[corner + 3][SW],
-      zero_tol);
-}
-*/
+
 TEST(StreamPeriodicHorizontal)
 {
   LatticeD2Q9 lm(g_ny
@@ -870,7 +743,7 @@ TEST(BoundaryZouHeSide)
                                   12.481481, 7, 8, 4.259259};
   std::vector<double> bottom_ans = {1,
                                     2, 8.777778, 4, 5,
-                                    12.77778, 9.888889, 8, 9};
+                                    12.77778, 6.111111, 8, 9};
   for (auto y = 1u; y < g_ny - 1; ++y) {
     auto left = y * g_nx;
     auto right = left + g_nx - 1;
@@ -901,53 +774,114 @@ TEST(BoundaryZouHeSide)
     }  // x
   }  // i
 }
-
-//TEST(BoundaryZouHeCorner)
-//{
-//  LatticeD2Q9 lm(g_ny
-//    , g_nx
-//    , g_dx
-//    , g_dt
-//    , g_u0);
-//  CollisionNS ns(lm
-//    , g_k_visco
-//    , g_rho0_f);
-//  ZouHeNodes zhns(!g_is_prestream
-//    , ns
-//    , lm);
-//  StreamPeriodic sp(lm);
-//  LatticeBoltzmann f(lm
-//    , ns
-//    , sp);
-//  auto u_lid = 0.1;
-//  auto v_lid = 0.1;
-//  std::vector<double> nums = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-//  std::vector<double> bottom_left = {10.83333,
-//                                     4.066667, 5.066667, 4, 5,
-//                                     8.033333, 0, 8, 0};
-//  std::vector<double> bottom_right = {13,
-//                                      2, 5.066667, 1.933333, 5,
-//                                      0.016667, 9, -0.016667, 9};
-//  std::vector<double> top_left = {17,
-//                                  4.066667, 3, 4, 2.933333,
-//                                  0.016667, 7, -0.016667, 7};
-//  std::vector<double> top_right = {23.166667,
-//                                   2, 3, 1.933333, 2.933333,
-//                                   6, 0, 5.966667, 0};
-//  for (auto &node : f.df) node = nums;
-//  ns.rho = ns.ComputeRho(f.df);
-//  zhns.AddNode(0, 0, u_lid, v_lid);
-//  zhns.AddNode(g_nx - 1, 0, u_lid, v_lid);
-//  zhns.AddNode(0, g_ny - 1, u_lid, v_lid);
-//  zhns.AddNode(g_nx - 1, g_ny - 1, u_lid, v_lid);
-//  zhns.UpdateNodes(f.df);
-//  for (auto i = 0; i < 9; ++i) {
-//    CHECK_CLOSE(bottom_left[i], f.df[0][i], loose_tol);
-//    CHECK_CLOSE(bottom_right[i], f.df[g_nx - 1][i], loose_tol);
-//    CHECK_CLOSE(top_left[i], f.df[(g_ny - 1) * g_nx][i], loose_tol);
-//    CHECK_CLOSE(top_right[i], f.df[g_ny * g_nx - 1][i], loose_tol);
-//  }
-//}
+/*
+TEST(BoundaryZouHeCorner)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  CollisionNS ns(lm
+    , g_k_visco
+    , g_rho0_f);
+  ZouHeNodes zhns(!g_is_prestream
+    , ns
+    , lm);
+  StreamPeriodic sp(lm);
+  LatticeBoltzmann f(lm
+    , ns
+    , sp);
+  auto u_lid = 0.1;
+  auto v_lid = 0.1;
+  std::vector<double> nums = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+  std::vector<double> bottom_left = {10.83333,
+                                     4.066667, 5.066667, 4, 5,
+                                     8.033333, 0, 8, 0};
+  std::vector<double> bottom_right = {13,
+                                      2, 5.066667, 1.933333, 5,
+                                      0.016667, 9, -0.016667, 9};
+  std::vector<double> top_left = {17,
+                                  4.066667, 3, 4, 2.933333,
+                                  0.016667, 7, -0.016667, 7};
+  std::vector<double> top_right = {23.166667,
+                                   2, 3, 1.933333, 2.933333,
+                                   6, 0, 5.966667, 0};
+  for (auto &node : f.df) node = nums;
+  ns.rho = ns.ComputeRho(f.df);
+  zhns.AddNode(0, 0, u_lid, v_lid);
+  zhns.AddNode(g_nx - 1, 0, u_lid, v_lid);
+  zhns.AddNode(0, g_ny - 1, u_lid, v_lid);
+  zhns.AddNode(g_nx - 1, g_ny - 1, u_lid, v_lid);
+  zhns.UpdateNodes(f.df);
+  for (auto i = 0; i < 9; ++i) {
+    CHECK_CLOSE(bottom_left[i], f.df[0][i], loose_tol);
+    CHECK_CLOSE(bottom_right[i], f.df[g_nx - 1][i], loose_tol);
+    CHECK_CLOSE(top_left[i], f.df[(g_ny - 1) * g_nx][i], loose_tol);
+    CHECK_CLOSE(top_right[i], f.df[g_ny * g_nx - 1][i], loose_tol);
+  }
+}
+*/
+TEST(BoundaryZouHePressureSide)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  CollisionNS ns(lm
+    , g_k_visco
+    , g_rho0_f);
+  ZouHePressureNodes zhns(lm
+    , ns);
+  StreamPeriodic sp(lm);
+  LatticeBoltzmann f(lm
+    , ns
+    , sp);
+  auto rho_node = 55.5;
+  std::vector<double> nums = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+  std::vector<double> right_ans = {1,
+                                   2, 3, -6.333333, 5,
+                                   6, 7.916667, 2.916667, 9};
+  std::vector<double> top_ans = {1,
+                                 2, 3, 4, -8,
+                                 6, 7, 2.25, 5.25};
+  std::vector<double> left_ans = {1,
+                                  9.666667, 3, 4, 5,
+                                  10.416667, 7, 8, 7.416667};
+  std::vector<double> bottom_ans = {1,
+                                    2, 8, 4, 5,
+                                    9.75, 8.75, 8, 9};
+  for (auto y = 1u; y < g_ny - 1; ++y) {
+    auto left = y * g_nx;
+    auto right = left + g_nx - 1;
+    zhns.AddNode(g_nx - 1, y, rho_node);
+    zhns.AddNode(0, y, rho_node);
+    f.df[right] = nums;
+    f.df[left] = nums;
+  }  // y
+  for (auto x = 1u; x < g_nx - 1; ++x) {
+    auto top = (g_ny - 1) * g_nx + x;
+    zhns.AddNode(x, g_ny - 1, rho_node);
+    zhns.AddNode(x, 0, rho_node);
+    f.df[top] = nums;
+    f.df[x] = nums;
+  }  // x
+  zhns.UpdateNodes(f.df, !g_is_modify_stream);
+  for (auto i = 0; i < 9; ++i) {
+    for (auto y = 1u; y < g_ny - 1; ++y) {
+      auto left = y * g_nx;
+      auto right = left + g_nx - 1;
+      CHECK_CLOSE(right_ans[i], f.df[right][i], loose_tol);
+      CHECK_CLOSE(left_ans[i], f.df[left][i], loose_tol);
+    }  // y
+    for (auto x = 1u; x < g_nx - 1; ++x) {
+      auto top = (g_ny - 1) * g_nx + x;
+      CHECK_CLOSE(top_ans[i], f.df[top][i], loose_tol);
+      CHECK_CLOSE(bottom_ans[i], f.df[x][i], loose_tol);
+    }  // x
+  }  // i
+}
 
 TEST(StreamHorizontalHalfwayBounceback)
 {

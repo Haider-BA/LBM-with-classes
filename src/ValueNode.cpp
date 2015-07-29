@@ -8,7 +8,21 @@ ValueNode::ValueNode(std::size_t x_position
   , bool b_1
   , int i_1)
   : Node(x_position, y_position, nx),
+    d1 {},
     v1 {{d_1, d_2}},
+    b1 {b_1},
+    i1 {i_1}
+{}
+
+ValueNode::ValueNode(std::size_t x_position
+  , std::size_t y_position
+  , std::size_t nx
+  , double d_1
+  , bool b_1
+  , int i_1)
+  : Node(x_position, y_position, nx),
+    d1 {d_1},
+    v1 {},
     b1 {b_1},
     i1 {i_1}
 {}

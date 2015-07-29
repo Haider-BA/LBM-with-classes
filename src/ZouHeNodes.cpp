@@ -99,8 +99,8 @@ void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
       auto df_diff = 0.5 * (df[n][W] - df[n][E]);
       for (auto &u : vel) u *= rho_node;
       df[n][N] = df[n][S] + 2.0 / 3.0 * vel[1];
-      df[n][NE] = df[n][SW] + df_diff + vel[0] / 6.0 + vel[1] / 2.0;
-      df[n][NW] = df[n][SE] - df_diff - vel[0] / 6.0 + vel[1] / 2.0;
+      df[n][NE] = df[n][SW] + df_diff + vel[0] / 2.0 + vel[1] / 6.0;
+      df[n][NW] = df[n][SE] - df_diff - vel[0] / 2.0 + vel[1] / 6.0;
       break;
     }
     default: {

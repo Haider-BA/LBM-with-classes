@@ -21,8 +21,9 @@ class ZouHePressureNodes: public BoundaryNodes {
    */
   ~ZouHePressureNodes() = default;
 
-  /** \brief
-   *
+  /**
+   * Assume node velocity along the side of the boundary wall is zero, i.e.,
+   * u_x = 0 on top and bottom, u_y = 0 on left and right
    * \param
    * \param
    * \return
@@ -30,9 +31,16 @@ class ZouHePressureNodes: public BoundaryNodes {
    */
   void AddNode(std::size_t x
     , std::size_t y
-    , double rho_node
-    , double u_x
-    , double v_y);
+    , double rho_node);
+
+  void UpdateNodes(std::vector<std::vector<double>> &df
+    , bool is_modify_stream);
+
+  void UpdateSide(std::vector<std::vector<double>> &df
+    , ValueNode &node);
+
+  void UpdateCorner(std::vector<std::vector<double>> &df
+    , ValueNode &node);
 
   /** \brief
    *
