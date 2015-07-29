@@ -14,6 +14,7 @@
 #include "UnitTest++.h"
 #include "WriteResultsCmgui.hpp"
 #include "ZouHeNodes.hpp"
+#include "ZouHePressureNodes.hpp"
 
 SUITE(SimulationDemo)
 {
@@ -169,6 +170,49 @@ TEST(SimulateDevelopingPoiseuilleFlow)
         node.v1[0] = lm.u[node.n - 1][0] / g_dx * g_dt;
     outlet.UpdateNodes(f.df, false);
 //    f.TakeStep();
+    WriteResultsCmgui(lm.u, nx, ny, t);
+  }
+}
+
+TEST(SimulateDevelopingPoiseuilleFlowPressure)
+{
+  std::size_t ny = 20;
+  std::size_t nx = 40;
+  auto dx = 0.01;
+  auto dt = 0.0001;
+  std::vector<double> u0 = {0.0, 0.0};
+  LatticeD2Q9 lm(ny
+    , nx
+    , dx
+    , dt
+    , u0);
+  StreamD2Q9 sd(lm);
+  StreamPeriodic sp(lm);
+  CollisionNS ns(lm
+    , g_k_visco
+    , g_rho0_f);
+  BouncebackNodes hwbb(lm
+    , &sp);
+  ZouHePressureNodes inlet(lm
+    , ns);
+  ZouHePressureNodes outlet(lm
+    , ns);
+  LatticeBoltzmann f(lm
+    , ns
+    , sp);
+  for (auto x = 0u; x < nx; ++x) {
+    hwbb.AddNode(x, 0);
+    hwbb.AddNode(x, ny - 1);
+  }
+  for (auto y = 1u; y < ny - 1; ++y) {
+    inlet.AddNode(0, y, 1.02);
+    outlet.AddNode(nx - 1, y, 1.0);
+  }
+  f.AddBoundaryNodes(&inlet);
+  f.AddBoundaryNodes(&outlet);
+  f.AddBoundaryNodes(&hwbb);
+  for (auto t = 0u; t < 501; ++t) {
+    f.TakeStep();
     WriteResultsCmgui(lm.u, nx, ny, t);
   }
 }

@@ -63,7 +63,7 @@ void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
   auto n = node.n;
   auto vel = node.v1;
   switch(node.i1) {
-    case 0: {
+    case 0: {  // right
       auto rho_node = (df[n][0] + df[n][N] + df[n][S] + 2.0 * (df[n][E] +
           df[n][NE] + df[n][SE])) / (1.0 + vel[0]);
       auto df_diff = 0.5 * (df[n][S] - df[n][N]);
@@ -73,7 +73,7 @@ void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
       df[n][SW] = df[n][NE] - df_diff - vel[0] / 6.0 - vel[1] / 2.0;
       break;
     }
-    case 1: {
+    case 1: {  // top
       auto rho_node = (df[n][0] + df[n][E] + df[n][W] + 2.0 * (df[n][N] +
           df[n][NE] + df[n][NW])) / (1.0 + vel[1]);
       auto df_diff = 0.5 * (df[n][E] - df[n][W]);
@@ -83,7 +83,7 @@ void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
       df[n][SE] = df[n][NW] - df_diff + vel[0] / 2.0 - vel[1] / 6.0;
       break;
     }
-    case 2: {
+    case 2: {  // left
       auto rho_node = (df[n][0] + df[n][N] + df[n][S] + 2.0 * (df[n][W] +
           df[n][NW] + df[n][SW])) / (1.0 - vel[0]);
       auto df_diff = 0.5 * (df[n][S] - df[n][N]);
@@ -93,7 +93,7 @@ void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
       df[n][SE] = df[n][NW] - df_diff + vel[0] / 6.0 - vel[1] / 2.0;
       break;
     }
-    case 3: {
+    case 3: {  // south
       auto rho_node = (df[n][0] + df[n][E] + df[n][W] + 2.0 * (df[n][S] +
           df[n][SW] + df[n][SE])) / (1.0 - vel[1]);
       auto df_diff = 0.5 * (df[n][W] - df[n][E]);

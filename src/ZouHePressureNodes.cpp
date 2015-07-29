@@ -58,7 +58,7 @@ void ZouHePressureNodes::UpdateSide(std::vector<std::vector<double>> &df
   std::vector<double> vel = {0.0, 0.0};
   switch(node.i1) {
     case 0: {  // right
-      vel[0] = 1.0 - (df[n][0] + df[n][N] + df[n][S] + 2.0 * (df[n][E] +
+      vel[0] = -1.0 + (df[n][0] + df[n][N] + df[n][S] + 2.0 * (df[n][E] +
           df[n][NE] + df[n][SE])) / rho_node;
       auto df_diff = 0.5 * (df[n][S] - df[n][N]);
       for (auto &u : vel) u *= rho_node;
@@ -68,7 +68,7 @@ void ZouHePressureNodes::UpdateSide(std::vector<std::vector<double>> &df
       break;
     }
     case 1: {  // top
-      vel[1] = 1.0 - (df[n][0] + df[n][E] + df[n][W] + 2.0 * (df[n][N] +
+      vel[1] = -1.0 + (df[n][0] + df[n][E] + df[n][W] + 2.0 * (df[n][N] +
           df[n][NE] + df[n][NW])) / rho_node;
       auto df_diff = 0.5 * (df[n][E] - df[n][W]);
       for (auto &u : vel) u *= rho_node;
@@ -108,10 +108,8 @@ void ZouHePressureNodes::UpdateCorner(std::vector<std::vector<double>> &df
 {
   auto n = node.n;
   auto rho_node = node.d1;
-  std::vector<double> vel = {0.0, 0.0};
   switch (node.i1) {
     case 0: {  // bottom-left
-      for (auto &u : vel) u *= rho_node;
       df[n][E] = df[n][W];
       df[n][N] = df[n][S];
       df[n][NE] = df[n][SW];
@@ -121,7 +119,6 @@ void ZouHePressureNodes::UpdateCorner(std::vector<std::vector<double>> &df
       break;
     }
     case 1: {  // bottom-right
-      for (auto &u : vel) u *= rho_node;
       df[n][W] = df[n][E];
       df[n][N] = df[n][S];
       df[n][NW] = df[n][SE];
@@ -131,7 +128,6 @@ void ZouHePressureNodes::UpdateCorner(std::vector<std::vector<double>> &df
       break;
     }
     case 2: {  // top-left
-      for (auto &u : vel) u *= rho_node;
       df[n][E] = df[n][W];
       df[n][S] = df[n][N];
       df[n][SE] = df[n][NW];
@@ -141,7 +137,6 @@ void ZouHePressureNodes::UpdateCorner(std::vector<std::vector<double>> &df
       break;
     }
     case 3: {  // top-right
-      for (auto &u : vel) u *= rho_node;
       df[n][W] = df[n][E];
       df[n][S] = df[n][N];
       df[n][SW] = df[n][NE];
