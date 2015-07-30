@@ -176,11 +176,11 @@ TEST(SimulateDevelopingPoiseuilleFlow)
 
 TEST(SimulateDevelopingPoiseuilleFlowPressureOutlet)
 {
-  std::size_t ny = 31;
+  std::size_t ny = 51;
   std::size_t nx = 100;
-  auto dx = 0.0316;
-  auto dt = 0.001;
-  auto k_visco = 0.07;
+  auto dx = 0.01;
+  auto dt = 0.0001;
+  auto k_visco = 0.1;
   auto rho0_f = 1.0;
   std::vector<double> u0 = {0.0, 0.0};
   LatticeD2Q9 lm(ny
@@ -217,24 +217,21 @@ TEST(SimulateDevelopingPoiseuilleFlowPressureOutlet)
     auto y_pos = abs(y - y_offset);
     for (auto x = 0u; x < nx; ++x) {
       auto x_pos = abs(x - x_offset);
-      if (sqrt(y_pos * y_pos + x_pos * x_pos) < radius) {
-        fwbb.AddNode(x, y);
-//        std::cout << x << " " << y << std::endl;
-      }
+      if (sqrt(y_pos * y_pos + x_pos * x_pos) < radius) fwbb.AddNode(x, y);
     }  // x
   }  // y
   // zou/he velocity inlet, pressure outlet
   for (auto y = 1u; y < ny - 1; ++y) {
-    inlet.AddNode(0, y, 0.1, 0.0);
+    inlet.AddNode(0, y, 0.125, 0.0);
     outlet.AddNode(nx - 1, y, 1.0);
   }
   f.AddBoundaryNodes(&inlet);
   f.AddBoundaryNodes(&outlet);
   f.AddBoundaryNodes(&hwbb);
   f.AddBoundaryNodes(&fwbb);
-  for (auto t = 0u; t < 2001; ++t) {
+  for (auto t = 0u; t < 1001; ++t) {
     f.TakeStep();
-    if (t % 4 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 4);
+    if (t % 2 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 2);
   }
 }
 
