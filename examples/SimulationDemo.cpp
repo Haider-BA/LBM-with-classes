@@ -174,12 +174,14 @@ TEST(SimulateDevelopingPoiseuilleFlow)
   }
 }
 
-TEST(SimulateDevelopingPoiseuilleFlowPressure)
+TEST(SimulateDevelopingPoiseuilleFlowPressureOutlet)
 {
-  std::size_t ny = 20;
-  std::size_t nx = 40;
-  auto dx = 0.01;
-  auto dt = 0.0001;
+  std::size_t ny = 31;
+  std::size_t nx = 100;
+  auto dx = 0.0316;
+  auto dt = 0.001;
+  auto k_visco = 0.07;
+  auto rho0_f = 1.0;
   std::vector<double> u0 = {0.0, 0.0};
   LatticeD2Q9 lm(ny
     , nx
@@ -187,33 +189,52 @@ TEST(SimulateDevelopingPoiseuilleFlowPressure)
     , dt
     , u0);
   StreamD2Q9 sd(lm);
-  StreamPeriodic sp(lm);
   CollisionNS ns(lm
-    , g_k_visco
-    , g_rho0_f);
+    , k_visco
+    , rho0_f);
   BouncebackNodes hwbb(lm
-    , &sp);
-  ZouHePressureNodes inlet(lm
+    , &sd);
+  BouncebackNodes fwbb(lm
+    , &ns);
+  ZouHeNodes zhns(lm
+    , ns);
+  ZouHeNodes inlet(lm
     , ns);
   ZouHePressureNodes outlet(lm
     , ns);
   LatticeBoltzmann f(lm
     , ns
-    , sp);
+    , sd);
+  // half-way bounceback on top and bottom wall
   for (auto x = 0u; x < nx; ++x) {
     hwbb.AddNode(x, 0);
     hwbb.AddNode(x, ny - 1);
   }
+  auto radius = ny / 4;
+  auto x_offset = ny;
+  auto y_offset = ny / 2;
+  for (auto y = 0u; y < ny; ++y) {
+    auto y_pos = abs(y - y_offset);
+    for (auto x = 0u; x < nx; ++x) {
+      auto x_pos = abs(x - x_offset);
+      if (sqrt(y_pos * y_pos + x_pos * x_pos) < radius) {
+        fwbb.AddNode(x, y);
+//        std::cout << x << " " << y << std::endl;
+      }
+    }  // x
+  }  // y
+  // zou/he velocity inlet, pressure outlet
   for (auto y = 1u; y < ny - 1; ++y) {
-    inlet.AddNode(0, y, 1.02);
+    inlet.AddNode(0, y, 0.1, 0.0);
     outlet.AddNode(nx - 1, y, 1.0);
   }
   f.AddBoundaryNodes(&inlet);
   f.AddBoundaryNodes(&outlet);
   f.AddBoundaryNodes(&hwbb);
-  for (auto t = 0u; t < 501; ++t) {
+  f.AddBoundaryNodes(&fwbb);
+  for (auto t = 0u; t < 2001; ++t) {
     f.TakeStep();
-    WriteResultsCmgui(lm.u, nx, ny, t);
+    if (t % 4 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 4);
   }
 }
 

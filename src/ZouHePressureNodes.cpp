@@ -1,4 +1,5 @@
 #include "ZouHePressureNodes.hpp"
+#include <iostream>
 #include <stdexcept>
 #include <vector>
 
@@ -63,8 +64,8 @@ void ZouHePressureNodes::UpdateSide(std::vector<std::vector<double>> &df
       auto df_diff = 0.5 * (df[n][S] - df[n][N]);
       for (auto &u : vel) u *= rho_node;
       df[n][W] = df[n][E] - 2.0 / 3.0 * vel[0];
-      df[n][NW] = df[n][SE] + df_diff - vel[0] / 6.0 + vel[1] / 2.0;
-      df[n][SW] = df[n][NE] - df_diff - vel[0] / 6.0 - vel[1] / 2.0;
+      df[n][NW] = df[n][SE] + df_diff - vel[0] / 6.0;
+      df[n][SW] = df[n][NE] - df_diff - vel[0] / 6.0;
       break;
     }
     case 1: {  // top
@@ -73,8 +74,8 @@ void ZouHePressureNodes::UpdateSide(std::vector<std::vector<double>> &df
       auto df_diff = 0.5 * (df[n][E] - df[n][W]);
       for (auto &u : vel) u *= rho_node;
       df[n][S] = df[n][N] - 2.0 / 3.0 * vel[1];
-      df[n][SW] = df[n][NE] + df_diff - vel[0] / 2.0 - vel[1] / 6.0;
-      df[n][SE] = df[n][NW] - df_diff + vel[0] / 2.0 - vel[1] / 6.0;
+      df[n][SW] = df[n][NE] + df_diff - vel[1] / 6.0;
+      df[n][SE] = df[n][NW] - df_diff - vel[1] / 6.0;
       break;
     }
     case 2: {  // left
@@ -83,8 +84,8 @@ void ZouHePressureNodes::UpdateSide(std::vector<std::vector<double>> &df
       auto df_diff = 0.5 * (df[n][S] - df[n][N]);
       for (auto &u : vel) u *= rho_node;
       df[n][E] = df[n][W] + 2.0 / 3.0 * vel[0];
-      df[n][NE] = df[n][SW] + df_diff + vel[0] / 6.0 + vel[1] / 2.0;
-      df[n][SE] = df[n][NW] - df_diff + vel[0] / 6.0 - vel[1] / 2.0;
+      df[n][NE] = df[n][SW] + df_diff + vel[0] / 6.0;
+      df[n][SE] = df[n][NW] - df_diff + vel[0] / 6.0;
       break;
     }
     case 3: {  // bottom
@@ -93,8 +94,8 @@ void ZouHePressureNodes::UpdateSide(std::vector<std::vector<double>> &df
       auto df_diff = 0.5 * (df[n][W] - df[n][E]);
       for (auto &u : vel) u *= rho_node;
       df[n][N] = df[n][S] + 2.0 / 3.0 * vel[1];
-      df[n][NE] = df[n][SW] + df_diff + vel[0] / 2.0 + vel[1] / 6.0;
-      df[n][NW] = df[n][SE] - df_diff - vel[0] / 2.0 + vel[1] / 6.0;
+      df[n][NE] = df[n][SW] + df_diff + vel[1] / 6.0;
+      df[n][NW] = df[n][SE] - df_diff + vel[1] / 6.0;
       break;
     }
     default: {

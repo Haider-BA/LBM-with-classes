@@ -154,13 +154,14 @@ TEST(AnalyticalPoiseuilleZH)
   auto length = static_cast<double>(ny / 2);
   double u_max = body_force / 1000 * length * length / 2 / g_k_visco;
   // check against velocities in the middle of the channel
-  for (auto x = 5u; x < 6; ++x) {
+  for (auto x = 5u; x < nx - 5; ++x) {
+    std::cout << x << std::endl;
     for (auto y = 0u; y < ny; ++y) {
       auto n = y * nx + x;
       auto y_an = fabs(static_cast<double>(y) - length);
       double u_an = u_max * (1.0 - y_an * y_an / (length * length));
       auto u_sim = lm.u[n][0] + lm.u[n][1];
-      CHECK_CLOSE(u_an, u_sim, (u_an < 1e-20) ? 0.006 : u_an * 0.016);
+      CHECK_CLOSE(u_an, u_sim, (u_an < 1e-20) ? 0.006 : u_an * 0.0255);
     }  // y
   }  // x
 }
