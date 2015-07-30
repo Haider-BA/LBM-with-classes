@@ -118,6 +118,53 @@ TEST(AnalyticalPoiseuille)
   }  // x
 }
 
+TEST(AnalyticalPoiseuilleZH)
+{
+  std::size_t ny = 19;
+  std::size_t nx = 34;
+  double body_force = 10.0;
+  std::vector<std::vector<std::size_t>> src_pos_f;
+  std::vector<std::vector<double>> src_str_f(nx * ny, {body_force, 0});
+  std::vector<double> u0 = {0, 0};
+  auto time_steps = 3000;
+  for (auto n = 0u; n < nx * ny; ++n) src_pos_f.push_back({n % nx, n / nx});
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt
+    , u0);
+  StreamPeriodic sp(lm);
+  CollisionNSF nsf(lm
+    , src_pos_f
+    , src_str_f
+    , g_k_visco
+    , g_rho0_f);
+  ZouHeNodes zhnsf(lm
+    , nsf);
+  LatticeBoltzmann f(lm
+    , nsf
+    , sp);
+  for (auto x = 0u; x < nx; ++x) {
+    zhnsf.AddNode(x, 0, 0.0, 0.0);
+    zhnsf.AddNode(x, ny - 1, 0.0, 0.0);
+  }
+  f.AddBoundaryNodes(&zhnsf);
+  for (auto t = 0; t < time_steps; ++t) f.TakeStep();
+  // calculation of analytical u_max according to formula in Guo2002 after
+  auto length = static_cast<double>(ny / 2);
+  double u_max = body_force / 1000 * length * length / 2 / g_k_visco;
+  // check against velocities in the middle of the channel
+  for (auto x = 5u; x < 6; ++x) {
+    for (auto y = 0u; y < ny; ++y) {
+      auto n = y * nx + x;
+      auto y_an = fabs(static_cast<double>(y) - length);
+      double u_an = u_max * (1.0 - y_an * y_an / (length * length));
+      auto u_sim = lm.u[n][0] + lm.u[n][1];
+      CHECK_CLOSE(u_an, u_sim, (u_an < 1e-20) ? 0.006 : u_an * 0.016);
+    }  // y
+  }  // x
+}
+
 TEST(AnalyticalTaylorVortex)
 {
   // have to use odd number for sizes
