@@ -71,6 +71,7 @@
 		<Unit filename="include/LatticeD2Q9.hpp" />
 		<Unit filename="include/LatticeModel.hpp" />
 		<Unit filename="include/Node.hpp" />
+		<Unit filename="include/ParticleRigid.hpp" />
 		<Unit filename="include/Printing.hpp" />
 		<Unit filename="include/StreamD2Q9.hpp" />
 		<Unit filename="include/StreamModel.hpp" />

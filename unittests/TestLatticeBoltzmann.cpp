@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 #include <stdexcept>  // runtime_error
 #include <vector>
@@ -1541,5 +1542,34 @@ TEST(HalfwayBouncebackNodeFindNeighbours)
       CHECK_EQUAL(true, hwbb.nodes[n].neighbours[1]);
     }
   }  // n
+}
+
+TEST(InterpolationStencils)
+{
+  for (auto x = -2.0; x <= 2.0; x += 0.01) {
+    auto x_abs = fabs(x);
+    CHECK_CLOSE(x_abs <= 1.0 ? 1.0 - x_abs : 0.0, Phi2(x), loose_tol);
+    if (x_abs <= 0.5) {
+      CHECK_CLOSE((1.0 + sqrt(1.0 - 3.0 * x * x)) / 3.0, Phi3(x), loose_tol);
+    }
+    else if (x_abs <= 1.5) {
+      CHECK_CLOSE((5.0 - 3.0 * x_abs - sqrt(-2.0 + 6.0 * x_abs - 3.0 * x * x)) /
+          6.0, Phi3(x), loose_tol);
+    }
+    else {
+      CHECK_CLOSE(0.0, Phi3(x), loose_tol);
+    }
+    if (x_abs <= 1.0) {
+      CHECK_CLOSE((3.0 - 2.0 * x_abs + sqrt(1.0 + 4.0 * x_abs - 4.0 * x * x)) /
+          8.0, Phi4(x), loose_tol);
+    }
+    else if (x_abs <= 2.0) {
+      CHECK_CLOSE((5.0 - 2.0 * x_abs - sqrt(-7.0 + 12.0 * x_abs - 4.0 * x *
+          x)) / 8.0, Phi4(x), loose_tol);
+    }
+    else {
+      CHECK_CLOSE(0.0, Phi4(x), loose_tol);
+    }
+  }
 }
 }

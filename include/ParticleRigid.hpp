@@ -1,0 +1,4 @@
+#ifndef PARTICLE_RIGID_HPP_
+#define PARTICLE_RIGID_HPP_
+
+#endif  // PARTICLE_RIGID_HPP_
