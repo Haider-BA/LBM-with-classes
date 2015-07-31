@@ -22,8 +22,6 @@ class ValueNode: public Node {
   ~ValueNode() = default;
 
   double d1;
-//  double d2;
-//  double d3;
   std::vector<double> v1;
   bool b1;
   int i1;
