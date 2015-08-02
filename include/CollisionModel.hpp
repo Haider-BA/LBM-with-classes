@@ -40,6 +40,13 @@ class CollisionModel {
    */
   std::vector<double> ComputeRho(const std::vector<std::vector<double>> &df);
 
+  /**
+   * Pure virtual function to compute the macroscopic properties of the lattice
+   * depending on the equation, density and velocity for Navier-Stokes, only
+   * density for Convection-diffusion equation
+   * \param df Particle distribution functions of the lattice stored row-wise
+   *        in a 2D vector
+   */
   virtual void ComputeMacroscopicProperties(
       const std::vector<std::vector<double>> &df) = 0;
 
@@ -49,13 +56,11 @@ class CollisionModel {
    * convection–diffusion equation" and Guo2002
    * \param lattice 2D vector containing distribution functions
    */
-  virtual void Collide(std::vector<std::vector<double>> &lattice) = 0;
+  virtual void Collide(std::vector<std::vector<double>> &df) = 0;
 
-  /** \brief
-   *
-   * \param n std::size_t
-   * \return void
-   *
+  /**
+   * Adds a node to exclude it from the collision step
+   * \param n index of the node in the lattice
    */
   void AddNodeToSkip(std::size_t n);
 
@@ -69,49 +74,31 @@ class CollisionModel {
    */
   std::vector<double> rho;
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+  /**
+   * Skips the collision step for the node if it is a full-way bounceback node
    */
   std::vector<bool> skip;
 
  protected:
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+  /**
+   * Lattice model to handle number of rows, columns, dimensions, directions,
+   * velocity
    */
   LatticeModel &lm_;
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+  /**
+   * Relaxation time
    */
   double tau_;
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+  /**
+   * Speed of sound in lattice
    */
   double c_;
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+  /**
+   * Square of speed of sound in lattice, used to simplify computations in the
+   * collision step
    */
   double cs_sqr_ = c_ * c_ / 3.0;
 };

@@ -367,18 +367,13 @@ TEST(SimulateLidDrivenCavityFlow)
   }
   for (auto x = 0u; x < nx; ++x) {
     bbns.AddNode(x, 0);
-    if (x != 0 && x != nx - 1) {
-      zhns.AddNode(x, ny - 1, u_lid, v_lid);
-    }
-    else {
-      bbns.AddNode(x, ny - 1);
-    }
+    zhns.AddNode(x, ny - 1, u_lid, v_lid);
   }
   f.AddBoundaryNodes(&bbns);
   f.AddBoundaryNodes(&zhns);
   for (auto t = 0u; t < 32001; ++t) {
     f.TakeStep();
-    if (t % 65 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 64);
+    if (t % 64 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 64);
     std::cout << t << std::endl;
   }
   std::ofstream myfile;
