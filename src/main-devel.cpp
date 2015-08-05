@@ -14,9 +14,11 @@ int main()
 //  return Unfit::RunOneTest("SimulateNSCDCoupling");
 //  return Unfit::RunOneTest("SimulateNSCDCouplingWithObstacles");
 //  return Unfit::RunOneTest("SimulateTaylorVortex");
+//  return Unfit::RunOneTest("SimulateTaylorVortexForce");
 //  return Unfit::RunOneTest("SimulateLidDrivenCavityFlow");
 //  return Unfit::RunOneTest("AnalyticalPoiseuille");
-  return Unfit::RunOneTest("AnalyticalTaylorVortex");
+//  return Unfit::RunOneTest("AnalyticalTaylorVortex");
+  return Unfit::RunOneTest("AnalyticalTaylorVortexForce");
 //  return Unfit::RunOneTest("AnalyticalPoiseuilleZH");
 //  return Unfit::RunOneTest("BoundaryZouHeSide");
 //  return Unfit::RunOneTest("BoundaryZouHeCorner");

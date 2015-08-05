@@ -266,4 +266,87 @@ TEST(AnalyticalTaylorVortex)
     }  // y
   }  // t
 }
+
+TEST(AnalyticalTaylorVortexForce)
+{
+  // have to use odd number for sizes
+  std::size_t ny = 65;
+  std::size_t nx = 65;
+  auto time_steps = 300;
+  // analytical solution parameters
+  std::vector<std::vector<double>> u_lattice_an;
+  std::vector<std::vector<std::size_t>> src_pos_f;
+  std::vector<std::vector<double>> src_str_f;
+  auto u0_an = 0.001;
+  auto body_force = u0_an * u0_an;
+  auto k_visco = 0.25;
+  auto rho0_f = 1000000.0;
+  // using one k since it's a square box
+  auto k = g_2pi / nx;
+  for (auto n = 0u; n < nx * ny; ++n) {
+    auto x = n % nx;
+    auto y = n / nx;
+    src_pos_f.push_back({x, y});
+    auto x_an = static_cast<double>(x) * k;
+    auto y_an = static_cast<double>(y) * k;
+    // analytical formula from "Interpolation methods and the accuracy of
+    // lattice-Boltzmann mesh refinement" eq17
+    auto u_an = -1.0 * u0_an * cos(x_an) * sin(y_an);
+    auto v_an = u0_an * sin(x_an) * cos(y_an);
+    u_lattice_an.push_back({u_an, v_an});
+    auto f_x = -0.5 / g_cs_sqr * body_force * sin(2.0 * x_an);
+    auto f_y = -0.5 / g_cs_sqr * body_force * sin(2.0 * y_an);
+    src_str_f.push_back({f_x, f_y});
+  }  // n
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt
+    , u_lattice_an);
+  StreamPeriodic sp(lm);
+  CollisionNSF nsf(lm
+    , src_pos_f
+    , src_str_f
+    , k_visco
+    , rho0_f);
+  LatticeBoltzmann f(lm
+    , nsf
+    , sp);
+  // According to t_c formula in Guo2002 pg5, checks simulation results against
+  // analytical result until velocity is 25% of initial value
+  for (auto t = 0; t < time_steps; ++t) {
+    for (auto n = 0u; n < nx * ny; ++n) {
+      auto x_an = static_cast<double>(n % nx) * k;
+      auto y_an = static_cast<double>(n / nx) * k;
+      // analytical formula from "Interpolation methods and the accuracy of
+      // lattice-Boltzmann mesh refinement" eq17
+      auto f_x = -0.5 / g_cs_sqr * body_force * sin(2.0 * x_an) *
+          exp(-2.0 * k * k * k_visco * t);
+      auto f_y = -0.5 / g_cs_sqr * body_force * sin(2.0 * y_an) *
+          exp(-2.0 * k * k * k_visco * t);
+      src_str_f[n] = {f_x, f_y};
+    }  // n
+    for (auto n = 0u; n < nx * ny; ++n) {
+      nsf.source[n][0] /= nsf.rho[n];
+      nsf.source[n][1] /= nsf.rho[n];
+    }
+    nsf.InitSource(src_pos_f
+      , src_str_f);
+    f.TakeStep();
+    for (auto n = 0u; n < nx * ny; ++n) {
+        auto x_an = static_cast<double>(n % nx) * k;
+        auto y_an = static_cast<double>(n / nx) * k;
+        auto u_an = -1.0 * u0_an * cos(x_an) * sin(y_an) *
+            exp(-2.0 * k_visco * k * k * t);
+        auto v_an = u0_an * sin(x_an) * cos(y_an) *
+            exp(-2.0 * k_visco * k * k * t);
+      // checks that simulation is within 1% of analytical value if analytical
+      // value is not zero, else check they are less than 1e-7
+      CHECK_CLOSE(u_an, lm.u[n][0], (fabs(u_an) > 1e-20) ? fabs(u_an) * 0.01 :
+          1e-7);
+      CHECK_CLOSE(v_an, lm.u[n][1], (fabs(v_an) > 1e-20) ? fabs(v_an) * 0.01 :
+          1e-7);
+    }  // y
+  }  // t
+}
 }
