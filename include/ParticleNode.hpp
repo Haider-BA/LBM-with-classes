@@ -4,6 +4,13 @@
 
 class ParticleNode {
  public:
+  /** \brief
+   *
+   * \param
+   * \param
+   * \return
+   *
+   */
   ParticleNode(double x
     , double y
     , double x_ref

@@ -11,6 +11,7 @@
 #include "LatticeBoltzmann.hpp"
 #include "LatticeD2Q9.hpp"
 #include "OnGridBouncebackNodes.hpp"
+#include "Particle.hpp"
 #include "Printing.hpp"
 #include "StreamD2Q9.hpp"
 #include "StreamPeriodic.hpp"
@@ -1571,5 +1572,55 @@ TEST(InterpolationStencils)
       CHECK_CLOSE(0.0, Phi4(x), loose_tol);
     }
   }
+}
+
+TEST(CreateCylinderParticle)
+{
+  auto number_of_nodes = 12;
+  auto radius = 2.0;
+  auto stiffness = -1.0;
+  auto center_x = 10.0;
+  auto center_y = 5.0;
+  Particle cylinder(number_of_nodes
+    , radius
+    , stiffness
+    , center_x
+    , center_y);
+  CHECK_CLOSE(center_x, cylinder.center.coord[0], zero_tol);
+  CHECK_CLOSE(center_y, cylinder.center.coord[1], zero_tol);
+  CHECK_CLOSE(center_x, cylinder.center.coord_ref[0], zero_tol);
+  CHECK_CLOSE(center_y, cylinder.center.coord_ref[1], zero_tol);
+  for (auto i = 0u; i < 2; ++i) {
+    CHECK_CLOSE(0.0, cylinder.center.u[i], zero_tol);
+    CHECK_CLOSE(0.0, cylinder.center.force[i], zero_tol);
+  }  // i
+  std::vector<double> x = {1.1, 2.1};
+  std::vector<double> y = {1.2, 2.2};
+  std::vector<double> x_ref = {1.3, 2.3};
+  std::vector<double> y_ref = {1.4, 2.4};
+  std::vector<double> u_x = {1.5, 2.5};
+  std::vector<double> u_y = {1.6, 2.6};
+  std::vector<double> force_x = {1.7, 2.7};
+  std::vector<double> force_y = {1.8, 2.8};
+  for (auto i = 0u; i < 2; ++i) {
+    cylinder.AddNode(x[i]
+    , y[i]
+    , x_ref[i]
+    , y_ref[i]
+    , u_x[i]
+    , u_y[i]
+    , force_x[i]
+    , force_y[i]);
+  }  // i
+  for (auto i = 0u; i < 2; ++i) {
+    CHECK_CLOSE(x[i], cylinder.nodes[i].coord[0], zero_tol);
+    CHECK_CLOSE(y[i], cylinder.nodes[i].coord[1], zero_tol);
+    CHECK_CLOSE(x_ref[i], cylinder.nodes[i].coord_ref[0], zero_tol);
+    CHECK_CLOSE(y_ref[i], cylinder.nodes[i].coord_ref[1], zero_tol);
+    CHECK_CLOSE(u_x[i], cylinder.nodes[i].u[0], zero_tol);
+    CHECK_CLOSE(u_y[i], cylinder.nodes[i].u[1], zero_tol);
+    CHECK_CLOSE(force_x[i], cylinder.nodes[i].force[0], zero_tol);
+    CHECK_CLOSE(force_y[i], cylinder.nodes[i].force[1], zero_tol);
+  }  // i
 }
 }

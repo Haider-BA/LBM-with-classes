@@ -1,7 +1,8 @@
 #include "Particle.hpp"
 #include "ParticleNode.hpp"
 
-Particle::Particle(double radius
+Particle::Particle(std::size_t num_nodes
+  , double radius
   , double stiffness
   , double center_x
   , double center_y)

@@ -6,8 +6,8 @@ ParticleNode::ParticleNode(double x
   , double y_ref)
   : coord {{x, y}},
     coord_ref {{x_ref, y_ref}},
-    u {},
-    force {}
+    u {{0.0, 0.0}},
+    force {{0.0, 0.0}}
 {}
 
 ParticleNode::ParticleNode(double x

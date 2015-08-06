@@ -5,7 +5,8 @@
 
 class Particle {
  public:
-  Particle(double radius
+  Particle(std::size_t num_nodes
+    , double radius
     , double stiffness
     , double center_x
     , double center_y);

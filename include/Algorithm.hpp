@@ -120,7 +120,6 @@ T Phi4(T x)
  * \param y y-position in lattice
  * \return approximated Dirac delta-function value
  */
-
 template <typename T>
 T Dirac2(T x, T y)
 {
@@ -133,7 +132,6 @@ T Dirac2(T x, T y)
  * \param y y-position in lattice
  * \return approximated Dirac delta-function value
  */
-
 template <typename T>
 T Dirac3(T x, T y)
 {
@@ -146,11 +144,9 @@ T Dirac3(T x, T y)
  * \param y y-position in lattice
  * \return approximated Dirac delta-function value
  */
-
 template <typename T>
 T Dirac4(T x, T y)
 {
   return Phi4(x) * Phi4(y);
 }
-
 #endif  // ALGORITHM_HPP_
