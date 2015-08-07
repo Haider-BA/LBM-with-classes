@@ -176,8 +176,8 @@ TEST(SimulateDevelopingPoiseuilleFlow)
 
 TEST(SimulateDevelopingPoiseuilleFlowPressureOutlet)
 {
-  std::size_t ny = 64;
-  std::size_t nx = 256;
+  std::size_t ny = 51;
+  std::size_t nx = 151;
   auto dx = 0.0316;
   auto dt = dx * dx;
   auto k_visco = 0.005;
@@ -222,17 +222,17 @@ TEST(SimulateDevelopingPoiseuilleFlowPressureOutlet)
   }  // y
   // zou/he velocity inlet, pressure outlet
   for (auto y = 1u; y < ny - 1; ++y) {
-    inlet.AddNode(0, y, 1.001);
+    inlet.AddNode(0, y, 1.005);
     outlet.AddNode(nx - 1, y, 1.0);
   }
   f.AddBoundaryNodes(&inlet);
   f.AddBoundaryNodes(&outlet);
   f.AddBoundaryNodes(&hwbb);
   f.AddBoundaryNodes(&fwbb);
-  for (auto t = 0u; t < 2001; ++t) {
+  for (auto t = 0u; t < 5001; ++t) {
     std::cout << t << std::endl;
     f.TakeStep();
-    if (t % 4 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 4);
+    if (t % 10 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 10);
   }
 }
 

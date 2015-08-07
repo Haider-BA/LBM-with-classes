@@ -94,6 +94,7 @@
 		<Unit filename="src/Node.cpp" />
 		<Unit filename="src/Particle.cpp" />
 		<Unit filename="src/ParticleNode.cpp" />
+		<Unit filename="src/ParticleRigid.cpp" />
 		<Unit filename="src/StreamD2Q9.cpp" />
 		<Unit filename="src/StreamModel.cpp" />
 		<Unit filename="src/StreamPeriodic.cpp" />

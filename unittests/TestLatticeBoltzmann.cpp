@@ -12,6 +12,7 @@
 #include "LatticeD2Q9.hpp"
 #include "OnGridBouncebackNodes.hpp"
 #include "Particle.hpp"
+#include "ParticleRigid.hpp"
 #include "Printing.hpp"
 #include "StreamD2Q9.hpp"
 #include "StreamPeriodic.hpp"
@@ -1581,7 +1582,7 @@ TEST(CreateCylinderParticle)
   auto stiffness = -1.0;
   auto center_x = 10.0;
   auto center_y = 5.0;
-  Particle cylinder(number_of_nodes
+  ParticleRigid cylinder(number_of_nodes
     , radius
     , stiffness
     , center_x
