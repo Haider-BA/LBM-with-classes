@@ -931,6 +931,108 @@ TEST(BoundaryZouHePressureCorner)
   }
 }
 
+TEST(HalfwayBouncebackCopyDF)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  CollisionNS ns(lm
+    , g_k_visco
+    , g_rho0_f);
+  StreamD2Q9 sd(lm);
+  StreamPeriodic sp(lm);
+  BouncebackNodes hwbb(lm
+    , &sd);
+  BouncebackNodes hwbbsp(lm
+    , &sp);
+  LatticeBoltzmann f(lm
+    , ns
+    , sd);
+  LatticeBoltzmann ff(lm
+    , ns
+    , sp);
+  std::vector<bool> bounce_back(g_nx * g_ny, false);
+  auto value = 0.1;
+  for (auto n = 0u; n < g_nx * g_ny; ++n) {
+    for (auto i = 0u; i < 9; ++i) {
+      f.df[n][i] = static_cast<double>(n) + static_cast<double>(i) * 0.1;
+      ff.df[n][i] = static_cast<double>(n) + static_cast<double>(i) * 0.1;
+    }  // i
+  }  // n
+//  Print(f.df, g_nx, g_ny);
+//  Print(ff.df, g_nx, g_ny);
+  for (auto y = 0u; y < g_ny; ++y) {
+    hwbb.AddNode(0, y);
+    hwbb.AddNode(g_nx - 1, y);
+    hwbbsp.AddNode(0, y);
+    hwbbsp.AddNode(g_nx - 1, y);
+    bounce_back[y * g_nx] = true;
+    bounce_back[y * g_nx + g_nx - 1] = true;
+  }
+  hwbb.UpdateNodes(f.df
+    , !g_is_modify_stream);
+  hwbbsp.UpdateNodes(ff.df
+    , !g_is_modify_stream);
+  for (auto node : hwbb.nodes) {
+    auto ind = 0;
+    for (auto i : node.df_node) CHECK_CLOSE(f.df[node.n][ind++], i, zero_tol);
+  }
+  for (auto node : hwbbsp.nodes) {
+    auto ind = 0;
+    for (auto i : node.df_node) CHECK_CLOSE(ff.df[node.n][ind++], i, zero_tol);
+  }
+  f.df = sd.Stream(f.df);
+  ff.df = sp.Stream(ff.df);
+  hwbb.UpdateNodes(f.df
+    , g_is_modify_stream);
+  hwbbsp.UpdateNodes(ff.df
+    , g_is_modify_stream);
+  for (auto n = 0u; n < g_nx * g_ny; ++n) {
+    auto bottom = n / g_nx == 0;
+    auto top = n / g_nx == g_ny - 1;
+//    for (auto i = 0u; i < 9; ++i) {
+//      if (bounce_back[n]) {
+//        if (top) {
+//          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? top_left_result[i] :
+//              top_right_result[i], f.df[n][i], zero_tol);
+//          CHECK_CLOSE(ff.df[n][0] - 1.0 < zero_tol ? top_left_result[i] :
+//              top_right_result[i], ff.df[n][i], zero_tol);
+//        }
+//        else if (bottom) {
+//          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? bottom_left_result[i] :
+//              bottom_right_result[i], f.df[n][i], zero_tol);
+//          CHECK_CLOSE(ff.df[n][0] - 1.0 < zero_tol ? bottom_left_result[i] :
+//              bottom_right_result[i], ff.df[n][i], zero_tol);
+//        }
+//        else {
+//          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? left_result[i] :
+//              right_result[i], f.df[n][i], zero_tol);
+//          CHECK_CLOSE(ff.df[n][0] - 1.0 < zero_tol ? left_result[i] :
+//              right_result[i], ff.df[n][i], zero_tol);
+//        }
+//      }
+//      else {
+//        if (top) {
+//          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? first_top_result[i] :
+//              second_top_result[i], f.df[n][i], zero_tol);
+//        }
+//        else if (bottom) {
+//          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? first_bottom_result[i] :
+//              second_bottom_result[i], f.df[n][i], zero_tol);
+//        }
+//        else {
+//          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? first_result[i] :
+//              second_result[i], f.df[n][i], zero_tol);
+//        }
+//        CHECK_CLOSE(ff.df[n][0] - 1.0 < zero_tol ? first_result[i] :
+//            second_result[i], ff.df[n][i], zero_tol);
+//      }
+//    }  // i
+  }  // n
+}
+
 TEST(StreamHorizontalHalfwayBounceback)
 {
   LatticeD2Q9 lm(g_ny
@@ -1488,62 +1590,6 @@ TEST(InstantPointer)
   g.TakeStep();
   // check cd source is zero
   for (auto node : cd.source) CHECK_CLOSE(0.0, node, zero_tol);
-}
-
-TEST(HalfwayBouncebackNodeFindNeighbours)
-{
-  LatticeD2Q9 lm(g_ny
-    , g_nx
-    , g_dx
-    , g_dt
-    , g_u0);
-  CollisionNS ns(lm
-    , g_k_visco
-    , g_rho0_f);
-  StreamD2Q9 sd(lm);
-  BouncebackNodes hwbb(lm
-    , &sd);
-  LatticeBoltzmann f(lm
-    , ns
-    , sd);
-  // add nodes in this configuration (with index in nodes vector):
-  // x (8) x (11) o x (13) x (15) o x (17) x (9)
-  // x (6)                                 x (7)
-  // x (4)                                 x (5)
-  // o                                     o
-  // x (2)                                 x (3)
-  // x (0) x (10) o x (12) x (14) o x (16) x (1)
-  for (auto y = 0u; y < g_ny; ++y) {
-    if (y != 2) {
-      hwbb.AddNode(0, y);
-      hwbb.AddNode(g_nx - 1, y);
-    }
-  }
-  for (auto x = 1u; x < g_nx - 1; ++x) {
-    if (x != 2 && x != 5) {
-      hwbb.AddNode(x, 0);
-      hwbb.AddNode(x, g_ny - 1);
-    }
-  }
-  f.AddBoundaryNodes(&hwbb);
-  hwbb.UpdateNodes(f.df
-    , !g_is_modify_stream);
-  hwbb.UpdateNodes(f.df
-    , g_is_modify_stream);
-  for (auto n = 0u; n < hwbb.nodes.size(); ++n) {
-    if (n > 1 && n < 8) {
-      CHECK_EQUAL(false, hwbb.nodes[n].neighbours[0]);
-      CHECK_EQUAL(true, hwbb.nodes[n].neighbours[1]);
-    }
-    else if (n > 9) {
-      CHECK_EQUAL(true, hwbb.nodes[n].neighbours[0]);
-      CHECK_EQUAL(false, hwbb.nodes[n].neighbours[1]);
-    }
-    else {
-      CHECK_EQUAL(true, hwbb.nodes[n].neighbours[0]);
-      CHECK_EQUAL(true, hwbb.nodes[n].neighbours[1]);
-    }
-  }  // n
 }
 
 TEST(InterpolationStencils)

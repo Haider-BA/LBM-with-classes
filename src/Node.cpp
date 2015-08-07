@@ -6,6 +6,5 @@ Node::Node(std::size_t x_position
   : x {x_position},
     y {y_position},
     n {y * nx + x},
-    df_node {},
-    neighbours {}
+    df_node {}
 {}

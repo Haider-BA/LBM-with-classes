@@ -39,20 +39,14 @@ void BouncebackNodes::UpdateNodes(std::vector<std::vector<double>> &df
     auto ny = lm_.GetNumberOfRows();
     for (auto &node : nodes) {
       auto n = node.n;
-      if (node.neighbours.empty())
-          node.neighbours = BouncebackNodes::FindNeighbourNode(node);
       auto left = n % nx == 0;
       auto right = n % nx == nx - 1;
       auto bottom = n / nx == 0;
       auto top = n / nx == ny - 1;
-      if (node.neighbours[0]){
-        if (bottom) df[n][N] = node.df_node[S];
-        if (top) df[n][S] = node.df_node[N];
-      }
-      if (node.neighbours[1]) {
-        if (left) df[n][E] = node.df_node[W];
-        if (right) df[n][W] = node.df_node[E];
-      }
+      if (bottom) df[n][N] = node.df_node[S];
+      if (top) df[n][S] = node.df_node[N];
+      if (left) df[n][E] = node.df_node[W];
+      if (right) df[n][W] = node.df_node[E];
       if (bottom || left) df[n][NE] = node.df_node[SW];
       if (bottom || right) df[n][NW] = node.df_node[SE];
       if (top || right) df[n][SW] = node.df_node[NE];
@@ -78,19 +72,4 @@ void BouncebackNodes::UpdateNodes(std::vector<std::vector<double>> &df
       for (auto &node : nodes) node.df_node = df[node.n];
     }
   }
-}
-
-std::vector<bool> BouncebackNodes::FindNeighbourNode(Node &node)
-{
-  std::vector<bool> result = {false, false};
-  auto x = node.x;
-  auto y = node.y;
-  for (auto other_node : nodes) {
-    auto o_x = other_node.x;
-    auto o_y = other_node.y;
-    if (o_y == y && (o_x == x + 1 || o_x == x - 1)) result[0] = true;
-    if (o_x == x && (o_y == y + 1 || o_y == y - 1)) result[1] = true;
-    if (result[0] && result[1]) return result;
-  }  // node
-  return result;
 }

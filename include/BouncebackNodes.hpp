@@ -41,8 +41,6 @@ class BouncebackNodes: public BoundaryNodes {
   void UpdateNodes(std::vector<std::vector<double>> &df
     , bool is_modify_stream);
 
-  std::vector<bool> FindNeighbourNode(Node &node);
-
   std::vector<Node> nodes;
 
  protected:

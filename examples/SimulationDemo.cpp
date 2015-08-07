@@ -122,6 +122,42 @@ TEST(SimulatePoiseuilleFlow)
   }
 }
 
+TEST(SimulatePoiseuilleFlowHw)
+{
+  std::size_t ny = 21;
+  std::size_t nx = 31;
+  std::vector<std::vector<std::size_t>> src_pos_f;
+  std::vector<std::vector<double>> src_str_f(nx * ny, {10.0, 0.0});
+  std::vector<double> u0 = {0.0, 0.0};
+  for (auto n = 0u; n < nx * ny; ++n) src_pos_f.push_back({n % nx, n / nx});
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt
+    , u0);
+  StreamPeriodic sp(lm);
+  StreamD2Q9 sd(lm);
+  CollisionNSF nsf(lm
+    , src_pos_f
+    , src_str_f
+    , g_k_visco
+    , g_rho0_f);
+  BouncebackNodes bbnsf(lm
+    , &sd);
+  LatticeBoltzmann f(lm
+    , nsf
+    , sd);
+  for (auto x = 0u; x < nx; ++x) {
+    bbnsf.AddNode(x, 0);
+    bbnsf.AddNode(x, ny - 1);
+  }
+  f.AddBoundaryNodes(&bbnsf);
+  for (auto t = 0u; t < 501; ++t) {
+    f.TakeStep();
+    WriteResultsCmgui(lm.u, nx, ny, t);
+  }
+}
+
 TEST(SimulateDevelopingPoiseuilleFlow)
 {
   std::size_t ny = 21;
