@@ -9,29 +9,32 @@
 class LatticeBoltzmann {
  public:
   /**
-   * Constructor: Creates lattice
-   * \param t_total total time of simulation
-   * \param obstacles_pos lattice containing position of obstacles
-   * \param is_ns NS equation toggle
-   * \param is_cd CD equation toggle
-   * \param is_taylor workaround to toggle bounceback boundary condition for
-   *        left and right edge for taylor analytical test
-   * \param is_instant instantaneous source togle
-   * \param has_obstacles obstacles toggle
-   * \param lm lattice model to take care of dimensions, directions, number of
-   *        rows, number of columns, space step, time step, omega, discrete
-   *        velocity vectors
-   * \param ns Collision model for NS equation
-   * \param cd Collision model for CD equation
+   * Constructor: Creates a LatticeBoltzmann object
+   * \param lm lattice model which contains information on the number of rows,
+   *        columns, dimensions, discrete directions and lattice velocity
+   * \param cm collision model used by the lattice: Convection-diffusion,
+   *        Navier-Stokes and Navier-Stokes with force
+   * \param sm stream mode used by the lattice: Periodic stream, non-periodic
+   *        streaming
    */
   LatticeBoltzmann(LatticeModel &lm
     , CollisionModel &cm
     , StreamModel &sm);
 
+  /**
+   * Destructor
+   */
   ~LatticeBoltzmann() = default;
 
+  /**
+   * Copy constructor
+   */
   LatticeBoltzmann(const LatticeBoltzmann&) = default;
 
+  /**
+   * Adds a boundary condition to the lattice
+   * \param bn pointer to the boundary condition to be added
+   */
   void AddBoundaryNodes(BoundaryNodes *bn);
 
   /**
@@ -41,7 +44,7 @@ class LatticeBoltzmann {
   void TakeStep();
 
   /**
-   * NS distribution function stored row-wise in a 2D vector.
+   * Lattice distribution function stored row-wise in a 2D vector.
    */
   std::vector<std::vector<double>> df;
 
@@ -51,6 +54,10 @@ class LatticeBoltzmann {
   // 3--0--1  |
   //  / | \   |
   // 7  4  8  +------->
+  /**
+   * Enumeration of discrete directions to be used with lattice distribution
+   * functions
+   */
   enum Directions {
     E = 1,
     N,
@@ -62,19 +69,30 @@ class LatticeBoltzmann {
     SE
   };
 
-  // input parameters
-  // LatticeModel to take care of dims, dirs, rows, cols and discrete e vectors
   // by reference, similar to by pointer
   // https://stackoverflow.com/questions/9285627/is-it-possible-to-pass-derived-
   // classes-by-reference-to-a-function-taking-base-cl
+  /**
+   * Lattice model which contains information on the number of rows, columns,
+   * dimensions, discrete directions and lattice velocity
+   */
   LatticeModel &lm_;
 
-  // Collision models to take care of eq, rho, source
+  /**
+   * Collision models to perform the collision step based on the model chosen
+   */
   CollisionModel &cm_;
 
+  /**
+   * Stream model to perform the streaming step based on the model chosen
+   */
   StreamModel &sm_;
 
-  // vector of boundary nodes pointer
+  /**
+   * Pointers to boundary conditions in the lattice stored in a vector.
+   * References cannot be used as it is not possible to store a vector of
+   * references
+   */
   std::vector<BoundaryNodes*> bn_;
 };
 #endif  // LATTICE_BOLTZMANN_HPP_

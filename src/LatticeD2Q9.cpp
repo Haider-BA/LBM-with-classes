@@ -49,35 +49,3 @@ LatticeD2Q9::LatticeD2Q9(std::size_t num_rows
            4.0 / 36.0, 4.0 / 36.0, 4.0 / 36.0, 4.0 / 36.0,
            1.0 / 36.0, 1.0 / 36.0, 1.0 / 36.0, 1.0 / 36.0};
 }
-
-std::vector<std::vector<double>> LatticeD2Q9::ComputeULid(
-    const std::vector<std::vector<double>> &lattice
-  , const std::vector<double> &rho
-  , const std::vector<std::vector<double>> &src
-  , double u_lid)
-{
-  auto nx = number_of_columns_;
-  auto ny = number_of_rows_;
-  std::vector<std::vector<double>> result;
-  auto index = 0u;
-  for (auto node : lattice) {
-    result.push_back(GetFirstMoment(node, e));
-    result[index][0] += 0.5 * time_step_ * src[index][0] * rho[index];
-    result[index][0] /= rho[index];
-    result[index][1] += 0.5 * time_step_ * src[index][1] * rho[index];
-    result[index][1] /= rho[index];
-    ++index;
-  }  // node
-  for (auto y = 0u; y < ny; ++y) {
-    auto left = y * nx;
-    auto right = left + nx - 1;
-    result[left] = {0.0, 0.0};
-    result[right] = {0.0, 0.0};
-  }  // y
-  for (auto x = 0u; x < nx; ++x) {
-    auto top = (ny - 1) * nx + x;
-    result[x] = {0.0, 0.0};
-    result[top] = {u_lid, 0.0};
-  }  // y
-  return result;
-}

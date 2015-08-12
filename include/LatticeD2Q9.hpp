@@ -39,11 +39,5 @@ class LatticeD2Q9: public LatticeModel {
    * Destructor
    */
   virtual ~LatticeD2Q9() = default;
-
-  std::vector<std::vector<double>> ComputeULid(
-      const std::vector<std::vector<double>> &lattice
-    , const std::vector<double> &rho
-    , const std::vector<std::vector<double>> &src
-    , double u_lid);
 };
 #endif  // LATTICE_D2Q9_HPP_

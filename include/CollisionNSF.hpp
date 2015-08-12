@@ -44,12 +44,11 @@ class CollisionNSF: public CollisionNS {
   std::vector<std::vector<double>> ComputeU(
       const std::vector<std::vector<double>> &df);
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \return
-   *
+  /**
+   * Computes the macroscopic properties based on the collision model used, both
+   * velocity and density in this case. Based on "Discrete lattice effects on
+   * the forcing term in the lattice Boltzmann method"
+   * \param df lattice distribution functions stored row-wise in a 2D vector
    */
   void ComputeMacroscopicProperties(
       const std::vector<std::vector<double>> &df);

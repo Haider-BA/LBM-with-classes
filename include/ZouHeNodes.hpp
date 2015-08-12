@@ -6,10 +6,11 @@
 
 class ZouHeNodes: public BoundaryNodes {
  public:
-  /** \brief
-   *
-   * \param
-   * \param
+  /**
+   * Constructor: Creates Zou/He velocity boundary nodes
+   * \param lm lattice model which contains information on the number of rows,
+   *        columns, dimensions, discrete directions and lattice velocity
+   * \param cm collision model which contains information on lattice density
    */
   ZouHeNodes(LatticeModel &lm
     , CollisionModel &cm);
@@ -19,51 +20,55 @@ class ZouHeNodes: public BoundaryNodes {
    */
   ~ZouHeNodes() = default;
 
-  /** \brief
-   *
-   * \param
-   * \param
-   * \param
-   * \param
-   *
+  /**
+   * Adds a Zou/He velocity node to the nodes vector
+   * \param x x-coordinate of the node
+   * \param y y-coordinate of the node
+   * \param u_x x-velocity of the node
+   * \param u_y y-velocity of the node
    */
   void AddNode(std::size_t x
     , std::size_t y
     , double u_x
     , double u_y);
 
-  /** \brief
-   *
-   * \param
-   * \param
+  /**
+   * Updates the boundary nodes based on "On pressure and velocity boundary
+   * conditions for the lattice Boltzmann"
+   * \param df lattice distribution functions stored row-wise in a 2D vector
+   * \param is_modify_stream boolean toggle for half-way bounceback nodes to
+   *        perform functions during stream, set to FALSE for Zou/He velocity
+   *        nodes
    */
   void UpdateNodes(std::vector<std::vector<double>> &df
     , bool is_modify_stream);
 
-  /** \brief
-   *
-   * \param
-   * \param
+  /**
+   * Updates the non-corner nodes
+   * \param df lattice distribution function stored row-wise in a 2D vector
+   * \param node Zou/He velocity node which contains information on the position
+   *        of the boundary node and velocities of the node
    */
   void UpdateSide(std::vector<std::vector<double>> &df
     , ValueNode &node);
 
-  /** \brief
-   *
-   * \param
-   * \param
+  /**
+   * Updates the corner nodes, first-order expolation for node density
+   * \param df lattice distribution function stored row-wise in a 2D vector
+   * \param node Zou/He velocity node which contains information on the position
+   *        of the boundary node and velocities of the node
    */
   void UpdateCorner(std::vector<std::vector<double>> &df
     , ValueNode &node);
 
-  /** \brief
-   *
+  /**
+   * Boundary nodes stored in a 1D vector
    */
   std::vector<ValueNode> nodes;
 
  protected:
-  /** \brief
-   *
+  /**
+   * Collision model which contains information on lattice density
    */
   CollisionModel &cm_;
 //  std::vector<bool> is_corner_;

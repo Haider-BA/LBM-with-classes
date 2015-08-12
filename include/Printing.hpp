@@ -11,7 +11,6 @@
  * \param nx number of columns of the lattice
  * \return flipped lattice
  */
-
 template <typename T, typename U>
 T Flip(const T &lattice
   , U nx)

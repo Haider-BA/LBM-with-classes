@@ -117,7 +117,7 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
   auto nx = lm_.GetNumberOfColumns();
   auto nc = lm_.GetNumberOfDirections();
   switch (node.i1) {
-    case 0: {
+    case 0: {  // bottom-left
       auto rho_node = 0.5 * (cm_.rho[n + nx] + cm_.rho[n + 1]);
       for (auto &u : vel) u *= rho_node;
       df[n][E] = df[n][W] + 2.0 / 3.0 * vel[0];
@@ -129,7 +129,7 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
       df[n][0] = rho_node;
       break;
     }
-    case 1: {
+    case 1: {  // bottom-right
       auto rho_node = 0.5 * (cm_.rho[n + nx] + cm_.rho[n - 1]);
       for (auto &u : vel) u *= rho_node;
       df[n][W] = df[n][E] - 2.0 / 3.0 * vel[0];
@@ -141,7 +141,7 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
       df[n][0] = rho_node;
       break;
     }
-    case 2: {
+    case 2: {  // top-left
       auto rho_node = 0.5 * (cm_.rho[n - nx] + cm_.rho[n + 1]);
       for (auto &u : vel) u *= rho_node;
       df[n][E] = df[n][W] + 2.0 / 3.0 * vel[0];
@@ -153,7 +153,7 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
       df[n][0] = rho_node;
       break;
     }
-    case 3: {
+    case 3: {  // top-right
       auto rho_node = 0.5 * (cm_.rho[n - nx] + cm_.rho[n - 1]);
       for (auto &u : vel) u *= rho_node;
       df[n][W] = df[n][E] - 2.0 / 3.0 * vel[0];

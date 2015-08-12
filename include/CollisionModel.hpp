@@ -44,6 +44,8 @@ class CollisionModel {
    * Pure virtual function to compute the macroscopic properties of the lattice
    * depending on the equation, density and velocity for Navier-Stokes, only
    * density for Convection-diffusion equation
+   * This is used to unify function calling in LatticeBoltzmann TakeStep()
+   * method
    * \param df Particle distribution functions of the lattice stored row-wise
    *        in a 2D vector
    */

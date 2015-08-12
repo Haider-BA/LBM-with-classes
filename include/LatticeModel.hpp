@@ -88,12 +88,6 @@ class LatticeModel {
    */
   double GetLatticeSpeed() const;
 
-  virtual std::vector<std::vector<double>> ComputeULid(
-      const std::vector<std::vector<double>> &lattice
-    , const std::vector<double> &rho
-    , const std::vector<std::vector<double>> &src
-    , double u_lid) = 0;
-
   /**
    * Lattice velocity stored row-wise in a 2D vector
    */
@@ -110,13 +104,49 @@ class LatticeModel {
   std::vector<double> omega;
 
  protected:
+  /**
+   * Checks if input parameters for lattice model is valid, prevents creation of
+   * invalid lattice model, such as a size 0 x 0 lattice
+   * \return validity of lattice model
+   *         TRUE: input parameters are invalid
+   *         FALSE: input parameters are valid
+   */
   bool CheckInput();
+
+  /**
+   * Number of dimensions of the lattice model, 2 for D2Q9 model
+   */
   std::size_t number_of_dimensions_;
+
+  /**
+   * Number of discrete directions of the lattice model, 9 for D2Q9 model
+   */
   std::size_t number_of_directions_;
+
+  /**
+   * Number of rows of the lattice model
+   */
   std::size_t number_of_rows_;
+
+  /**
+   * Number of columns of the lattice model
+   */
   std::size_t number_of_columns_;
+
+  /**
+   * Space step of the lattice model, dx
+   */
   double space_step_;
+
+  /**
+   * Time step of the lattice model, dt
+   */
   double time_step_;
+
+  /**
+   * Propagation speed on the lattice. Based on "Introduction to Lattice
+   * Boltzmann Methods"
+   */
   double c_ = space_step_ / time_step_;
 };
 #endif  // LATTICE_MODEL_HPP_
