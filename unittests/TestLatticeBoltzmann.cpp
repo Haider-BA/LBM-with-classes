@@ -10,7 +10,6 @@
 #include "CollisionNSF.hpp"
 #include "LatticeBoltzmann.hpp"
 #include "LatticeD2Q9.hpp"
-#include "OnGridBouncebackNodes.hpp"
 #include "Particle.hpp"
 #include "ParticleRigid.hpp"
 #include "Printing.hpp"
