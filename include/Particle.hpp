@@ -5,9 +5,7 @@
 
 class Particle {
  public:
-  Particle(std::size_t num_nodes
-    , double radius
-    , double stiffness
+  Particle(double stiffness
     , double center_x
     , double center_y);
 
@@ -23,6 +21,9 @@ class Particle {
     , double force_y);
 
   virtual void ComputeForces() = 0;
+
+  void CreateCylinder(std::size_t num_nodes
+    , double radius);
 
   ParticleNode center;
 

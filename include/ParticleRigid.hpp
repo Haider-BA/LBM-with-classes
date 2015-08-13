@@ -4,9 +4,7 @@
 
 class ParticleRigid: public Particle {
  public:
-  ParticleRigid(std::size_t num_nodes
-    , double radius
-    , double stiffness
+  ParticleRigid(double stiffness
     , double center_x
     , double center_y);
 

@@ -51,6 +51,7 @@ static const double g_d_coeff = 0.2;
 static const double g_k_visco = 0.2;
 static const double g_rho0_f = 1.1;
 static const double g_rho0_g = 1.2;
+static const double g_pi = 3.14159265;
 static const std::vector<double> g_u0 = {1.3, 1.4};
 static const std::vector<std::vector<std::size_t>> g_src_pos_f = {{1, 1},
     {2, 3}};
@@ -1620,16 +1621,12 @@ TEST(InterpolationStencils)
   }
 }
 
-TEST(CreateCylinderParticle)
+TEST(CreateParticle)
 {
-  auto number_of_nodes = 12;
-  auto radius = 2.0;
   auto stiffness = -1.0;
   auto center_x = 10.0;
   auto center_y = 5.0;
-  ParticleRigid cylinder(number_of_nodes
-    , radius
-    , stiffness
+  ParticleRigid cylinder(stiffness
     , center_x
     , center_y);
   CHECK_CLOSE(center_x, cylinder.center.coord[0], zero_tol);
@@ -1668,5 +1665,24 @@ TEST(CreateCylinderParticle)
     CHECK_CLOSE(force_x[i], cylinder.nodes[i].force[0], zero_tol);
     CHECK_CLOSE(force_y[i], cylinder.nodes[i].force[1], zero_tol);
   }  // i
+}
+
+TEST(CreateCylinderParticle)
+{
+  std::size_t num_nodes = 36;
+  auto radius = 2.0;
+  auto stiffness = -1.0;
+  auto center_x = 11.0;
+  auto center_y = 11.0;
+  ParticleRigid cylinder(stiffness
+    , center_x
+    , center_y);
+  cylinder.CreateCylinder(num_nodes
+    , radius);
+  for (auto node : cylinder.nodes) {
+    auto x = node.coord[0] - center_x;
+    auto y = node.coord[1] - center_y;
+    CHECK_CLOSE(radius, sqrt(x * x + y * y), loose_tol);
+  }  // node
 }
 }
