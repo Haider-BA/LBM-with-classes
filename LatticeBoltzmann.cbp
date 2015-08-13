@@ -67,6 +67,7 @@
 		<Unit filename="include/CollisionModel.hpp" />
 		<Unit filename="include/CollisionNS.hpp" />
 		<Unit filename="include/CollisionNSF.hpp" />
+		<Unit filename="include/ImmersedBoundaryMethod.hpp" />
 		<Unit filename="include/LatticeBoltzmann.hpp" />
 		<Unit filename="include/LatticeD2Q9.hpp" />
 		<Unit filename="include/LatticeModel.hpp" />
@@ -88,6 +89,7 @@
 		<Unit filename="src/CollisionModel.cpp" />
 		<Unit filename="src/CollisionNS.cpp" />
 		<Unit filename="src/CollisionNSF.cpp" />
+		<Unit filename="src/ImmersedBoundaryMethod.cpp" />
 		<Unit filename="src/LatticeBoltzmann.cpp" />
 		<Unit filename="src/LatticeD2Q9.cpp" />
 		<Unit filename="src/LatticeModel.cpp" />
