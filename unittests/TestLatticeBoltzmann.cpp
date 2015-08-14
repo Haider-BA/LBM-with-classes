@@ -8,6 +8,7 @@
 #include "CollisionCD.hpp"
 #include "CollisionNS.hpp"
 #include "CollisionNSF.hpp"
+#include "ImmersedBoundaryMethod.hpp"
 #include "LatticeBoltzmann.hpp"
 #include "LatticeD2Q9.hpp"
 #include "Particle.hpp"
@@ -1684,5 +1685,53 @@ TEST(CreateCylinderParticle)
     auto y = node.coord[1] - center_y;
     CHECK_CLOSE(radius, sqrt(x * x + y * y), loose_tol);
   }  // node
+}
+
+TEST(ImmersedBoundaryForceVelocityReferencing)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  CollisionNSF nsf(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f);
+  ImmersedBoundaryMethod ibm(2
+    , nsf.source
+    , lm.u);
+  for (auto n = 0u; n < g_nx * g_ny; ++n) {
+    CHECK_CLOSE(nsf.source[n][0], ibm.fluid_force[n][0], zero_tol);
+    CHECK_CLOSE(nsf.source[n][1], ibm.fluid_force[n][1], zero_tol);
+    CHECK_CLOSE(lm.u[n][0], ibm.fluid_velocity[n][0], zero_tol);
+    CHECK_CLOSE(lm.u[n][1], ibm.fluid_velocity[n][1], zero_tol);
+  }  // n
+}
+
+TEST(ImmersedBoundaryClearVelocityForInterpolation)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  CollisionNSF nsf(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f);
+  ImmersedBoundaryMethod ibm(2
+    , nsf.source
+    , lm.u);
+  ibm.InterpolateFluidVelocity();
+  ibm.SpreadForce();
+  for (auto n = 0u; n < g_nx * g_ny; ++n) {
+    CHECK_CLOSE(0.0, lm.u[n][0], zero_tol);
+    CHECK_CLOSE(0.0, lm.u[n][1], zero_tol);
+    CHECK_CLOSE(0.0, nsf.source[n][0], zero_tol);
+    CHECK_CLOSE(0.0, nsf.source[n][1], zero_tol);
+  }  // n
 }
 }
