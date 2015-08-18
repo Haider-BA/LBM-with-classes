@@ -1,4 +1,5 @@
 #include "ImmersedBoundaryMethod.hpp"
+#include <iostream>
 
 ImmersedBoundaryMethod::ImmersedBoundaryMethod(int interpolation_stencil
   , std::vector<std::vector<double>> &lattice_force
@@ -9,6 +10,11 @@ ImmersedBoundaryMethod::ImmersedBoundaryMethod(int interpolation_stencil
     interpolation_stencil_ {interpolation_stencil}
 {}
 
+void ImmersedBoundaryMethod::AddParticle(Particle* particle)
+{
+  particles.push_back(particle);
+}
+
 void ImmersedBoundaryMethod::InterpolateFluidVelocity()
 {
   fluid_velocity.assign(fluid_velocity.size(), {0.0, 0.0});
@@ -17,4 +23,12 @@ void ImmersedBoundaryMethod::InterpolateFluidVelocity()
 void ImmersedBoundaryMethod::SpreadForce()
 {
   fluid_force.assign(fluid_force.size(), {0.0, 0.0});
+  std::cout << "spread force" << std::endl;
+  for (auto particle : particles) {
+    std::cout << "looping particles" << std::endl;
+    auto nn = particle->GetNumberOfNodes();
+    for (auto n = 0u; n < nn; ++n) {
+      std::cout << "node " << n << std::endl;
+    }
+  }
 }

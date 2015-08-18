@@ -3,11 +3,18 @@
 #include "ParticleNode.hpp"
 
 Particle::Particle(double stiffness
+  , std::size_t num_nodes
   , double center_x
   , double center_y)
   : center {ParticleNode(center_x, center_y, center_x, center_y)},
+    number_of_nodes_ {num_nodes},
     nodes {}
 {}
+
+std::size_t Particle::GetNumberOfNodes() const
+{
+  return number_of_nodes_;
+}
 
 void Particle::AddNode(double x
   , double y
@@ -21,14 +28,13 @@ void Particle::AddNode(double x
   nodes.push_back(ParticleNode(x, y, x_ref, y_ref, u_x, u_y, force_x, force_y));
 }
 
-void Particle::CreateCylinder(std::size_t num_nodes
-  , double radius)
+void Particle::CreateCylinder(double radius)
 {
-  for (auto i = 0u; i < num_nodes; ++i) {
+  for (auto i = 0u; i < number_of_nodes_; ++i) {
     auto x = center.coord[0] + radius * sin(2.0 * pi_ * static_cast<double>(i) /
-        num_nodes);
+        number_of_nodes_);
     auto y = center.coord[1] + radius * cos(2.0 * pi_ * static_cast<double>(i) /
-        num_nodes);
+        number_of_nodes_);
     Particle::AddNode(x, y, x, y, 0.0, 0.0, 0.0, 0.0);
   }
 }

@@ -6,10 +6,13 @@
 class Particle {
  public:
   Particle(double stiffness
+    , std::size_t num_nodes
     , double center_x
     , double center_y);
 
   virtual ~Particle() = default;
+
+  std::size_t GetNumberOfNodes() const;
 
   void AddNode(double x
     , double y
@@ -22,13 +25,13 @@ class Particle {
 
   virtual void ComputeForces() = 0;
 
-  void CreateCylinder(std::size_t num_nodes
-    , double radius);
+  void CreateCylinder(double radius);
 
   ParticleNode center;
 
   std::vector<ParticleNode> nodes;
  protected:
   double pi_ = 3.14159265;
+  std::size_t number_of_nodes_;
 };
 #endif  // PARTICLE_HPP_

@@ -12,6 +12,8 @@ class ImmersedBoundaryMethod {
 
   ~ImmersedBoundaryMethod() = default;
 
+  void AddParticle(Particle* particle);
+
   void InterpolateFluidVelocity();
 
   void SpreadForce();
