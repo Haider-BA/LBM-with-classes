@@ -23,12 +23,13 @@ void ImmersedBoundaryMethod::InterpolateFluidVelocity()
 void ImmersedBoundaryMethod::SpreadForce()
 {
   fluid_force.assign(fluid_force.size(), {0.0, 0.0});
-  std::cout << "spread force" << std::endl;
   for (auto particle : particles) {
     std::cout << "looping particles" << std::endl;
     auto nn = particle->GetNumberOfNodes();
     for (auto n = 0u; n < nn; ++n) {
-      std::cout << "node " << n << std::endl;
+      std::cout << "node " << n << " "
+                << particle->nodes[n].coord[0] << " "
+                << particle->nodes[n].coord[1] << std::endl;
     }
   }
 }
