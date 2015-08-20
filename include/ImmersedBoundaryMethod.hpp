@@ -1,14 +1,14 @@
 #ifndef IMMERSED_BOUNDARY_METHOD_
 #define IMMERSED_BOUNDARY_METHOD_
 #include <vector>
-
+#include "LatticeModel.hpp"
 #include "Particle.hpp"
 
 class ImmersedBoundaryMethod {
  public:
   ImmersedBoundaryMethod(int interpolation_stencil
     , std::vector<std::vector<double>> &lattice_force
-    , std::vector<std::vector<double>> &lattice_velocity);
+    , LatticeModel &lm);
 
   ~ImmersedBoundaryMethod() = default;
 
@@ -22,10 +22,10 @@ class ImmersedBoundaryMethod {
 
   std::vector<std::vector<double>> &fluid_force;
 
-  std::vector<std::vector<double>> &fluid_velocity;
-
  private:
   int interpolation_stencil_;
+
+  LatticeModel &lm_;
 
 };
 #endif  // IMMERSED_BOUNDARY_METHOD_

@@ -955,15 +955,12 @@ TEST(HalfwayBouncebackCopyDF)
     , ns
     , sp);
   std::vector<bool> bounce_back(g_nx * g_ny, false);
-  auto value = 0.1;
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     for (auto i = 0u; i < 9; ++i) {
       f.df[n][i] = static_cast<double>(n) + static_cast<double>(i) * 0.1;
       ff.df[n][i] = static_cast<double>(n) + static_cast<double>(i) * 0.1;
     }  // i
   }  // n
-//  Print(f.df, g_nx, g_ny);
-//  Print(ff.df, g_nx, g_ny);
   for (auto y = 0u; y < g_ny; ++y) {
     hwbb.AddNode(0, y);
     hwbb.AddNode(g_nx - 1, y);
@@ -984,54 +981,6 @@ TEST(HalfwayBouncebackCopyDF)
     auto ind = 0;
     for (auto i : node.df_node) CHECK_CLOSE(ff.df[node.n][ind++], i, zero_tol);
   }
-  f.df = sd.Stream(f.df);
-  ff.df = sp.Stream(ff.df);
-  hwbb.UpdateNodes(f.df
-    , g_is_modify_stream);
-  hwbbsp.UpdateNodes(ff.df
-    , g_is_modify_stream);
-  for (auto n = 0u; n < g_nx * g_ny; ++n) {
-    auto bottom = n / g_nx == 0;
-    auto top = n / g_nx == g_ny - 1;
-//    for (auto i = 0u; i < 9; ++i) {
-//      if (bounce_back[n]) {
-//        if (top) {
-//          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? top_left_result[i] :
-//              top_right_result[i], f.df[n][i], zero_tol);
-//          CHECK_CLOSE(ff.df[n][0] - 1.0 < zero_tol ? top_left_result[i] :
-//              top_right_result[i], ff.df[n][i], zero_tol);
-//        }
-//        else if (bottom) {
-//          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? bottom_left_result[i] :
-//              bottom_right_result[i], f.df[n][i], zero_tol);
-//          CHECK_CLOSE(ff.df[n][0] - 1.0 < zero_tol ? bottom_left_result[i] :
-//              bottom_right_result[i], ff.df[n][i], zero_tol);
-//        }
-//        else {
-//          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? left_result[i] :
-//              right_result[i], f.df[n][i], zero_tol);
-//          CHECK_CLOSE(ff.df[n][0] - 1.0 < zero_tol ? left_result[i] :
-//              right_result[i], ff.df[n][i], zero_tol);
-//        }
-//      }
-//      else {
-//        if (top) {
-//          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? first_top_result[i] :
-//              second_top_result[i], f.df[n][i], zero_tol);
-//        }
-//        else if (bottom) {
-//          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? first_bottom_result[i] :
-//              second_bottom_result[i], f.df[n][i], zero_tol);
-//        }
-//        else {
-//          CHECK_CLOSE(f.df[n][0] - 1.0 < zero_tol ? first_result[i] :
-//              second_result[i], f.df[n][i], zero_tol);
-//        }
-//        CHECK_CLOSE(ff.df[n][0] - 1.0 < zero_tol ? first_result[i] :
-//            second_result[i], ff.df[n][i], zero_tol);
-//      }
-//    }  // i
-  }  // n
 }
 
 TEST(StreamHorizontalHalfwayBounceback)
@@ -1689,7 +1638,7 @@ TEST(CreateCylinderParticle)
   }  // node
 }
 
-TEST(ImmersedBoundaryForceVelocityReferencing)
+TEST(ImmersedBoundaryForceReferencing)
 {
   LatticeD2Q9 lm(g_ny
     , g_nx
@@ -1703,12 +1652,10 @@ TEST(ImmersedBoundaryForceVelocityReferencing)
     , g_rho0_f);
   ImmersedBoundaryMethod ibm(2
     , nsf.source
-    , lm.u);
+    , lm);
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     CHECK_CLOSE(nsf.source[n][0], ibm.fluid_force[n][0], zero_tol);
     CHECK_CLOSE(nsf.source[n][1], ibm.fluid_force[n][1], zero_tol);
-    CHECK_CLOSE(lm.u[n][0], ibm.fluid_velocity[n][0], zero_tol);
-    CHECK_CLOSE(lm.u[n][1], ibm.fluid_velocity[n][1], zero_tol);
   }  // n
 }
 
@@ -1726,7 +1673,7 @@ TEST(ImmersedBoundaryClearVelocityForInterpolation)
     , g_rho0_f);
   ImmersedBoundaryMethod ibm(2
     , nsf.source
-    , lm.u);
+    , lm);
   ibm.InterpolateFluidVelocity();
   ibm.SpreadForce();
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
@@ -1761,13 +1708,51 @@ TEST(ImmersedBoundaryLoopThroughParticles)
     , g_rho0_f);
   ImmersedBoundaryMethod ibm(2
     , nsf.source
-    , lm.u);
+    , lm);
   ibm.AddParticle(&cylinder);
   ibm.InterpolateFluidVelocity();
   ibm.SpreadForce();
   for (auto n = 0u; n < g_nx * g_ny; ++n) {
     CHECK_CLOSE(0.0, lm.u[n][0], zero_tol);
     CHECK_CLOSE(0.0, lm.u[n][1], zero_tol);
+    CHECK_CLOSE(0.0, nsf.source[n][0], zero_tol);
+    CHECK_CLOSE(0.0, nsf.source[n][1], zero_tol);
+  }  // n
+}
+
+TEST(ImmersedBoundarySpreadForce)
+{
+  auto nx = 30u;
+  auto ny = 20u;
+  std::size_t num_nodes = 36;
+  auto radius = 5.0;
+  auto stiffness = -1.0;
+  auto center_x = 11.0;
+  auto center_y = 11.0;
+  ParticleRigid cylinder(stiffness
+    , num_nodes
+    , center_x
+    , center_y);
+  cylinder.CreateCylinder(radius);
+  for (auto &node : cylinder.nodes) {
+    node.force = {1.1, 1.2};
+  }
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  CollisionNSF nsf(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f);
+  ImmersedBoundaryMethod ibm(2
+    , nsf.source
+    , lm);
+  ibm.AddParticle(&cylinder);
+  ibm.SpreadForce();
+  for (auto n = 0u; n < nx * ny; ++n) {
     CHECK_CLOSE(0.0, nsf.source[n][0], zero_tol);
     CHECK_CLOSE(0.0, nsf.source[n][1], zero_tol);
   }  // n
