@@ -1661,31 +1661,7 @@ TEST(ImmersedBoundaryForceReferencing)
 
 TEST(ImmersedBoundaryClearVelocityForInterpolation)
 {
-  LatticeD2Q9 lm(g_ny
-    , g_nx
-    , g_dx
-    , g_dt
-    , g_u0);
-  CollisionNSF nsf(lm
-    , g_src_pos_f
-    , g_src_str_f
-    , g_k_visco
-    , g_rho0_f);
-  ImmersedBoundaryMethod ibm(2
-    , nsf.source
-    , lm);
-  ibm.InterpolateFluidVelocity();
-  ibm.SpreadForce();
-  for (auto n = 0u; n < g_nx * g_ny; ++n) {
-    CHECK_CLOSE(0.0, lm.u[n][0], zero_tol);
-    CHECK_CLOSE(0.0, lm.u[n][1], zero_tol);
-    CHECK_CLOSE(0.0, nsf.source[n][0], zero_tol);
-    CHECK_CLOSE(0.0, nsf.source[n][1], zero_tol);
-  }  // n
-}
-
-TEST(ImmersedBoundaryLoopThroughParticles)
-{
+  std::vector<double> u0 = {1.1, 1.2};
   std::size_t num_nodes = 36;
   auto radius = 2.0;
   auto stiffness = -1.0;
@@ -1700,7 +1676,7 @@ TEST(ImmersedBoundaryLoopThroughParticles)
     , g_nx
     , g_dx
     , g_dt
-    , g_u0);
+    , u0);
   CollisionNSF nsf(lm
     , g_src_pos_f
     , g_src_str_f
@@ -1710,13 +1686,11 @@ TEST(ImmersedBoundaryLoopThroughParticles)
     , nsf.source
     , lm);
   ibm.AddParticle(&cylinder);
+  for (auto n = 0u; n < num_nodes; ++n) cylinder.nodes[n].u = {1.0, 1.1};
   ibm.InterpolateFluidVelocity();
-  ibm.SpreadForce();
-  for (auto n = 0u; n < g_nx * g_ny; ++n) {
-    CHECK_CLOSE(0.0, lm.u[n][0], zero_tol);
-    CHECK_CLOSE(0.0, lm.u[n][1], zero_tol);
-    CHECK_CLOSE(0.0, nsf.source[n][0], zero_tol);
-    CHECK_CLOSE(0.0, nsf.source[n][1], zero_tol);
+  for (auto n = 0u; n < num_nodes; ++n) {
+    CHECK_CLOSE(u0[0], cylinder.nodes[n].u[0], loose_tol);
+    CHECK_CLOSE(u0[1], cylinder.nodes[n].u[1], loose_tol);
   }  // n
 }
 
