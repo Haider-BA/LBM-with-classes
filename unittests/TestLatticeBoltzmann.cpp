@@ -778,7 +778,7 @@ TEST(BoundaryZouHeSide)
     }  // x
   }  // i
 }
-/*
+
 TEST(BoundaryZouHeCorner)
 {
   LatticeD2Q9 lm(g_ny
@@ -789,9 +789,8 @@ TEST(BoundaryZouHeCorner)
   CollisionNS ns(lm
     , g_k_visco
     , g_rho0_f);
-  ZouHeNodes zhns(!g_is_prestream
-    , ns
-    , lm);
+  ZouHeNodes zhns(lm
+    , ns);
   StreamPeriodic sp(lm);
   LatticeBoltzmann f(lm
     , ns
@@ -799,25 +798,25 @@ TEST(BoundaryZouHeCorner)
   auto u_lid = 0.1;
   auto v_lid = 0.1;
   std::vector<double> nums = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-  std::vector<double> bottom_left = {10.83333,
-                                     4.066667, 5.066667, 4, 5,
-                                     8.033333, 0, 8, 0};
+  std::vector<double> bottom_left = {3.5,
+                                     7, 8, 4, 5,
+                                     9.5, 0, 8, 0};
   std::vector<double> bottom_right = {13,
-                                      2, 5.066667, 1.933333, 5,
-                                      0.016667, 9, -0.016667, 9};
+                                      2, 8, -1, 5,
+                                      0.75, 9, -0.75, 9};
   std::vector<double> top_left = {17,
-                                  4.066667, 3, 4, 2.933333,
-                                  0.016667, 7, -0.016667, 7};
-  std::vector<double> top_right = {23.166667,
-                                   2, 3, 1.933333, 2.933333,
-                                   6, 0, 5.966667, 0};
+                                  7, 3, 4, 0,
+                                  0.75, 7, -0.75, 7};
+  std::vector<double> top_right = {30.5,
+                                   2, 3, -1, 0,
+                                   6, 0, 4.5, 0};
   for (auto &node : f.df) node = nums;
   ns.rho = ns.ComputeRho(f.df);
   zhns.AddNode(0, 0, u_lid, v_lid);
   zhns.AddNode(g_nx - 1, 0, u_lid, v_lid);
   zhns.AddNode(0, g_ny - 1, u_lid, v_lid);
   zhns.AddNode(g_nx - 1, g_ny - 1, u_lid, v_lid);
-  zhns.UpdateNodes(f.df);
+  zhns.UpdateNodes(f.df, !g_is_prestream);
   for (auto i = 0; i < 9; ++i) {
     CHECK_CLOSE(bottom_left[i], f.df[0][i], loose_tol);
     CHECK_CLOSE(bottom_right[i], f.df[g_nx - 1][i], loose_tol);
@@ -825,7 +824,7 @@ TEST(BoundaryZouHeCorner)
     CHECK_CLOSE(top_right[i], f.df[g_ny * g_nx - 1][i], loose_tol);
   }
 }
-*/
+
 TEST(BoundaryZouHePressureSide)
 {
   LatticeD2Q9 lm(g_ny
@@ -1806,5 +1805,30 @@ TEST(ImmersedBoundaryUpdateParticlePosition)
     CHECK_CLOSE(exp_coord[n][0], cylinder.nodes[n].coord[0], loose_tol);
     CHECK_CLOSE(exp_coord[n][1], cylinder.nodes[n].coord[1], loose_tol);
   }  // n
+}
+
+TEST(RigidParticleComputeParticleForce)
+{
+  std::size_t num_nodes = 36;
+  auto radius = 2.0;
+  auto stiffness = -1.0;
+  auto center_x = 11.0;
+  auto center_y = 11.0;
+  auto displacement = 0.1;
+  ParticleRigid cylinder(stiffness
+    , num_nodes
+    , center_x
+    , center_y);
+  cylinder.CreateCylinder(radius);
+  auto force = -stiffness * 2.0 * g_pi * radius / num_nodes * displacement;
+  for (auto &node : cylinder.nodes) {
+    node.coord[0] += displacement;
+    node.coord[1] += displacement;
+  }  // node
+  cylinder.ComputeForces();
+  for (auto node : cylinder.nodes) {
+    CHECK_CLOSE(force, node.force[0], loose_tol);
+    CHECK_CLOSE(force, node.force[1], loose_tol);
+  }  // node
 }
 }

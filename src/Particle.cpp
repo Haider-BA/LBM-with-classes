@@ -8,6 +8,8 @@ Particle::Particle(double stiffness
   , double center_y)
   : center {ParticleNode(center_x, center_y, center_x, center_y)},
     nodes {},
+    area_ {0.0},
+    stiffness_ {stiffness},
     number_of_nodes_ {num_nodes}
 {}
 
@@ -36,5 +38,6 @@ void Particle::CreateCylinder(double radius)
     auto y = center.coord[1] + radius * cos(2.0 * pi_ * static_cast<double>(i) /
         number_of_nodes_);
     Particle::AddNode(x, y, x, y, 0.0, 0.0, 0.0, 0.0);
+    area_ = 2 * pi_ * radius;
   }
 }

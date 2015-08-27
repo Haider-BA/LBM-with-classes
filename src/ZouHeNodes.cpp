@@ -46,12 +46,12 @@ void ZouHeNodes::UpdateNodes(std::vector<std::vector<double>> &df
   , bool is_modify_stream)
 {
   if (!is_modify_stream) {
-    for (auto n = 0u; n < nodes.size(); ++n) {
-      if (nodes[n].b1) {
-        ZouHeNodes::UpdateCorner(df, nodes[n]);
+    for (auto node : nodes) {
+      if (node.b1) {
+        ZouHeNodes::UpdateCorner(df, node);
       }
       else {
-        ZouHeNodes::UpdateSide(df, nodes[n]);
+        ZouHeNodes::UpdateSide(df, node);
       }
     }  // n
   }
@@ -110,7 +110,7 @@ void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
 }
 
 void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
-    , ValueNode &node)
+  , ValueNode &node)
 {
   auto n = node.n;
   auto vel = node.v1;
@@ -123,7 +123,7 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
       df[n][E] = df[n][W] + 2.0 / 3.0 * vel[0];
       df[n][N] = df[n][S] + 2.0 / 3.0 * vel[1];
       df[n][NE] = df[n][SW] + vel[0] / 6.0 + vel[1] / 6.0;
-      df[n][NW] = -1.0 * vel[0] / 12.0 + vel[1] / 12.0;
+      df[n][NW] = -vel[0] / 12.0 + vel[1] / 12.0;
       df[n][SE] = vel[0] / 12.0 - vel[1] / 12.0;
       for (auto i = 1u; i < nc; ++i) rho_node -= df[n][i];
       df[n][0] = rho_node;
@@ -136,7 +136,7 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
       df[n][N] = df[n][S] + 2.0 / 3.0 * vel[1];
       df[n][NW] = df[n][SE] - vel[0] / 6.0 + vel[1] / 6.0;
       df[n][NE] = vel[0] / 12.0 + vel[1] / 12.0;
-      df[n][SW] = -1.0 * vel[0] / 12.0 - vel[1] / 12.0;
+      df[n][SW] = -vel[0] / 12.0 - vel[1] / 12.0;
       for (auto i = 1u; i < nc; ++i) rho_node -= df[n][i];
       df[n][0] = rho_node;
       break;
@@ -148,7 +148,7 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
       df[n][S] = df[n][N] - 2.0 / 3.0 * vel[1];
       df[n][SE] = df[n][NW] + vel[0] / 6.0 - vel[1] / 6.0;
       df[n][NE] = vel[0] / 12.0 + vel[1] / 12.0;
-      df[n][SW] = -1.0 * vel[0] / 12.0 - vel[1] / 12.0;
+      df[n][SW] = -vel[0] / 12.0 - vel[1] / 12.0;
       for (auto i = 1u; i < nc; ++i) rho_node -= df[n][i];
       df[n][0] = rho_node;
       break;
@@ -159,7 +159,7 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
       df[n][W] = df[n][E] - 2.0 / 3.0 * vel[0];
       df[n][S] = df[n][N] - 2.0 / 3.0 * vel[1];
       df[n][SW] = df[n][NE] - vel[0] / 6.0 - vel[1] / 6.0;
-      df[n][NW] = -1.0 * vel[0] / 12.0 + vel[1] / 12.0;
+      df[n][NW] = -vel[0] / 12.0 + vel[1] / 12.0;
       df[n][SE] = vel[0] / 12.0 - vel[1] / 12.0;
       for (auto i = 1u; i < nc; ++i) rho_node -= df[n][i];
       df[n][0] = rho_node;

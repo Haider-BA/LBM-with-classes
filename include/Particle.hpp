@@ -32,6 +32,8 @@ class Particle {
   std::vector<ParticleNode> nodes;
  protected:
   double pi_ = 3.14159265;
+  double area_;
+  double stiffness_;
   std::size_t number_of_nodes_;
 };
 #endif  // PARTICLE_HPP_

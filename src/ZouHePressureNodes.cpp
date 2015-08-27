@@ -40,12 +40,12 @@ void ZouHePressureNodes::UpdateNodes(std::vector<std::vector<double>> &df
   , bool is_modify_stream)
 {
   if (!is_modify_stream) {
-    for (auto n = 0u; n < nodes.size(); ++n) {
-      if (nodes[n].b1) {
-        ZouHePressureNodes::UpdateCorner(df, nodes[n]);
+    for (auto node : nodes) {
+      if (node.b1) {
+        ZouHePressureNodes::UpdateCorner(df, node);
       }
       else {
-        ZouHePressureNodes::UpdateSide(df, nodes[n]);
+        ZouHePressureNodes::UpdateSide(df, node);
       }
     }  // n
   }
