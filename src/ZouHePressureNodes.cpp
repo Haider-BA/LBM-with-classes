@@ -7,7 +7,7 @@ ZouHePressureNodes::ZouHePressureNodes(LatticeModel &lm
   , CollisionModel &cm)
   : BoundaryNodes(false, false, lm),
     nodes {},
-    cm_ (cm)
+    cm_ {cm}
 {}
 
 void ZouHePressureNodes::AddNode(std::size_t x

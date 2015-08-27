@@ -7,8 +7,8 @@ Particle::Particle(double stiffness
   , double center_x
   , double center_y)
   : center {ParticleNode(center_x, center_y, center_x, center_y)},
-    number_of_nodes_ {num_nodes},
-    nodes {}
+    nodes {},
+    number_of_nodes_ {num_nodes}
 {}
 
 std::size_t Particle::GetNumberOfNodes() const

@@ -10,16 +10,13 @@
 #include "Printing.hpp"
 #include "WriteResultsCmgui.hpp"
 
-// cant use braces to initialize reference cuz gcc bug
-// https://stackoverflow.com/questions/10509603/why-cant-i-initialize-a-
-// reference-in-an-initializer-list-with-uniform-initializ
 LatticeBoltzmann::LatticeBoltzmann(LatticeModel &lm
   , CollisionModel &cm
   , StreamModel &sm)
   : df {cm.edf},
-    lm_ (lm),
-    cm_ (cm),
-    sm_ (sm),
+    lm_ {lm},
+    cm_ {cm},
+    sm_ {sm},
     bn_ {}
 {}
 

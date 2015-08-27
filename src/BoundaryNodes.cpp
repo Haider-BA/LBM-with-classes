@@ -6,5 +6,5 @@ BoundaryNodes::BoundaryNodes(bool is_prestream
   , LatticeModel &lm)
   : prestream {is_prestream},
     during_stream {is_during_stream},
-    lm_ (lm)
+    lm_ {lm}
 {}

@@ -6,39 +6,15 @@
 ImmersedBoundaryMethod::ImmersedBoundaryMethod(int interpolation_stencil
   , std::vector<std::vector<double>> &lattice_force
   , LatticeModel &lm)
-  : particles{},
+  : particles {},
     fluid_force {lattice_force},
     interpolation_stencil_ {interpolation_stencil},
     lm_ {lm}
 {}
 
-void ImmersedBoundaryMethod::AddParticle(Particle* particle)
+void ImmersedBoundaryMethod::AddParticle(Particle *particle)
 {
   particles.push_back(particle);
-}
-
-void ImmersedBoundaryMethod::InterpolateFluidVelocity()
-{
-  auto nx = lm_.GetNumberOfColumns();
-  auto ny = lm_.GetNumberOfRows();
-  // pointer always editable, do not need &
-  for (auto particle : particles) {
-    for (auto &node : particle -> nodes) {
-      node.u = {0.0, 0.0};
-      auto x_particle = node.coord[0];
-      auto y_particle = node.coord[1];
-      auto x_fluid = static_cast<std::size_t>(x_particle);
-      auto y_fluid = static_cast<std::size_t>(y_particle);
-      for (auto x = x_fluid; x < x_fluid + 2; ++x) {
-        for (auto y = y_fluid; y < y_fluid + 2; ++y) {
-          auto n = (y % ny) * nx + x % nx;
-          auto weight = Dirac2(x_particle - x, y_particle - y);
-          node.u[0] += lm_.u[n][0] * weight;
-          node.u[1] += lm_.u[n][1] * weight;
-        }  // y
-      }  // x
-    }  // node
-  }  // particle
 }
 
 void ImmersedBoundaryMethod::SpreadForce()
@@ -70,6 +46,45 @@ void ImmersedBoundaryMethod::SpreadForce()
           fluid_force[n][1] += node.force[1] * weight;
         }  // y
       }  // x
+    }  // node
+  }  // particle
+}
+
+void ImmersedBoundaryMethod::InterpolateFluidVelocity()
+{
+  auto nx = lm_.GetNumberOfColumns();
+  auto ny = lm_.GetNumberOfRows();
+  // pointer always editable, do not need &
+  for (auto particle : particles) {
+    for (auto &node : particle->nodes) {
+      node.u = {0.0, 0.0};
+      auto x_particle = node.coord[0];
+      auto y_particle = node.coord[1];
+      auto x_fluid = static_cast<std::size_t>(x_particle);
+      auto y_fluid = static_cast<std::size_t>(y_particle);
+      for (auto x = x_fluid; x < x_fluid + 2; ++x) {
+        for (auto y = y_fluid; y < y_fluid + 2; ++y) {
+          auto n = (y % ny) * nx + x % nx;
+          auto weight = Dirac2(x_particle - x, y_particle - y);
+          node.u[0] += lm_.u[n][0] * weight;
+          node.u[1] += lm_.u[n][1] * weight;
+        }  // y
+      }  // x
+    }  // node
+  }  // particle
+}
+
+void ImmersedBoundaryMethod::UpdateParticlePosition()
+{
+  auto dt = lm_.GetTimeStep();
+  for (auto particle : particles) {
+    auto nn = particle->GetNumberOfNodes();
+    particle->center.coord = {0.0, 0.0};
+    for (auto &node : particle->nodes) {
+      node.coord[0] += node.u[0] * dt;
+      node.coord[1] += node.u[1] * dt;
+      particle->center.coord[0] += node.coord[0] / nn;
+      particle->center.coord[1] += node.coord[1] / nn;
     }  // node
   }  // particle
 }
