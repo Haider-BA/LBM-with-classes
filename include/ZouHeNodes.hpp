@@ -62,6 +62,12 @@ class ZouHeNodes: public BoundaryNodes {
     , ValueNode &node);
 
   /**
+   * Toggles behaviour of Zou/He nodes when used as outlet, boundary node
+   * velocity will be extrapolated (1st order) from the neighbouring nodes
+   */
+  void ToggleNormalFlow();
+
+  /**
    * Boundary nodes stored in a 1D vector
    */
   std::vector<ValueNode> nodes;
@@ -71,6 +77,8 @@ class ZouHeNodes: public BoundaryNodes {
    * Collision model which contains information on lattice density
    */
   CollisionModel &cm_;
+
+  bool is_normal_flow_;
 //  std::vector<bool> is_corner_;
 //  std::vector<bool> knowns_;
 

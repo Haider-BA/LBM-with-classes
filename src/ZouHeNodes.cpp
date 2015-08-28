@@ -8,7 +8,8 @@ ZouHeNodes::ZouHeNodes(LatticeModel &lm
   , CollisionModel &cm)
   : BoundaryNodes(false, false, lm),
     nodes {},
-    cm_ {cm}
+    cm_ {cm},
+    is_normal_flow_ {false}
 {}
 
 void ZouHeNodes::AddNode(std::size_t x
@@ -61,9 +62,14 @@ void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
   , ValueNode &node)
 {
   auto n = node.n;
-  auto vel = node.v1;
+  auto nx = lm_.GetNumberOfColumns();
+  auto scaling = lm_.GetTimeStep() / lm_.GetSpaceStep();
   switch(node.i1) {
     case 0: {  // right
+      auto vel = is_normal_flow_ ? lm_.u[n - 1] : node.v1;
+      if (is_normal_flow_) {
+        for (auto &u : vel) u *= scaling;
+      }
       auto rho_node = (df[n][0] + df[n][N] + df[n][S] + 2.0 * (df[n][E] +
           df[n][NE] + df[n][SE])) / (1.0 + vel[0]);
       auto df_diff = 0.5 * (df[n][S] - df[n][N]);
@@ -74,6 +80,10 @@ void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
       break;
     }
     case 1: {  // top
+      auto vel = is_normal_flow_ ? lm_.u[n - nx] : node.v1;
+      if (is_normal_flow_) {
+        for (auto &u : vel) u *= scaling;
+      }
       auto rho_node = (df[n][0] + df[n][E] + df[n][W] + 2.0 * (df[n][N] +
           df[n][NE] + df[n][NW])) / (1.0 + vel[1]);
       auto df_diff = 0.5 * (df[n][E] - df[n][W]);
@@ -84,6 +94,10 @@ void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
       break;
     }
     case 2: {  // left
+      auto vel = is_normal_flow_ ? lm_.u[n + 1] : node.v1;
+      if (is_normal_flow_) {
+        for (auto &u : vel) u *= scaling;
+      }
       auto rho_node = (df[n][0] + df[n][N] + df[n][S] + 2.0 * (df[n][W] +
           df[n][NW] + df[n][SW])) / (1.0 - vel[0]);
       auto df_diff = 0.5 * (df[n][S] - df[n][N]);
@@ -94,6 +108,10 @@ void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
       break;
     }
     case 3: {  // bottom
+      auto vel = is_normal_flow_ ? lm_.u[n + nx] : node.v1;
+      if (is_normal_flow_) {
+        for (auto &u : vel) u *= scaling;
+      }
       auto rho_node = (df[n][0] + df[n][E] + df[n][W] + 2.0 * (df[n][S] +
           df[n][SW] + df[n][SE])) / (1.0 - vel[1]);
       auto df_diff = 0.5 * (df[n][W] - df[n][E]);
@@ -169,4 +187,9 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
       throw std::runtime_error("Not a corner");
     }
   }
+}
+
+void ZouHeNodes::ToggleNormalFlow()
+{
+  is_normal_flow_ = true;
 }

@@ -35,7 +35,7 @@ void LatticeBoltzmann::TakeStep()
   }  // bdr
   df = sm_.Stream(df);
   for (auto bdr : bn_) {
-    if (bdr-> during_stream) bdr->UpdateNodes(df, true);
+    if (bdr->during_stream) bdr->UpdateNodes(df, true);
     if (!bdr->prestream) bdr->UpdateNodes(df, false);
   }  // bdr
 }

@@ -8,6 +8,7 @@
 #include "CollisionNSF.hpp"
 #include "LatticeBoltzmann.hpp"
 #include "LatticeD2Q9.hpp"
+#include "ParticleRigid.hpp"
 #include "Printing.hpp"
 #include "StreamD2Q9.hpp"
 #include "StreamPeriodic.hpp"
@@ -20,7 +21,7 @@ SUITE(SimulationDemo)
 {
 const static auto g_dx = 0.0316;
 const static auto g_dt = 0.001;
-static const auto g_cs_sqr = (g_dx / g_dt) * (g_dx / g_dt) / 3.0;
+const static auto g_cs_sqr = (g_dx / g_dt) * (g_dx / g_dt) / 3.0;
 const static auto g_k_visco = 0.2;
 const static auto g_rho0_f = 1.0;
 const static auto g_d_coeff = 0.2;
@@ -193,20 +194,11 @@ TEST(SimulateDevelopingPoiseuilleFlow)
   f.AddBoundaryNodes(&inlet);
   f.AddBoundaryNodes(&outlet);
   f.AddBoundaryNodes(&hwbb);
+  outlet.ToggleNormalFlow();
   for (auto t = 0u; t < 501; ++t) {
-    ns.ComputeMacroscopicProperties(f.df);
-    ns.ComputeEq();
-    ns.Collide(f.df);
-    hwbb.UpdateNodes(f.df, false);
-    f.df = sp.Stream(f.df);
-    hwbb.UpdateNodes(f.df, true);
-    inlet.UpdateNodes(f.df, false);
-    // extrapolate outlet velocity (1st order)
-    for (auto &node : outlet.nodes)
-        node.v1[0] = lm.u[node.n - 1][0] / g_dx * g_dt;
-    outlet.UpdateNodes(f.df, false);
-//    f.TakeStep();
+    f.TakeStep();
     WriteResultsCmgui(lm.u, nx, ny, t);
+    std::cout << t << std::endl;
   }
 }
 
@@ -488,5 +480,61 @@ TEST(SimulateLidDrivenCavityFlow)
     myfile << lm.u[y][1] << "," << lm.u[x][0] << std::endl;
   }
   myfile.close();
+}
+
+TEST(SimulateKarmanVortex)
+{
+  std::size_t nx = 30;
+  std::size_t ny = 20;
+  auto dt = 0.001;
+  auto dx = 0.0316;
+  std::vector<double> u0 = {1.0, 0.0};
+  auto k_visco = 0.1;
+  auto u_zh = 0.316;
+  auto v_zh = 0.0;
+  std::size_t num_nodes = 36;
+  auto radius = 2.0;
+  auto stiffness = -0.1;
+  auto center = 11.0;
+  ParticleRigid cylinder(stiffness
+    , num_nodes
+    , center
+    , center);
+  cylinder.CreateCylinder(radius);
+  LatticeD2Q9 lm(ny
+    , nx
+    , dx
+    , dt
+    , u0);
+  StreamD2Q9 sd(lm);
+  CollisionNS ns(lm
+    , k_visco
+    , g_rho0_f);
+  BouncebackNodes hwbb(lm
+    , &sd);
+  ZouHeNodes inlet(lm
+    , ns);
+  ZouHeNodes outlet(lm
+    , ns);
+  LatticeBoltzmann f(lm
+    , ns
+    , sd);
+  for (auto x = 0u; x < nx; ++x) {
+    hwbb.AddNode(x, 0);
+    hwbb.AddNode(x, ny - 1);
+  }  // x
+  for (auto y = 1u; y < ny - 1; ++y) {
+    inlet.AddNode(0, y, u_zh, v_zh);
+    outlet.AddNode(nx - 1, y, 0.0, 0.0);
+  }  // y
+  f.AddBoundaryNodes(&inlet);
+  f.AddBoundaryNodes(&outlet);
+  f.AddBoundaryNodes(&hwbb);
+  outlet.ToggleNormalFlow();
+  for (auto t = 0u; t < 501; ++t) {
+    f.TakeStep();
+    WriteResultsCmgui(lm.u, nx, ny, t);
+    std::cout << t << std::endl;
+  }
 }
 }
