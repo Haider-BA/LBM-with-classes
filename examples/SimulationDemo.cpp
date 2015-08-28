@@ -6,6 +6,7 @@
 #include "CollisionCD.hpp"
 #include "CollisionNS.hpp"
 #include "CollisionNSF.hpp"
+#include "ImmersedBoundaryMethod.hpp"
 #include "LatticeBoltzmann.hpp"
 #include "LatticeD2Q9.hpp"
 #include "ParticleRigid.hpp"
@@ -484,18 +485,21 @@ TEST(SimulateLidDrivenCavityFlow)
 
 TEST(SimulateKarmanVortex)
 {
-  std::size_t nx = 30;
+  std::size_t nx = 200;
   std::size_t ny = 20;
   auto dt = 0.001;
   auto dx = 0.0316;
-  std::vector<double> u0 = {1.0, 0.0};
-  auto k_visco = 0.1;
-  auto u_zh = 0.316;
+  std::vector<double> u0 = {0.0, 0.0};
+  std::vector<std::vector<std::size_t>> src_pos_f;
+  std::vector<std::vector<double>> src_str_f;
+  auto k_visco = 0.05;
+  auto u_zh = 0.016;
   auto v_zh = 0.0;
   std::size_t num_nodes = 36;
-  auto radius = 2.0;
-  auto stiffness = -0.1;
+  auto radius = 5.0;
+  auto stiffness = -10.1;
   auto center = 11.0;
+  auto interpolation_stencil = 2;
   ParticleRigid cylinder(stiffness
     , num_nodes
     , center
@@ -507,18 +511,23 @@ TEST(SimulateKarmanVortex)
     , dt
     , u0);
   StreamD2Q9 sd(lm);
-  CollisionNS ns(lm
+  CollisionNSF nsf(lm
+    , src_pos_f
+    , src_str_f
     , k_visco
     , g_rho0_f);
   BouncebackNodes hwbb(lm
     , &sd);
   ZouHeNodes inlet(lm
-    , ns);
+    , nsf);
   ZouHeNodes outlet(lm
-    , ns);
+    , nsf);
   LatticeBoltzmann f(lm
-    , ns
+    , nsf
     , sd);
+  ImmersedBoundaryMethod ibm(interpolation_stencil
+    , nsf.source
+    , lm);
   for (auto x = 0u; x < nx; ++x) {
     hwbb.AddNode(x, 0);
     hwbb.AddNode(x, ny - 1);
@@ -530,10 +539,17 @@ TEST(SimulateKarmanVortex)
   f.AddBoundaryNodes(&inlet);
   f.AddBoundaryNodes(&outlet);
   f.AddBoundaryNodes(&hwbb);
+  ibm.AddParticle(&cylinder);
   outlet.ToggleNormalFlow();
-  for (auto t = 0u; t < 501; ++t) {
+  auto time = 8001u;
+  auto interval = time / 500;
+  for (auto t = 0u; t < time; ++t) {
+    cylinder.ComputeForces();
+    ibm.SpreadForce();
     f.TakeStep();
-    WriteResultsCmgui(lm.u, nx, ny, t);
+    ibm.InterpolateFluidVelocity();
+    ibm.UpdateParticlePosition();
+    if (t % interval == 0) WriteResultsCmgui(lm.u, nx, ny, t / interval);
     std::cout << t << std::endl;
   }
 }

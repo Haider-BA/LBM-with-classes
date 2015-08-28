@@ -24,6 +24,7 @@ void ImmersedBoundaryMethod::SpreadForce()
   fluid_force.assign(fluid_force.size(), {0.0, 0.0});
   auto nx = lm_.GetNumberOfColumns();
   auto ny = lm_.GetNumberOfRows();
+  auto scaling = lm_.GetSpaceStep() * lm_.GetSpaceStep();
   for (auto particle : particles) {
     for (auto &node : particle->nodes) {
       // Identify the lowest fluid lattice node in interpolation range.
@@ -45,6 +46,8 @@ void ImmersedBoundaryMethod::SpreadForce()
           // weight may need to be multiplied by dx
           fluid_force[n][0] += node.force[0] * weight;
           fluid_force[n][1] += node.force[1] * weight;
+//          fluid_force[n][0] += node.force[0] * weight / scaling;
+//          fluid_force[n][1] += node.force[1] * weight / scaling;
         }  // y
       }  // x
     }  // node
@@ -55,6 +58,7 @@ void ImmersedBoundaryMethod::InterpolateFluidVelocity()
 {
   auto nx = lm_.GetNumberOfColumns();
   auto ny = lm_.GetNumberOfRows();
+  auto scaling = lm_.GetTimeStep() / lm_.GetSpaceStep();
   // pointer always editable, do not need &
   for (auto particle : particles) {
     for (auto &node : particle->nodes) {
@@ -72,6 +76,8 @@ void ImmersedBoundaryMethod::InterpolateFluidVelocity()
           node.u[1] += lm_.u[n][1] * weight;
         }  // y
       }  // x
+//      node.u[0] *= scaling;
+//      node.u[1] *= scaling;
     }  // node
   }  // particle
 }
