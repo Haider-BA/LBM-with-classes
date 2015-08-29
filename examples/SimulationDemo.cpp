@@ -486,19 +486,19 @@ TEST(SimulateLidDrivenCavityFlow)
 TEST(SimulateKarmanVortex)
 {
   std::size_t nx = 200;
-  std::size_t ny = 20;
-  auto dt = 0.001;
-  auto dx = 0.0316;
+  std::size_t ny = 100;
+  auto dt = 1.0;
+  auto dx = 1.0;
   std::vector<double> u0 = {0.0, 0.0};
   std::vector<std::vector<std::size_t>> src_pos_f;
   std::vector<std::vector<double>> src_str_f;
-  auto k_visco = 0.05;
-  auto u_zh = 0.016;
+  auto k_visco = 0.5;
+  auto u_zh = 0.000001;
   auto v_zh = 0.0;
-  std::size_t num_nodes = 36;
-  auto radius = 5.0;
-  auto stiffness = -10.1;
-  auto center = 11.0;
+  std::size_t num_nodes = 500;
+  auto radius = 1;
+  auto stiffness = -0.01;
+  auto center = 50.0;
   auto interpolation_stencil = 2;
   ParticleRigid cylinder(stiffness
     , num_nodes
@@ -541,7 +541,10 @@ TEST(SimulateKarmanVortex)
   f.AddBoundaryNodes(&hwbb);
   ibm.AddParticle(&cylinder);
   outlet.ToggleNormalFlow();
-  auto time = 8001u;
+//  for (auto node : cylinder.nodes) {
+//    std::cout << node.coord[0] << " " << node.coord[1] << std::endl;
+//  }
+  auto time = 1001u;
   auto interval = time / 500;
   for (auto t = 0u; t < time; ++t) {
     cylinder.ComputeForces();
@@ -552,5 +555,9 @@ TEST(SimulateKarmanVortex)
     if (t % interval == 0) WriteResultsCmgui(lm.u, nx, ny, t / interval);
     std::cout << t << std::endl;
   }
+  // cylinder shifts too much
+//  for (auto node : cylinder.nodes) {
+//    std::cout << node.coord[0] << " " << node.coord[1] << std::endl;
+//  }
 }
 }

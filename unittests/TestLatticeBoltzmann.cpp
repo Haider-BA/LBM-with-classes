@@ -1543,29 +1543,43 @@ TEST(InstantPointer)
 
 TEST(InterpolationStencils)
 {
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  CollisionNSF nsf(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f);
+  ImmersedBoundaryMethod ibm(2
+    , nsf.source
+    , lm);
   for (auto x = -2.0; x <= 2.0; x += 0.01) {
     auto x_abs = fabs(x);
-    CHECK_CLOSE(x_abs <= 1.0 ? 1.0 - x_abs : 0.0, Phi2(x), loose_tol);
+    CHECK_CLOSE(x_abs <= 1.0 ? 1.0 - x_abs : 0.0, ibm.Phi2(x), loose_tol);
     if (x_abs <= 0.5) {
-      CHECK_CLOSE((1.0 + sqrt(1.0 - 3.0 * x * x)) / 3.0, Phi3(x), loose_tol);
+      CHECK_CLOSE((1.0 + sqrt(1.0 - 3.0 * x * x)) / 3.0, ibm.Phi3(x),
+          loose_tol);
     }
     else if (x_abs <= 1.5) {
       CHECK_CLOSE((5.0 - 3.0 * x_abs - sqrt(-2.0 + 6.0 * x_abs - 3.0 * x * x)) /
-          6.0, Phi3(x), loose_tol);
+          6.0, ibm.Phi3(x), loose_tol);
     }
     else {
-      CHECK_CLOSE(0.0, Phi3(x), loose_tol);
+      CHECK_CLOSE(0.0, ibm.Phi3(x), loose_tol);
     }
     if (x_abs <= 1.0) {
       CHECK_CLOSE((3.0 - 2.0 * x_abs + sqrt(1.0 + 4.0 * x_abs - 4.0 * x * x)) /
-          8.0, Phi4(x), loose_tol);
+          8.0, ibm.Phi4(x), loose_tol);
     }
     else if (x_abs <= 2.0) {
       CHECK_CLOSE((5.0 - 2.0 * x_abs - sqrt(-7.0 + 12.0 * x_abs - 4.0 * x *
-          x)) / 8.0, Phi4(x), loose_tol);
+          x)) / 8.0, ibm.Phi4(x), loose_tol);
     }
     else {
-      CHECK_CLOSE(0.0, Phi4(x), loose_tol);
+      CHECK_CLOSE(0.0, ibm.Phi4(x), loose_tol);
     }
   }
 }

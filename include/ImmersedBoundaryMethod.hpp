@@ -31,6 +31,57 @@ class ImmersedBoundaryMethod {
   void AddParticle(Particle *particle);
 
   /**
+   * Immersed Boundary Method Interpolation Stencil
+   * http://lbmworkshop.com/wp-content/uploads/2011/09/2011-08-25_Edmonton_IBM.pdf
+   * \param x position in one of the lattice directions
+   * \return contribution towards the interpolation function in one of the lattice
+   *         directions
+   */
+  double Phi2(double x);
+
+  /**
+   * Immersed Boundary Method Interpolation Stencil
+   * http://lbmworkshop.com/wp-content/uploads/2011/09/2011-08-25_Edmonton_IBM.pdf
+   * \param x position in one of the lattice directions
+   * \return contribution towards the interpolation function in one of the lattice
+   *         directions
+   */
+  double Phi3(double x);
+
+  /**
+   * Immersed Boundary Method Interpolation Stencil
+   * http://lbmworkshop.com/wp-content/uploads/2011/09/2011-08-25_Edmonton_IBM.pdf
+   * \param x position in one of the lattice directions
+   * \return contribution towards the interpolation function in one of the lattice
+   *         directions
+   */
+  double Phi4(double x);
+
+  /**
+   * Approximates Dirac delta-function of IBM using Phi2
+   * \param x x-position in lattice
+   * \param y y-position in lattice
+   * \return approximated Dirac delta-function value
+   */
+  double Dirac2(double x, double y);
+
+  /**
+   * Approximates Dirac delta-function of IBM using Phi3
+   * \param x x-position in lattice
+   * \param y y-position in lattice
+   * \return approximated Dirac delta-function value
+   */
+  double Dirac3(double x, double y);
+
+  /**
+   * Approximates Dirac delta-function of IBM using Phi4
+   * \param x x-position in lattice
+   * \param y y-position in lattice
+   * \return approximated Dirac delta-function value
+   */
+  double Dirac4(double x, double y);
+
+  /**
    * Spread particle forces to the lattice using the specified interpolation
    * stencil
    * "Introduction to immersed boundary methods"
