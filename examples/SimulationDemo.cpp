@@ -500,11 +500,6 @@ TEST(SimulateKarmanVortex)
   auto stiffness = -0.01;
   auto center = 50.0;
   auto interpolation_stencil = 2;
-  ParticleRigid cylinder(stiffness
-    , num_nodes
-    , center
-    , center);
-  cylinder.CreateCylinder(radius);
   LatticeD2Q9 lm(ny
     , nx
     , dx
@@ -525,6 +520,12 @@ TEST(SimulateKarmanVortex)
   LatticeBoltzmann f(lm
     , nsf
     , sd);
+  ParticleRigid cylinder(stiffness
+    , num_nodes
+    , center
+    , center
+    , lm);
+  cylinder.CreateCylinder(radius);
   ImmersedBoundaryMethod ibm(interpolation_stencil
     , nsf.source
     , lm);

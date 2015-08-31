@@ -1590,10 +1590,16 @@ TEST(CreateParticle)
   auto center_x = 10.0;
   auto center_y = 5.0;
   auto num_nodes = 10;
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
   ParticleRigid cylinder(stiffness
     , num_nodes
     , center_x
-    , center_y);
+    , center_y
+    , lm);
   CHECK_CLOSE(center_x, cylinder.center.coord[0], zero_tol);
   CHECK_CLOSE(center_y, cylinder.center.coord[1], zero_tol);
   CHECK_CLOSE(center_x, cylinder.center.coord_ref[0], zero_tol);
@@ -1639,10 +1645,16 @@ TEST(CreateCylinderParticle)
   auto stiffness = -1.0;
   auto center_x = 11.0;
   auto center_y = 11.0;
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
   ParticleRigid cylinder(stiffness
     , num_nodes
     , center_x
-    , center_y);
+    , center_y
+    , lm);
   cylinder.CreateCylinder(radius);
   for (auto node : cylinder.nodes) {
     auto x = node.coord[0] - center_x;
@@ -1680,11 +1692,6 @@ TEST(ImmersedBoundaryClearVelocityForInterpolation)
   auto stiffness = -1.0;
   auto center_x = 11.0;
   auto center_y = 11.0;
-  ParticleRigid cylinder(stiffness
-    , num_nodes
-    , center_x
-    , center_y);
-  cylinder.CreateCylinder(radius);
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
@@ -1695,6 +1702,12 @@ TEST(ImmersedBoundaryClearVelocityForInterpolation)
     , g_src_str_f
     , g_k_visco
     , g_rho0_f);
+  ParticleRigid cylinder(stiffness
+    , num_nodes
+    , center_x
+    , center_y
+    , lm);
+  cylinder.CreateCylinder(radius);
   ImmersedBoundaryMethod ibm(2
     , nsf.source
     , lm);
@@ -1742,14 +1755,6 @@ TEST(ImmersedBoundarySpreadForce)
       1.228637, 0.198076, 0.426279, 1.228637, 0.658870, 0.184042, 0.024021,
       0.184042, 0.658870, 1.228637, 0.426279, 0.198076, 0.793251, 1.205727,
       1.492201, 1.205727, 0.793251, 0.198076, 0, 0};
-  ParticleRigid cylinder(stiffness
-    , num_nodes
-    , center_x
-    , center_y);
-  cylinder.CreateCylinder(radius);
-  for (auto &node : cylinder.nodes) {
-    node.force = {1.1, 1.2};
-  }
   LatticeD2Q9 lm(ny
     , nx
     , g_dx
@@ -1760,6 +1765,15 @@ TEST(ImmersedBoundarySpreadForce)
     , g_src_str_f
     , g_k_visco
     , g_rho0_f);
+  ParticleRigid cylinder(stiffness
+    , num_nodes
+    , center_x
+    , center_y
+    , lm);
+  cylinder.CreateCylinder(radius);
+  for (auto &node : cylinder.nodes) {
+    node.force = {1.1, 1.2};
+  }
   ImmersedBoundaryMethod ibm(2
     , nsf.source
     , lm);
@@ -1789,11 +1803,6 @@ TEST(ImmersedBoundaryUpdateParticlePosition)
   auto center_y = 11.0;
   auto particle_u = 1.0;
   auto particle_v = 1.1;
-  ParticleRigid cylinder(stiffness
-    , num_nodes
-    , center_x
-    , center_y);
-  cylinder.CreateCylinder(radius);
   LatticeD2Q9 lm(g_ny
     , g_nx
     , g_dx
@@ -1804,6 +1813,12 @@ TEST(ImmersedBoundaryUpdateParticlePosition)
     , g_src_str_f
     , g_k_visco
     , g_rho0_f);
+  ParticleRigid cylinder(stiffness
+    , num_nodes
+    , center_x
+    , center_y
+    , lm);
+  cylinder.CreateCylinder(radius);
   ImmersedBoundaryMethod ibm(2
     , nsf.source
     , lm);
@@ -1829,10 +1844,16 @@ TEST(RigidParticleComputeParticleForce)
   auto center_x = 11.0;
   auto center_y = 11.0;
   auto displacement = 0.1;
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
   ParticleRigid cylinder(stiffness
     , num_nodes
     , center_x
-    , center_y);
+    , center_y
+    , lm);
   cylinder.CreateCylinder(radius);
   auto force = -stiffness * 2.0 * g_pi * radius / num_nodes * displacement;
   for (auto &node : cylinder.nodes) {

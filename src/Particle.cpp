@@ -5,12 +5,14 @@
 Particle::Particle(double stiffness
   , std::size_t num_nodes
   , double center_x
-  , double center_y)
+  , double center_y
+  , LatticeModel &lm)
   : center {ParticleNode(center_x, center_y, center_x, center_y)},
     nodes {},
     area_ {0.0},
     stiffness_ {stiffness},
-    number_of_nodes_ {num_nodes}
+    number_of_nodes_ {num_nodes},
+    lm_ {lm}
 {}
 
 std::size_t Particle::GetNumberOfNodes() const
@@ -32,6 +34,7 @@ void Particle::AddNode(double x
 
 void Particle::CreateCylinder(double radius)
 {
+  auto dx = lm_.GetSpaceStep();
   for (auto i = 0u; i < number_of_nodes_; ++i) {
     auto x = center.coord[0] + radius * sin(2.0 * pi_ * static_cast<double>(i) /
         number_of_nodes_);

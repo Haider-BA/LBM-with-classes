@@ -1,6 +1,7 @@
 #ifndef PARTICLE_HPP_
 #define PARTICLE_HPP_
 #include <vector>
+#include "LatticeModel.hpp"
 #include "ParticleNode.hpp"
 
 class Particle {
@@ -8,7 +9,8 @@ class Particle {
   Particle(double stiffness
     , std::size_t num_nodes
     , double center_x
-    , double center_y);
+    , double center_y
+    , LatticeModel &lm);
 
   virtual ~Particle() = default;
 
@@ -35,5 +37,6 @@ class Particle {
   double area_;
   double stiffness_;
   std::size_t number_of_nodes_;
+  LatticeModel &lm_;
 };
 #endif  // PARTICLE_HPP_

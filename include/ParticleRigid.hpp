@@ -1,5 +1,6 @@
 #ifndef PARTICLE_RIGID_HPP_
 #define PARTICLE_RIGID_HPP_
+#include "LatticeModel.hpp"
 #include "Particle.hpp"
 
 class ParticleRigid: public Particle {
@@ -7,7 +8,8 @@ class ParticleRigid: public Particle {
   ParticleRigid(double stiffness
     , std::size_t num_nodes
     , double center_x
-    , double center_y);
+    , double center_y
+    , LatticeModel &lm);
 
   ~ParticleRigid() = default;
 
