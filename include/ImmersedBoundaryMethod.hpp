@@ -4,6 +4,9 @@
 #include "LatticeModel.hpp"
 #include "Particle.hpp"
 
+///All inputs and and variables in IBM are calculated in real life units for now
+// TODO: change phi3 and phi4 to work with real units
+
 class ImmersedBoundaryMethod {
  public:
   /**
@@ -32,30 +35,36 @@ class ImmersedBoundaryMethod {
 
   /**
    * Immersed Boundary Method Interpolation Stencil
-   * http://lbmworkshop.com/wp-content/uploads/2011/09/2011-08-25_Edmonton_IBM.pdf
+   * An immersed boundary technique for simulating complex flows
+   * with rigid boundary
    * \param x position in one of the lattice directions
-   * \return contribution towards the interpolation function in one of the lattice
-   *         directions
+   * \return contribution towards the interpolation function in one of the
+   *         lattice directions
    */
-  double Phi2(double x);
+  double Phi2(double x
+    , double h);
 
   /**
    * Immersed Boundary Method Interpolation Stencil
-   * http://lbmworkshop.com/wp-content/uploads/2011/09/2011-08-25_Edmonton_IBM.pdf
+   * http://lbmworkshop.com/wp-content/uploads/2011/09/
+   * 2011-08-25_Edmonton_IBM.pdf
    * \param x position in one of the lattice directions
-   * \return contribution towards the interpolation function in one of the lattice
-   *         directions
+   * \return contribution towards the interpolation function in one of the
+   *         lattice directions
    */
-  double Phi3(double x);
+  double Phi3(double x
+    , double h);
 
   /**
    * Immersed Boundary Method Interpolation Stencil
-   * http://lbmworkshop.com/wp-content/uploads/2011/09/2011-08-25_Edmonton_IBM.pdf
+   * http://lbmworkshop.com/wp-content/uploads/2011/09/
+   * 2011-08-25_Edmonton_IBM.pdf
    * \param x position in one of the lattice directions
-   * \return contribution towards the interpolation function in one of the lattice
-   *         directions
+   * \return contribution towards the interpolation function in one of the
+   *         lattice directions
    */
-  double Phi4(double x);
+  double Phi4(double x
+    , double h);
 
   /**
    * Approximates Dirac delta-function of IBM using Phi2
@@ -63,7 +72,9 @@ class ImmersedBoundaryMethod {
    * \param y y-position in lattice
    * \return approximated Dirac delta-function value
    */
-  double Dirac2(double x, double y);
+  double Dirac2(double x
+    , double y
+    , double h);
 
   /**
    * Approximates Dirac delta-function of IBM using Phi3
@@ -71,7 +82,9 @@ class ImmersedBoundaryMethod {
    * \param y y-position in lattice
    * \return approximated Dirac delta-function value
    */
-  double Dirac3(double x, double y);
+  double Dirac3(double x
+    , double y
+    , double h);
 
   /**
    * Approximates Dirac delta-function of IBM using Phi4
@@ -79,7 +92,9 @@ class ImmersedBoundaryMethod {
    * \param y y-position in lattice
    * \return approximated Dirac delta-function value
    */
-  double Dirac4(double x, double y);
+  double Dirac4(double x
+    , double y
+    , double h);
 
   /**
    * Spread particle forces to the lattice using the specified interpolation

@@ -34,7 +34,7 @@ void Particle::AddNode(double x
 
 void Particle::CreateCylinder(double radius)
 {
-  auto dx = lm_.GetSpaceStep();
+  // particle coordinates stored in real units
   for (auto i = 0u; i < number_of_nodes_; ++i) {
     auto x = center.coord[0] + radius * sin(2.0 * pi_ * static_cast<double>(i) /
         number_of_nodes_);

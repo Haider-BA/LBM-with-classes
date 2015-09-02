@@ -12,6 +12,7 @@ ParticleRigid::ParticleRigid(double stiffness
 
 void ParticleRigid::ComputeForces()
 {
+  // change to store coordinates on particle as real coordinates
   auto area = area_ / nodes.size();
   for (auto &node : nodes) {
     node.force[0] = -stiffness_ * area * (node.coord[0] - node.coord_ref[0]);
