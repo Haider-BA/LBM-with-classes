@@ -14,9 +14,9 @@ LatticeBoltzmann::LatticeBoltzmann(LatticeModel &lm
   , CollisionModel &cm
   , StreamModel &sm)
   : df {cm.edf},
-    lm_ {lm},
-    cm_ {cm},
-    sm_ {sm},
+    lm_ (lm),
+    cm_ (cm),
+    sm_ (sm),
     bn_ {}
 {}
 

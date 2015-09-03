@@ -7,9 +7,9 @@ ImmersedBoundaryMethod::ImmersedBoundaryMethod(int interpolation_stencil
   , std::vector<std::vector<double>> &lattice_force
   , LatticeModel &lm)
   : particles {},
-    fluid_force {lattice_force},
+    fluid_force (lattice_force),
     interpolation_stencil_ {interpolation_stencil},
-    lm_ {lm}
+    lm_ (lm)
 {}
 
 void ImmersedBoundaryMethod::AddParticle(Particle *particle)

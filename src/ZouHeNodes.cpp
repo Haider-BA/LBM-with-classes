@@ -8,7 +8,7 @@ ZouHeNodes::ZouHeNodes(LatticeModel &lm
   , CollisionModel &cm)
   : BoundaryNodes(false, false, lm),
     nodes {},
-    cm_ {cm},
+    cm_ (cm),
     is_normal_flow_ {false}
 {}
 

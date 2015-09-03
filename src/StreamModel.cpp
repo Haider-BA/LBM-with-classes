@@ -2,5 +2,5 @@
 #include "LatticeModel.hpp"
 
 StreamModel::StreamModel(LatticeModel &lm)
-  : lm_ {lm}
+  : lm_ (lm)
 {}

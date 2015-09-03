@@ -10,7 +10,7 @@ CollisionModel::CollisionModel(LatticeModel &lm
   : edf {},
     rho {},
     skip {},
-    lm_ {lm},
+    lm_ (lm),
     tau_ {0},
     c_ {lm.GetLatticeSpeed()}
 {
@@ -29,7 +29,7 @@ CollisionModel::CollisionModel(LatticeModel &lm
   : edf {},
     rho {initial_density},
     skip {},
-    lm_ {lm},
+    lm_ (lm),
     tau_ {0},
     c_ {lm.GetLatticeSpeed()}
 {

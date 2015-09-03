@@ -12,7 +12,7 @@ Particle::Particle(double stiffness
     area_ {0.0},
     stiffness_ {stiffness},
     number_of_nodes_ {num_nodes},
-    lm_ {lm}
+    lm_ (lm)
 {}
 
 std::size_t Particle::GetNumberOfNodes() const

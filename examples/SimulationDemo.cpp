@@ -487,43 +487,43 @@ TEST(SimulateKarmanVortex)
 {
   // TODO: try periodic stream
   auto pi = 3.14159265;
-  std::size_t nx = 220;
-  std::size_t ny = 60;
-  auto dt = 0.001;
+  std::size_t nx = 200;
+  std::size_t ny = 100;
   auto dx = 0.0316;
-  std::vector<double> u0 = {0.0, 0.0};
+  auto dt = 0.001;
+  std::vector<double> u0 = {3.0, 0.0};
   std::vector<std::vector<std::size_t>> src_pos_f;
   std::vector<std::vector<double>> src_str_f;
-  auto k_visco = 0.008333;
-  auto u_zh = 0.001;
+  auto k_visco = 0.08;
+  auto u_zh = 0.0316;
   auto v_zh = 0.0;
-  auto radius = ny / 8 * dx;
+  auto radius = dx * ny / 20;
   auto stiffness = 1.0 / dx;
   auto center = dx * ny / 2.2;
-//  std::size_t num_nodes = 2 * pi * radius / 0.3 / dx;
-  std::size_t num_nodes = 36;
+  std::size_t num_nodes = 2 * pi * radius / 0.6 / dx;
+//  std::size_t num_nodes = 36;
   auto interpolation_stencil = 2;
   LatticeD2Q9 lm(ny
     , nx
     , dx
     , dt
     , u0);
-  StreamD2Q9 sd(lm);
-  StreamPeriodic sp(lm);
+//  StreamD2Q9 sd(lm);
+  StreamPeriodic sd(lm);
   CollisionNSF nsf(lm
     , src_pos_f
     , src_str_f
     , k_visco
     , g_rho0_f);
   BouncebackNodes hwbb(lm
-    , &sp);
-//  ZouHeNodes inlet(lm
-//    , nsf);
-//  ZouHeNodes outlet(lm
-//    , nsf);
+    , &sd);
+  ZouHeNodes inlet(lm
+    , nsf);
+  ZouHeNodes outlet(lm
+    , nsf);
   LatticeBoltzmann f(lm
     , nsf
-    , sp);
+    , sd);
   ParticleRigid cylinder(stiffness
     , num_nodes
     , center
@@ -537,10 +537,12 @@ TEST(SimulateKarmanVortex)
     hwbb.AddNode(x, 0);
     hwbb.AddNode(x, ny - 1);
   }  // x
-//  for (auto y = 1u; y < ny - 1; ++y) {
-//    inlet.AddNode(0, y, u_zh, v_zh);
-//    outlet.AddNode(nx - 1, y, 0.0, 0.0);
-//  }  // y
+  for (auto y = 1u; y < ny - 1; ++y) {
+    // parabolic velocity profile for inlet
+    inlet.AddNode(0, y, 1.5 * u_zh * (1 - static_cast<double>(abs(y - ny / 2) *
+        abs(y - ny / 2)) / ny / ny * 4), v_zh);
+    outlet.AddNode(nx - 1, y, 0.0, 0.0);
+  }  // y
 //  f.AddBoundaryNodes(&inlet);
 //  f.AddBoundaryNodes(&outlet);
   f.AddBoundaryNodes(&hwbb);
@@ -549,17 +551,19 @@ TEST(SimulateKarmanVortex)
   for (auto node : cylinder.nodes) {
     std::cout << node.coord[0] << " " << node.coord[1] << std::endl;
   }
-  auto time = 501u;
+  auto time = 8001u;
   auto interval = time / 500;
   for (auto t = 0u; t < time; ++t) {
     cylinder.ComputeForces();
     ibm.SpreadForce();
-    for (auto &i : nsf.source) i[0] += 8e-7;
+    for (auto &i : nsf.source) i[0] += 2.0;
     f.TakeStep();
     ibm.InterpolateFluidVelocity();
     ibm.UpdateParticlePosition();
-    if (t % interval == 0) WriteResultsCmgui(lm.u, nx, ny, t / interval);
-    std::cout << t << std::endl;
+    if (t % interval == 0) {
+      WriteResultsCmgui(lm.u, nx, ny, t / interval);
+      std::cout << t << std::endl;
+    }
   }
   // cylinder shifts too much
   for (auto node : cylinder.nodes) {
