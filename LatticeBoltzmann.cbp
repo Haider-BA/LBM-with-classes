@@ -56,7 +56,7 @@
 		</Compiler>
 		<Linker>
 			<Add option="--coverage" />
-			<Add library="UnitTest++\lib\Debug\libUnitTest++.a" />
+			<Add library="UnitTest++/lib/Debug/libUnitTest++.a" />
 			<Add directory="UnitTest++/lib/Debug" />
 		</Linker>
 		<Unit filename="examples/SimulationDemo.cpp" />

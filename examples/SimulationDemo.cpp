@@ -487,20 +487,21 @@ TEST(SimulateKarmanVortex)
 {
   // TODO: try periodic stream
   auto pi = 3.14159265;
-  std::size_t nx = 400;
-  std::size_t ny = 100;
+  std::size_t nx = 220;
+  std::size_t ny = 60;
   auto dt = 0.001;
   auto dx = 0.0316;
   std::vector<double> u0 = {0.0, 0.0};
   std::vector<std::vector<std::size_t>> src_pos_f;
   std::vector<std::vector<double>> src_str_f;
-  auto k_visco = 0.03;
+  auto k_visco = 0.008333;
   auto u_zh = 0.001;
   auto v_zh = 0.0;
   auto radius = ny / 8 * dx;
   auto stiffness = 1.0 / dx;
-  auto center = dx * ny / 2.1;
-  std::size_t num_nodes = 2 * pi * radius / 0.3 / dx;
+  auto center = dx * ny / 2.2;
+//  std::size_t num_nodes = 2 * pi * radius / 0.3 / dx;
+  std::size_t num_nodes = 36;
   auto interpolation_stencil = 2;
   LatticeD2Q9 lm(ny
     , nx
@@ -508,20 +509,21 @@ TEST(SimulateKarmanVortex)
     , dt
     , u0);
   StreamD2Q9 sd(lm);
+  StreamPeriodic sp(lm);
   CollisionNSF nsf(lm
     , src_pos_f
     , src_str_f
     , k_visco
     , g_rho0_f);
   BouncebackNodes hwbb(lm
-    , &sd);
-  ZouHeNodes inlet(lm
-    , nsf);
-  ZouHeNodes outlet(lm
-    , nsf);
+    , &sp);
+//  ZouHeNodes inlet(lm
+//    , nsf);
+//  ZouHeNodes outlet(lm
+//    , nsf);
   LatticeBoltzmann f(lm
     , nsf
-    , sd);
+    , sp);
   ParticleRigid cylinder(stiffness
     , num_nodes
     , center
@@ -535,23 +537,24 @@ TEST(SimulateKarmanVortex)
     hwbb.AddNode(x, 0);
     hwbb.AddNode(x, ny - 1);
   }  // x
-  for (auto y = 1u; y < ny - 1; ++y) {
-    inlet.AddNode(0, y, u_zh, v_zh);
-    outlet.AddNode(nx - 1, y, 0.0, 0.0);
-  }  // y
-  f.AddBoundaryNodes(&inlet);
-  f.AddBoundaryNodes(&outlet);
+//  for (auto y = 1u; y < ny - 1; ++y) {
+//    inlet.AddNode(0, y, u_zh, v_zh);
+//    outlet.AddNode(nx - 1, y, 0.0, 0.0);
+//  }  // y
+//  f.AddBoundaryNodes(&inlet);
+//  f.AddBoundaryNodes(&outlet);
   f.AddBoundaryNodes(&hwbb);
   ibm.AddParticle(&cylinder);
-  outlet.ToggleNormalFlow();
+//  outlet.ToggleNormalFlow();
   for (auto node : cylinder.nodes) {
     std::cout << node.coord[0] << " " << node.coord[1] << std::endl;
   }
-  auto time = 1001u;
+  auto time = 501u;
   auto interval = time / 500;
   for (auto t = 0u; t < time; ++t) {
     cylinder.ComputeForces();
     ibm.SpreadForce();
+    for (auto &i : nsf.source) i[0] += 8e-7;
     f.TakeStep();
     ibm.InterpolateFluidVelocity();
     ibm.UpdateParticlePosition();

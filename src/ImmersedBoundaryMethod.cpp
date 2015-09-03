@@ -107,7 +107,6 @@ void ImmersedBoundaryMethod::SpreadForce()
           auto weight = ImmersedBoundaryMethod::Dirac2((x_particle - x) * dx,
               (y_particle - y) * dx, dx);
           // Compute fluid force
-          // weight may need to be multiplied by dx
           fluid_force[n][0] += node.force[0] * scaling * weight;
           fluid_force[n][1] += node.force[1] * scaling * weight;
         }  // y
@@ -134,10 +133,8 @@ void ImmersedBoundaryMethod::InterpolateFluidVelocity()
       for (auto x = x_fluid; x < x_fluid + 2; ++x) {
         for (auto y = y_fluid; y < y_fluid + 2; ++y) {
           auto n = (y % ny) * nx + x % nx;
-          // weight may need to be multiplied by dx
           auto weight = ImmersedBoundaryMethod::Dirac2((x_particle - x) * dx,
               (y_particle - y) * dx, dx);
-//          std::cout << x_particle - x << std::endl;
           node.u[0] += lm_.u[n][0] / scaling * weight;
           node.u[1] += lm_.u[n][1] / scaling * weight;
         }  // y
