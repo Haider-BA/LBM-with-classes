@@ -485,9 +485,10 @@ TEST(SimulateLidDrivenCavityFlow)
 
 TEST(SimulateKarmanVortex)
 {
+  // TODO: try periodic stream
   auto pi = 3.14159265;
-  std::size_t nx = 200;
-  std::size_t ny = 50;
+  std::size_t nx = 400;
+  std::size_t ny = 100;
   auto dt = 0.001;
   auto dx = 0.0316;
   std::vector<double> u0 = {0.0, 0.0};
@@ -497,8 +498,8 @@ TEST(SimulateKarmanVortex)
   auto u_zh = 0.001;
   auto v_zh = 0.0;
   auto radius = ny / 8 * dx;
-  auto stiffness = 0.1 / dx;
-  auto center = 25.0 * dx;
+  auto stiffness = 1.0 / dx;
+  auto center = dx * ny / 2.1;
   std::size_t num_nodes = 2 * pi * radius / 0.3 / dx;
   auto interpolation_stencil = 2;
   LatticeD2Q9 lm(ny
