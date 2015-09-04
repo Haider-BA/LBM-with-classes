@@ -24,7 +24,8 @@ int main()
 //  return Unfit::RunOneTest("SimulateTaylorVortex");
 //  return Unfit::RunOneTest("SimulateTaylorVortexForce");
 //  return Unfit::RunOneTest("SimulateLidDrivenCavityFlow");
-  return Unfit::RunOneTest("SimulateKarmanVortex");
+//  return Unfit::RunOneTest("SimulateKarmanVortex");
+  return Unfit::RunOneTest("SimulateLinearShearFlow");
 
 
   // to run only one suite, uncomment the following line
