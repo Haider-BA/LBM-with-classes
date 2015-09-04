@@ -5,7 +5,7 @@ int main()
 {
 //  return Unfit::RunAllTheTests();
 
-  return Unfit::RunOneSuite("TestFunctionality");
+//  return Unfit::RunOneSuite("TestFunctionality");
 //  return Unfit::RunOneSuite("TestAnalyticalSolutions");
 
 //  return Unfit::RunOneTest("AnalyticalPoiseuille");
@@ -24,7 +24,7 @@ int main()
 //  return Unfit::RunOneTest("SimulateTaylorVortex");
 //  return Unfit::RunOneTest("SimulateTaylorVortexForce");
 //  return Unfit::RunOneTest("SimulateLidDrivenCavityFlow");
-//  return Unfit::RunOneTest("SimulateKarmanVortex");
+  return Unfit::RunOneTest("SimulateKarmanVortex");
 
 
   // to run only one suite, uncomment the following line

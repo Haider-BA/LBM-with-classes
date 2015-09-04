@@ -487,7 +487,7 @@ TEST(SimulateKarmanVortex)
 {
   // TODO: try periodic stream
   auto pi = 3.14159265;
-  std::size_t nx = 200;
+  std::size_t nx = 400;
   std::size_t ny = 100;
   auto dx = 0.0316;
   auto dt = 0.001;
@@ -495,11 +495,12 @@ TEST(SimulateKarmanVortex)
   std::vector<std::vector<std::size_t>> src_pos_f;
   std::vector<std::vector<double>> src_str_f;
   auto k_visco = 0.08;
-  auto u_zh = 0.0316;
+  auto u_zh = 0.2;
   auto v_zh = 0.0;
   auto radius = dx * ny / 20;
   auto stiffness = 1.0 / dx;
-  auto center = dx * ny / 2.2;
+  auto center_y = dx * ny / 2.0;
+  auto center_x = dx * nx * 0.25;
   std::size_t num_nodes = 2 * pi * radius / 0.6 / dx;
 //  std::size_t num_nodes = 36;
   auto interpolation_stencil = 2;
@@ -508,8 +509,8 @@ TEST(SimulateKarmanVortex)
     , dx
     , dt
     , u0);
-//  StreamD2Q9 sd(lm);
-  StreamPeriodic sd(lm);
+  StreamD2Q9 sd(lm);
+//  StreamPeriodic sd(lm);
   CollisionNSF nsf(lm
     , src_pos_f
     , src_str_f
@@ -526,8 +527,8 @@ TEST(SimulateKarmanVortex)
     , sd);
   ParticleRigid cylinder(stiffness
     , num_nodes
-    , center
-    , center
+    , center_x
+    , center_y
     , lm);
   cylinder.CreateCylinder(radius);
   ImmersedBoundaryMethod ibm(interpolation_stencil
@@ -543,20 +544,20 @@ TEST(SimulateKarmanVortex)
         abs(y - ny / 2)) / ny / ny * 4), v_zh);
     outlet.AddNode(nx - 1, y, 0.0, 0.0);
   }  // y
-//  f.AddBoundaryNodes(&inlet);
-//  f.AddBoundaryNodes(&outlet);
+  f.AddBoundaryNodes(&inlet);
+  f.AddBoundaryNodes(&outlet);
   f.AddBoundaryNodes(&hwbb);
   ibm.AddParticle(&cylinder);
-//  outlet.ToggleNormalFlow();
+  outlet.ToggleNormalFlow();
   for (auto node : cylinder.nodes) {
     std::cout << node.coord[0] << " " << node.coord[1] << std::endl;
   }
-  auto time = 8001u;
+  auto time = 32001u;
   auto interval = time / 500;
   for (auto t = 0u; t < time; ++t) {
     cylinder.ComputeForces();
     ibm.SpreadForce();
-    for (auto &i : nsf.source) i[0] += 2.0;
+//    for (auto &i : nsf.source) i[0] += 2.0;
     f.TakeStep();
     ibm.InterpolateFluidVelocity();
     ibm.UpdateParticlePosition();
