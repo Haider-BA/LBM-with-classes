@@ -29,24 +29,19 @@ void WriteResultsCmguiNavierStokes(
         temp_u_x[n] = 0.0;
         temp_u_y[n] = 0.0;
         temp_pressure[n] = density * c_s_squared;  // pressure = average pressure
-        temp_solute[n] = g[n][9];
+//        temp_solute[n] = g[n][9];
       }
       else {
         // Density, rho, is the sum over the lattice directions, i, of f[i]
-//        auto rho = std::accumulate(begin(f[n]), end(f[n]), 0.0);
         double rho_ns = 0.0;
-        for (auto i = 0; i < 9; ++i) {
-          rho_ns += f[n][i];
-        }
+        for (auto i = 0; i < 9; ++i) rho_ns += f[n][i];
         // x-, and y- velocity components
         temp_u_x[n] = c*(f[n][1] + f[n][5] + f[n][8] -(f[n][3] + f[n][6] + f[n][7])) / rho_ns;
         temp_u_y[n] = c*(f[n][2] + f[n][5] + f[n][6] -(f[n][4] + f[n][7] + f[n][8])) / rho_ns;
         temp_pressure[n] = rho_ns * c_s_squared;
 
         double rho_cd = 0.0;
-        for (auto i = 0; i < 9; ++i) {
-          rho_cd += g[n][i];
-        }
+        for (auto i = 0; i < 9; ++i) rho_cd += g[n][i];
         temp_solute[n] = rho_cd;
       }
     }
@@ -54,7 +49,7 @@ void WriteResultsCmguiNavierStokes(
 
   if (first_time) {
     std::ofstream cmgui_node_file;
-    cmgui_node_file.open("blbm.exnode");
+    cmgui_node_file.open("lbm.exnode");
     cmgui_node_file << " Group name : lbm" << std::endl;
     cmgui_node_file << " #Fields=1" << std::endl;
     cmgui_node_file << " 1) coordinates, coordinate, rectangular cartesian, #Components=2" << std::endl;
@@ -77,7 +72,7 @@ void WriteResultsCmguiNavierStokes(
   }
 
   std::ofstream cmgui_elem_file;
-  cmgui_elem_file.open("albm"+std::to_string(time)+".exelem");
+  cmgui_elem_file.open("lbm"+std::to_string(time)+".exelem");
 
   cmgui_elem_file << " Group name: lbm" << std::endl;
   cmgui_elem_file << " Shape.  Dimension=1" << std::endl;
@@ -89,7 +84,7 @@ void WriteResultsCmguiNavierStokes(
   cmgui_elem_file << " #Scale factor sets= 1" << std::endl;
   cmgui_elem_file << "   l.Lagrange*l.Lagrange, #Scale factors= 4" << std::endl;
   cmgui_elem_file << " #Nodes=           4" << std::endl;
-  cmgui_elem_file << " #Fields=7" << std::endl;
+  cmgui_elem_file << " #Fields=5" << std::endl;
   cmgui_elem_file << " 1) coordinates, coordinate, rectangular cartesian, #Components=2" << std::endl;
   cmgui_elem_file << "   x.  l.Lagrange*l.Lagrange, no modify, standard node based." << std::endl;
   cmgui_elem_file << "     #Nodes= 4" << std::endl;
@@ -128,13 +123,13 @@ void WriteResultsCmguiNavierStokes(
   cmgui_elem_file << " 4) pressure, field, rectangular cartesian, #Components=1" << std::endl;
   cmgui_elem_file << "   pressure.  l.Lagrange*l.Lagrange, no modify, grid based." << std::endl;
   cmgui_elem_file << "   #xi1=" << num_nodes_x -1 << ", #xi2=" << num_nodes_y - 1 << std::endl;
-  cmgui_elem_file << " 5) obstacle, field, rectangular cartesian, #Components=1" << std::endl;
-  cmgui_elem_file << "   obstacle.  l.Lagrange*l.Lagrange, no modify, grid based." << std::endl;
-  cmgui_elem_file << "   #xi1=" << num_nodes_x -1 << ", #xi2=" << num_nodes_y - 1 << std::endl;
-  cmgui_elem_file << " 6) porosity, field, rectangular cartesian, #Components=1" << std::endl;
-  cmgui_elem_file << "   porosity.  l.Lagrange*l.Lagrange, no modify, grid based." << std::endl;
-  cmgui_elem_file << "   #xi1=" << num_nodes_x -1 << ", #xi2=" << num_nodes_y - 1 << std::endl;
-  cmgui_elem_file << " 7) solute, field, rectangular cartesian, #Components=1" << std::endl;
+//  cmgui_elem_file << " 5) obstacle, field, rectangular cartesian, #Components=1" << std::endl;
+//  cmgui_elem_file << "   obstacle.  l.Lagrange*l.Lagrange, no modify, grid based." << std::endl;
+//  cmgui_elem_file << "   #xi1=" << num_nodes_x -1 << ", #xi2=" << num_nodes_y - 1 << std::endl;
+//  cmgui_elem_file << " 6) porosity, field, rectangular cartesian, #Components=1" << std::endl;
+//  cmgui_elem_file << "   porosity.  l.Lagrange*l.Lagrange, no modify, grid based." << std::endl;
+//  cmgui_elem_file << "   #xi1=" << num_nodes_x -1 << ", #xi2=" << num_nodes_y - 1 << std::endl;
+  cmgui_elem_file << " 5) solute, field, rectangular cartesian, #Components=1" << std::endl;
   cmgui_elem_file << "   solute.  l.Lagrange*l.Lagrange, no modify, grid based." << std::endl;
   cmgui_elem_file << "   #xi1=" << num_nodes_x -1 << ", #xi2=" << num_nodes_y - 1 << std::endl;
   cmgui_elem_file << " Element:            1 0 0" << std::endl;
@@ -147,8 +142,8 @@ void WriteResultsCmguiNavierStokes(
   for (auto n : temp_u_x) cmgui_elem_file << "  " << n << std::endl;
   for (auto n : temp_u_y) cmgui_elem_file << "  " << n << std::endl;
   for (auto n : temp_pressure) cmgui_elem_file << "  " << n << std::endl;
-  for (auto n : obstacle) cmgui_elem_file << "  " << n << std::endl;
-  for (auto n = 0u; n < f.size(); ++n) cmgui_elem_file << "  " << ((f[n][9] < 1.0) ? "1.0" : "0.0") << std::endl;
+//  for (auto n : obstacle) cmgui_elem_file << "  " << n << std::endl;
+//  for (auto n = 0u; n < f.size(); ++n) cmgui_elem_file << "  " << ((f[n][9] < 1.0) ? "1.0" : "0.0") << std::endl;
   for (auto n : temp_solute) cmgui_elem_file << "  " << n << std::endl;
   cmgui_elem_file << "   Nodes:" << std::endl;
   cmgui_elem_file << "                1            2            3            4" << std::endl;

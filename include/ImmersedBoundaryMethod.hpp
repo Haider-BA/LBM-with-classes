@@ -116,14 +116,25 @@ class ImmersedBoundaryMethod {
    */
   void UpdateParticlePosition();
 
+  /**
+   * 1D vector of particles stored in the immersed boundary method
+   */
   std::vector<Particle*> particles;
 
+  /**
+   * Reference to fluid force: source in CollisionNSF
+   */
   std::vector<std::vector<double>> &fluid_force;
 
  private:
+  /**
+   * Selection of interpolation stencil to be used. Not yet implemented
+   */
   int interpolation_stencil_;
 
+  /**
+   * Reference to LatticeModel
+   */
   LatticeModel &lm_;
-
 };
 #endif  // IMMERSED_BOUNDARY_METHOD_

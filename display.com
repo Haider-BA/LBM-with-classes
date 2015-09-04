@@ -1,24 +1,28 @@
+$first = 0;
+$last = 500;
+$step = 1;
+
 sub anim{
-#  for( $a = 10; $a <= 6000; $a = $a + 10 ){
-  for( $a = 100; $a <= 6000; $a = $a + 100 ){
+  gfx read elem lbm$first;
+  for( $a = $step; $a <= $last; $a = $a + $step ){
     gfx read elem "lbm$a";
-    $b = $a/10;
     gfx update;
   }
 }
 
 sub animprint{
+  gfx read elem lbm$first;
   gfx print file lbm0.png anti 8 force width 720 height 480;
-  for( $a = 10; $a <= 6000; $a = $a + 10 ){
+  for( $a = $step; $a <= $last; $a = $a + $step ){
     gfx read elem "lbm$a";
-    $b = $a/10;
+    $b = $a/$step;
     gfx update;
     gfx print file "lbm$b.png" anti 8 force  width 720 height 480;
   }
 }
 
 gfx read node lbm;
-gfx read elem lbm0;
+gfx read elem lbm$first;
 
 gfx define field velocity component u_x u_y;
 gfx define field vmag magnitude field velocity;

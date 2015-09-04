@@ -15,6 +15,8 @@
 #include "StreamPeriodic.hpp"
 #include "UnitTest++.h"
 #include "WriteResultsCmgui.hpp"
+#include "WriteResultsCmguiNavierStokes.hpp"
+#include "WriteToCmgui.hpp"
 #include "ZouHeNodes.hpp"
 #include "ZouHePressureNodes.hpp"
 
@@ -267,6 +269,7 @@ TEST(SimulateDevelopingPoiseuilleFlowPressureOutlet)
 
 TEST(SimulateNSCDCoupling)
 {
+  std::vector<bool> obs = {false};
   std::size_t ny = 21;
   std::size_t nx = 31;
   std::vector<std::vector<std::size_t>> src_pos_f;
@@ -315,7 +318,18 @@ TEST(SimulateNSCDCoupling)
   for (auto t = 0u; t < 501; ++t) {
     f.TakeStep();
     g.TakeStep();
-    WriteResultsCmgui(g.df, nx, ny, t);
+    WriteToCmgui(f.df, g.df, lm.u, nx, ny, t, g_rho0_f, g_dx / g_dt, g_cs_sqr);
+//    WriteResultsCmguiNavierStokes(f.df
+//      , g.df
+//      , obs
+//      , nx
+//      , ny
+//      , nx * ny
+//      , t
+//      , g_rho0_f
+//      , g_dx / g_dt
+//      , g_cs_sqr);
+//    WriteResultsCmgui(g.df, nx, ny, t);
   }
 }
 
@@ -613,8 +627,8 @@ TEST(SimulateLinearShearFlow)
     , nsf.source
     , lm);
   for (auto x = 0u; x < nx; ++x) {
-    bottom.AddNode(x, 0, -u_zh, 0.0);
-    top.AddNode(x, ny - 1, u_zh, 0.0);
+    bottom.AddNode(x, 0, -u_zh, v_zh);
+    top.AddNode(x, ny - 1, u_zh, v_zh);
   }  // x
   f.AddBoundaryNodes(&top);
   f.AddBoundaryNodes(&bottom);

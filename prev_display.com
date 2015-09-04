@@ -2,7 +2,6 @@ $first = 0;
 $last = 500;
 $step = 1;
 
-
 sub anim{
   gfx read elem lbm$first;
   for( $a = $step; $a <= $last; $a = $a + $step ){

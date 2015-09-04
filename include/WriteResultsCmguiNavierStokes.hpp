@@ -18,5 +18,4 @@ void WriteResultsCmguiNavierStokes(
   , double density
   , double c
   , double c_s);
-
 #endif

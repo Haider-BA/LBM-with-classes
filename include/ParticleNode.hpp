@@ -38,11 +38,29 @@ class ParticleNode {
     , double force_x
     , double force_y);
 
+  /**
+   * Destructor
+   */
   ~ParticleNode() = default;
 
+  /**
+   * Coordinates of the node in the lattice in physical units
+   */
   std::vector<double> coord;
+
+  /**
+   * Reference coordinates of the nodes in the lattice in physical units
+   */
   std::vector<double> coord_ref;
+
+  /**
+   * Node velocity in physical units
+   */
   std::vector<double> u;
+
+  /**
+   * Node force in physical units
+   */
   std::vector<double> force;
 };
 #endif  // PARTICLE_NODE_HPP_
