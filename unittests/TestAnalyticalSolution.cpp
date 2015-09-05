@@ -111,7 +111,7 @@ TEST(AnalyticalPoiseuille)
   auto visco_an = g_k_visco * g_dx * g_dx / g_dt;
   double u_max = body_force * length_an * length_an / 2 / visco_an;
   // check against velocities in the middle of the channel
-  for (auto x = 5u; x < nx - 5; ++x) {
+  for (auto x = 10u; x < nx - 10; ++x) {
     for (auto y = 0u; y < ny; ++y) {
       auto n = y * nx + x;
       auto y_an = fabs(static_cast<double>(y) - length + 0.5) * g_dx;

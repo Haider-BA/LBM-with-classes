@@ -315,9 +315,28 @@ TEST(SimulateNSCDCoupling)
   }
   f.AddBoundaryNodes(&bbnsf);
   g.AddBoundaryNodes(&bbcd);
+  auto rho_ns = 0.0;
   for (auto t = 0u; t < 501; ++t) {
+    if (t > 0) {
+    for (auto n = nx; n < 2 * nx; ++n) {
+      auto u_x = g_dx / g_dt * (f.df[n][1] + f.df[n][5] + f.df[n][8] - f.df[n][3] -
+          f.df[n][6] - f.df[n][7]) / nsf.rho[n];
+      CHECK_CLOSE(u_x, lm.u[n][0], 1e-6);
+    }
+  }
     f.TakeStep();
     g.TakeStep();
+    for (auto n = 0u; n < nx * ny; ++n) {
+      rho_ns = 0.0;
+      for (auto i : f.df[n]) rho_ns += i;
+      CHECK_CLOSE(rho_ns, nsf.rho[n], 1e-6);
+      auto rho_cd = 0.0;
+      for (auto i : g.df[n]) rho_cd += i;
+      CHECK_CLOSE(rho_cd, cd.rho[n], 1e-6);
+      auto u_x = g_dx / g_dt * (f.df[n][1] + f.df[n][5] + f.df[n][8] - f.df[n][3] -
+          f.df[n][6] - f.df[n][7]) / nsf.rho[n];
+      CHECK_CLOSE(u_x, lm.u[n][0], 1e-6);
+    }
     WriteToCmgui(f.df, g.df, lm.u, nx, ny, t, g_rho0_f, g_dx / g_dt, g_cs_sqr);
 //    WriteResultsCmguiNavierStokes(f.df
 //      , g.df
@@ -374,7 +393,8 @@ TEST(SimulateTaylorVortex)
     , sp);
   for (auto t = 0u; t < 501; ++t) {
     f.TakeStep();
-    WriteResultsCmgui(lm.u, nx, ny, t);
+    WriteToCmgui(f.df, f.df, lm.u, nx, ny, t, g_rho0_f, g_dx / g_dt, g_cs_sqr);
+//    WriteResultsCmgui(lm.u, nx, ny, t);
   }
 }
 

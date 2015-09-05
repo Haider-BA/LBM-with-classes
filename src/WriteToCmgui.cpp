@@ -35,14 +35,12 @@ void WriteToCmgui(const std::vector<std::vector<double>> &f
   for (auto y = 0u; y < ny; ++y) {
     for (auto x = 0u; x < nx; ++x) {
       const auto n = y * nx + x;
-      // add code to detect boundary nodes
+      // TODO: add code to detect boundary nodes
       auto rho_ns = 0.0;
       // density is sum of all discrete velocities per node
       for (auto i : f[n]) rho_ns += i;
-      u_x[n] = c * (f[n][E] + f[n][NE] + f[n][SE] - f[n][W] - f[n][NW] -
-          f[n][SW]) / rho_ns;
-      u_y[n] = c * (f[n][N] + f[n][NE] + f[n][NW] - f[n][S] - f[n][SW] -
-          f[n][SE]) / rho_ns;
+      u_x[n] = u[n][0];
+      u_y[n] = u[n][1];
       pressure[n] = rho_ns * cs_sqr;
 
       auto rho_cd = 0.0;
@@ -153,7 +151,7 @@ void WriteToCmgui(const std::vector<std::vector<double>> &f
   for (auto n : pressure) cmgui_elem_file << "  " << n << std::endl;
   for (auto n : solute) cmgui_elem_file << "  " << n << std::endl;
   cmgui_elem_file << "   Nodes:" << std::endl;
-  cmgui_elem_file << "                4            3            2            1"
+  cmgui_elem_file << "                1            2            3            4"
       << std::endl;
   cmgui_elem_file << "   Scale factors:" << std::endl;
   cmgui_elem_file << "       1.0   1.0   1.0   1.0" << std::endl;

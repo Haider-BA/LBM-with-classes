@@ -27,7 +27,6 @@ void LatticeBoltzmann::AddBoundaryNodes(BoundaryNodes *bn)
 
 void LatticeBoltzmann::TakeStep()
 {
-  cm_.ComputeMacroscopicProperties(df);
   cm_.ComputeEq();
   cm_.Collide(df);
   for (auto bdr : bn_) {
@@ -38,4 +37,5 @@ void LatticeBoltzmann::TakeStep()
     if (bdr->during_stream) bdr->UpdateNodes(df, true);
     if (!bdr->prestream) bdr->UpdateNodes(df, false);
   }  // bdr
+  cm_.ComputeMacroscopicProperties(df);
 }
