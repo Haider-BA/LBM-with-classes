@@ -83,11 +83,11 @@ void ImmersedBoundaryMethod::SpreadForce()
   // The two-point interpolation stencil (bi-linear interpolation) is used in
   // the present code.
   fluid_force.assign(fluid_force.size(), {0.0, 0.0});
-  auto nx = lm_.GetNumberOfColumns();
-  auto ny = lm_.GetNumberOfRows();
-  auto dx = lm_.GetSpaceStep();
-  auto dt = lm_.GetTimeStep();
-  auto scaling = dx / dt / dt;
+  const auto nx = lm_.GetNumberOfColumns();
+  const auto ny = lm_.GetNumberOfRows();
+  const auto dx = lm_.GetSpaceStep();
+  const auto dt = lm_.GetTimeStep();
+  const auto scaling = dx / dt / dt;
   for (auto particle : particles) {
     for (auto &node : particle->nodes) {
       // Identify the lowest fluid lattice node in interpolation range.
@@ -117,11 +117,11 @@ void ImmersedBoundaryMethod::SpreadForce()
 
 void ImmersedBoundaryMethod::InterpolateFluidVelocity()
 {
-  auto nx = lm_.GetNumberOfColumns();
-  auto ny = lm_.GetNumberOfRows();
-  auto dx = lm_.GetSpaceStep();
-  auto dt = lm_.GetTimeStep();
-  auto scaling = dx / dt;
+  const auto nx = lm_.GetNumberOfColumns();
+  const auto ny = lm_.GetNumberOfRows();
+  const auto dx = lm_.GetSpaceStep();
+  const auto dt = lm_.GetTimeStep();
+  const auto scaling = dx / dt;
   // pointer always editable, do not need &
   for (auto particle : particles) {
     for (auto &node : particle->nodes) {
@@ -145,7 +145,7 @@ void ImmersedBoundaryMethod::InterpolateFluidVelocity()
 
 void ImmersedBoundaryMethod::UpdateParticlePosition()
 {
-  auto dt = lm_.GetTimeStep();
+  const auto dt = lm_.GetTimeStep();
   for (auto particle : particles) {
     auto nn = particle->GetNumberOfNodes();
     particle->center.coord = {0.0, 0.0};

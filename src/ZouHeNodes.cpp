@@ -17,12 +17,12 @@ void ZouHeNodes::AddNode(std::size_t x
   , double u_x
   , double u_y)
 {
-  auto nx = lm_.GetNumberOfColumns();
-  auto ny = lm_.GetNumberOfRows();
-  auto left = x == 0;
-  auto right = x == nx - 1;
-  auto bottom = y == 0;
-  auto top = y == ny - 1;
+  const auto nx = lm_.GetNumberOfColumns();
+  const auto ny = lm_.GetNumberOfRows();
+  const auto left = x == 0;
+  const auto right = x == nx - 1;
+  const auto bottom = y == 0;
+  const auto top = y == ny - 1;
 //  knowns_ = {!((left || right) && (top || bottom)),
 //      right, top, left, bottom,
 //      right || top, left || top, left || bottom, right || bottom};
@@ -61,9 +61,9 @@ void ZouHeNodes::UpdateNodes(std::vector<std::vector<double>> &df
 void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
   , ValueNode &node)
 {
-  auto n = node.n;
-  auto nx = lm_.GetNumberOfColumns();
-  auto scaling = lm_.GetTimeStep() / lm_.GetSpaceStep();
+  const auto n = node.n;
+  const auto nx = lm_.GetNumberOfColumns();
+  const auto scaling = lm_.GetTimeStep() / lm_.GetSpaceStep();
   switch(node.i1) {
     case 0: {  // right
       auto vel = is_normal_flow_ ? lm_.u[n - 1] : node.v1;
@@ -130,10 +130,10 @@ void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
 void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
   , ValueNode &node)
 {
-  auto n = node.n;
+  const auto n = node.n;
   auto vel = node.v1;
-  auto nx = lm_.GetNumberOfColumns();
-  auto nc = lm_.GetNumberOfDirections();
+  const auto nx = lm_.GetNumberOfColumns();
+  const auto nc = lm_.GetNumberOfDirections();
   switch (node.i1) {
     case 0: {  // bottom-left
       auto rho_node = 0.5 * (cm_.rho[n + nx] + cm_.rho[n + 1]);

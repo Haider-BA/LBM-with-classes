@@ -14,7 +14,7 @@ CollisionNSF::CollisionNSF(LatticeModel &lm
   : CollisionNS(lm, kinematic_viscosity, initial_density_f),
     source {}
 {
-  auto dt = lm.GetTimeStep();
+  const auto dt = lm.GetTimeStep();
   // tau_ formula from "Discrete lattice effects on the forcing term in
   // the lattice Boltzmann method" Guo2002
   tau_ = 0.5 + kinematic_viscosity / cs_sqr_ / dt;
@@ -27,9 +27,9 @@ void CollisionNSF::InitSource(
 {
   if (source_position.size() != source_strength.size())
       throw std::runtime_error("Insufficient source information");
-  auto nx = lm_.GetNumberOfColumns();
-  auto ny = lm_.GetNumberOfRows();
-  auto nd = lm_.GetNumberOfDimensions();
+  const auto nx = lm_.GetNumberOfColumns();
+  const auto ny = lm_.GetNumberOfRows();
+  const auto nd = lm_.GetNumberOfDimensions();
   source.assign(nx * ny, std::vector<double>(nd, 0.0));
   auto it_strength = begin(source_strength);
   for (auto pos : source_position) {
@@ -43,8 +43,8 @@ void CollisionNSF::InitSource(
 std::vector<std::vector<double>> CollisionNSF::ComputeU(
     const std::vector<std::vector<double>> &df)
 {
-  auto nd = lm_.GetNumberOfDimensions();
-  auto dt = lm_.GetTimeStep();
+  const auto nd = lm_.GetNumberOfDimensions();
+  const auto dt = lm_.GetTimeStep();
   std::vector<std::vector<double>> result;
   auto index = 0u;
   for (auto node : df) {
@@ -67,11 +67,11 @@ void CollisionNSF::ComputeMacroscopicProperties(
 
 void CollisionNSF::Collide(std::vector<std::vector<double>> &lattice)
 {
-  auto nc = lm_.GetNumberOfDirections();
-  auto nd = lm_.GetNumberOfDimensions();
-  auto nx = lm_.GetNumberOfColumns();
-  auto ny = lm_.GetNumberOfRows();
-  auto dt = lm_.GetTimeStep();
+  const auto nc = lm_.GetNumberOfDirections();
+  const auto nd = lm_.GetNumberOfDimensions();
+  const auto nx = lm_.GetNumberOfColumns();
+  const auto ny = lm_.GetNumberOfRows();
+  const auto dt = lm_.GetTimeStep();
   for (auto n = 0u; n < nx * ny; ++n) {
     if (!skip[n]) {
       for (auto i = 0u; i < nc; ++i) {

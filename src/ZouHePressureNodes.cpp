@@ -14,12 +14,12 @@ void ZouHePressureNodes::AddNode(std::size_t x
   , std::size_t y
   , double rho_node)
 {
-  auto nx = lm_.GetNumberOfColumns();
-  auto ny = lm_.GetNumberOfRows();
-  auto left = x == 0;
-  auto right = x == nx - 1;
-  auto bottom = y == 0;
-  auto top = y == ny - 1;
+  const auto nx = lm_.GetNumberOfColumns();
+  const auto ny = lm_.GetNumberOfRows();
+  const auto left = x == 0;
+  const auto right = x == nx - 1;
+  const auto bottom = y == 0;
+  const auto top = y == ny - 1;
   auto side = -1;
   if (right) side = 0;
   if (top) side = 1;
@@ -54,8 +54,8 @@ void ZouHePressureNodes::UpdateNodes(std::vector<std::vector<double>> &df
 void ZouHePressureNodes::UpdateSide(std::vector<std::vector<double>> &df
   , ValueNode &node)
 {
-  auto n = node.n;
-  auto rho_node = node.d1;
+  const auto n = node.n;
+  const auto rho_node = node.d1;
   std::vector<double> vel = {0.0, 0.0};
   switch(node.i1) {
     case 0: {  // right
@@ -107,8 +107,8 @@ void ZouHePressureNodes::UpdateSide(std::vector<std::vector<double>> &df
 void ZouHePressureNodes::UpdateCorner(std::vector<std::vector<double>> &df
     , ValueNode &node)
 {
-  auto n = node.n;
-  auto rho_node = node.d1;
+  const auto n = node.n;
+  const auto rho_node = node.d1;
   switch (node.i1) {
     case 0: {  // bottom-left
       df[n][E] = df[n][W];

@@ -14,7 +14,7 @@ CollisionNS::CollisionNS(LatticeModel &lm
   , double initial_density_f)
   : CollisionModel(lm, initial_density_f)
 {
-  auto dt = lm.GetTimeStep();
+  const auto dt = lm.GetTimeStep();
   // tau_ formula from "Discrete lattice effects on the forcing term in
   // the lattice Boltzmann method" Guo2002
   tau_ = 0.5 + kinematic_viscosity / cs_sqr_ / dt;
@@ -25,7 +25,7 @@ CollisionNS::CollisionNS(LatticeModel &lm
   , const std::vector<double> &initial_density_f)
   : CollisionModel(lm, initial_density_f)
 {
-  auto dt = lm.GetTimeStep();
+  const auto dt = lm.GetTimeStep();
   // tau_ formula from "Discrete lattice effects on the forcing term in
   // the lattice Boltzmann method" Guo2002
   tau_ = 0.5 + kinematic_viscosity / cs_sqr_ / dt;
@@ -53,9 +53,9 @@ void CollisionNS::ComputeMacroscopicProperties(
 
 void CollisionNS::Collide(std::vector<std::vector<double>> &lattice)
 {
-  auto nc = lm_.GetNumberOfDirections();
-  auto nx = lm_.GetNumberOfColumns();
-  auto ny = lm_.GetNumberOfRows();
+  const auto nc = lm_.GetNumberOfDirections();
+  const auto nx = lm_.GetNumberOfColumns();
+  const auto ny = lm_.GetNumberOfRows();
   for (auto n = 0u; n < nx * ny; ++n) {
     if (!skip[n]) {
       for (auto i = 0u; i < nc; ++i) {

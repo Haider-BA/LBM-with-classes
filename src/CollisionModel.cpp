@@ -14,10 +14,10 @@ CollisionModel::CollisionModel(LatticeModel &lm
     tau_ {0},
     c_ {lm.GetLatticeSpeed()}
 {
-  auto nx = lm_.GetNumberOfColumns();
-  auto ny = lm_.GetNumberOfRows();
-  auto nc = lm_.GetNumberOfDirections();
-  auto lat_size = nx * ny;
+  const auto nx = lm_.GetNumberOfColumns();
+  const auto ny = lm_.GetNumberOfRows();
+  const auto nc = lm_.GetNumberOfDirections();
+  const auto lat_size = nx * ny;
   edf.assign(lat_size, std::vector<double>(nc, 0.0));
   rho.assign(lat_size, initial_density);
   skip.assign(lat_size, false);
@@ -33,10 +33,10 @@ CollisionModel::CollisionModel(LatticeModel &lm
     tau_ {0},
     c_ {lm.GetLatticeSpeed()}
 {
-  auto nx = lm_.GetNumberOfColumns();
-  auto ny = lm_.GetNumberOfRows();
-  auto nc = lm_.GetNumberOfDirections();
-  auto lat_size = nx * ny;
+  const auto nx = lm_.GetNumberOfColumns();
+  const auto ny = lm_.GetNumberOfRows();
+  const auto nc = lm_.GetNumberOfDirections();
+  const auto lat_size = nx * ny;
   edf.assign(lat_size, std::vector<double>(nc, 0.0));
   skip.assign(lat_size, false);
   ComputeEq();

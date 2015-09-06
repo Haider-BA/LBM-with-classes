@@ -11,8 +11,8 @@ StreamD2Q9::StreamD2Q9(LatticeModel &lm)
 std::vector<std::vector<double>> StreamD2Q9::Stream(
     const std::vector<std::vector<double>> &df)
 {
-  auto nx = lm_.GetNumberOfColumns();
-  auto ny = lm_.GetNumberOfRows();
+  const auto nx = lm_.GetNumberOfColumns();
+  const auto ny = lm_.GetNumberOfRows();
   auto temp_df = df;
   // Streaming
   for (auto n = 0u; n < nx * ny; ++n) {

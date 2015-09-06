@@ -22,7 +22,7 @@ BouncebackNodes::BouncebackNodes(LatticeModel &lm
 void BouncebackNodes::AddNode(std::size_t x
   , std::size_t y)
 {
-  auto nx = lm_.GetNumberOfColumns();
+  const auto nx = lm_.GetNumberOfColumns();
   auto n = y * nx + x;
   nodes.push_back(Node(x, y, nx));
   // in C++11 nullptr is implicitly cast to boolean false
@@ -37,8 +37,8 @@ void BouncebackNodes::UpdateNodes(std::vector<std::vector<double>> &df
   , bool is_modify_stream)
 {
   if (is_modify_stream) {
-    auto nx = lm_.GetNumberOfColumns();
-    auto ny = lm_.GetNumberOfRows();
+    const auto nx = lm_.GetNumberOfColumns();
+    const auto ny = lm_.GetNumberOfRows();
     for (auto &node : nodes) {
       auto n = node.n;
       auto left = n % nx == 0;

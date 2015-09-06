@@ -18,7 +18,7 @@ CollisionCD::CollisionCD(LatticeModel &lm
     source {},
     is_instant_ {is_instant}
 {
-  auto dt = lm.GetTimeStep();
+  const auto dt = lm.GetTimeStep();
   // tau_ formula from "A new scheme for source term in LBGK model for
   // convection diffusion equation"
   tau_ = 0.5 + diffusion_coefficient / cs_sqr_ / dt;
@@ -31,9 +31,9 @@ void CollisionCD::InitSource(
 {
   if (source_position.size() != source_strength.size())
       throw std::runtime_error("Insufficient source information");
-  auto nx = lm_.GetNumberOfColumns();
-  auto ny = lm_.GetNumberOfRows();
-  auto nd = lm_.GetNumberOfDimensions();
+  const auto nx = lm_.GetNumberOfColumns();
+  const auto ny = lm_.GetNumberOfRows();
+  const auto nd = lm_.GetNumberOfDimensions();
   source.assign(nx * ny, 0.0);
   auto it_strength = begin(source_strength);
   for (auto pos : source_position) {
@@ -52,10 +52,10 @@ void CollisionCD::ComputeMacroscopicProperties(
 
 void CollisionCD::Collide(std::vector<std::vector<double>> &df)
 {
-  auto nc = lm_.GetNumberOfDirections();
-  auto nx = lm_.GetNumberOfColumns();
-  auto ny = lm_.GetNumberOfRows();
-  auto dt = lm_.GetTimeStep();
+  const auto nc = lm_.GetNumberOfDirections();
+  const auto nx = lm_.GetNumberOfColumns();
+  const auto ny = lm_.GetNumberOfRows();
+  const auto dt = lm_.GetTimeStep();
   for (auto n = 0u; n < nx * ny; ++n) {
     if (!skip[n]) {
       for (auto i = 0u; i < nc; ++i) {
