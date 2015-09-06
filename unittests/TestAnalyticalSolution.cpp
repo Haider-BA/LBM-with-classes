@@ -105,7 +105,7 @@ TEST(AnalyticalPoiseuille)
     f.TakeStep();
     if (t % 6 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 6);
   }
-  // calculation of analytical u_max according to formula in Guo2002 after
+  // calculation of analytical u_max according to formula in Guo2002
   auto length = static_cast<double>(ny / 2);
   auto length_an = static_cast<double>(ny / 2) * g_dx;
   auto visco_an = g_k_visco * g_dx * g_dx / g_dt;
@@ -122,85 +122,59 @@ TEST(AnalyticalPoiseuille)
   }  // x
 }
 
-//TEST(AnalyticalPoiseuilleZH)
-//{
-//  std::size_t ny = 36;
-//  std::size_t nx = 68;
-//  std::vector<double> u0 = {0, 0};
-//  auto body_force = 10.0;
-//  auto time_steps = 3001;
-//  auto k_visco = 0.1;
-//  LatticeD2Q9 lm(ny
-//    , nx
-//    , g_dx
-//    , g_dt
-//    , u0);
-//  StreamD2Q9 sd(lm);
-//  StreamPeriodic sp(lm);
-//  CollisionNS ns(lm
-//    , k_visco
-//    , g_rho0_f);
-//  BouncebackNodes hwbb(lm
-//    , &sd);
-//  ZouHeNodes inlet(lm
-//    , ns);
-//  ZouHeNodes outlet(lm
-//    , ns);
-//  ZouHeNodes corners(lm
-//    , ns);
-//  LatticeBoltzmann f(lm
-//    , ns
-//    , sp);
-//  for (auto x = 1u; x < nx - 1; ++x) {
-//    hwbb.AddNode(x, 0);
-//    hwbb.AddNode(x, ny - 1);
-//  }
-//  for (auto y = 0u; y < ny; ++y) {
-//    if (y == 0 || y == ny - 1) {
-//      corners.AddNode(0, y, 0.0, 0.0);
-//      corners.AddNode(nx - 1, y, 0.0, 0.0);
-//    }
-//    else {
-//      inlet.AddNode(0, y, 0.042721518, 0);
-//      outlet.AddNode(nx - 1, y, 0.0, 0.0);
-//    }
-//  }
-//  f.AddBoundaryNodes(&hwbb);
-//  f.AddBoundaryNodes(&inlet);
-//  f.AddBoundaryNodes(&outlet);
-//  f.AddBoundaryNodes(&corners);
-//  for (auto t = 0; t < time_steps; ++t) {
-//    ns.ComputeMacroscopicProperties(f.df);
-//    ns.ComputeEq();
-//    ns.Collide(f.df);
-//    hwbb.UpdateNodes(f.df, false);
-//    f.df = sp.Stream(f.df);
-//    hwbb.UpdateNodes(f.df, true);
-//    inlet.UpdateNodes(f.df, false);
-//    // extrapolate outlet velocity (1st order)
-//    for (auto &node : outlet.nodes)
-//        node.v1[0] = lm.u[node.n - 1][0] / g_dx * g_dt;
-//    outlet.UpdateNodes(f.df, false);
-//    if (t % 6 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 6);
-//    //f.TakeStep();
-//  }
-//  // calculation of analytical u_max according to formula in Guo2002 after
-//  auto length = static_cast<double>(ny / 2);
-//  auto length_an = static_cast<double>(ny / 2) * g_dx;
-//  auto visco_an = g_k_visco * g_dx * g_dx / g_dt;
-//  double u_max = body_force * length_an * length_an / 2 / visco_an;
-//  // check against velocities in the middle of the channel
-//  for (auto x = 55; x < 56; ++x) {
-//    for (auto y = 0u; y < ny; ++y) {
-//      auto n = y * nx + x;
-//      auto y_an = fabs(static_cast<double>(y) - length + 0.5) * g_dx;
-//      double u_an = u_max * (1.0 - y_an * y_an / (length_an * length_an));
-//      auto u_sim = lm.u[n][0] + lm.u[n][1];
-//      std::cout << u_sim << std::endl;
-////      CHECK_CLOSE(u_an, u_sim, u_an * 0.02);
-//    }  // y
-//  }  // x
-//}
+TEST(AnalyticalPoiseuilleZH)
+{
+  std::size_t ny = 38;
+  std::size_t nx = 100;
+  std::vector<double> u0 = {0.0, 0};
+  auto u_in = 0.04272;
+  auto time_steps = 1001;
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt
+    , u0);
+  StreamD2Q9 sd(lm);
+  StreamPeriodic sp(lm);
+  CollisionNS ns(lm
+    , g_k_visco
+    , g_rho0_f);
+  BouncebackNodes hwbb(lm
+    , &ns);
+  ZouHeNodes inlet(lm
+    , ns);
+  ZouHeNodes outlet(lm
+    , ns);
+  LatticeBoltzmann f(lm
+    , ns
+    , sp);
+  for (auto x = 0u; x < nx; ++x) {
+    hwbb.AddNode(x, 0);
+    hwbb.AddNode(x, ny - 1);
+  }
+  for (auto y = 0u; y < ny; ++y) {
+    inlet.AddNode(0, y, u_in, 0);
+    outlet.AddNode(nx - 1, y, 0.0, 0.0);
+  }
+  outlet.ToggleNormalFlow();
+  f.AddBoundaryNodes(&hwbb);
+  f.AddBoundaryNodes(&inlet);
+  f.AddBoundaryNodes(&outlet);
+  for (auto t = 0; t < time_steps; ++t) f.TakeStep();
+  auto length = static_cast<double>(ny / 2 - 1);
+  auto length_an = static_cast<double>(ny / 2 - 1) * g_dx;
+  double u_max = u_in * g_dx / g_dt * 1.5;
+  // check against velocities in the middle of the channel
+  for (auto x = 74; x < 75; ++x) {
+    for (auto y = 1u; y < ny - 1; ++y) {
+      auto n = y * nx + x;
+      auto y_an = fabs(static_cast<double>(y - 1) - length + 0.5) * g_dx;
+      double u_an = u_max * (1.0 - y_an * y_an / (length_an * length_an));
+      auto u_sim = lm.u[n][0];
+      CHECK_CLOSE(u_an, u_sim, u_an * 0.03);
+    }  // y
+  }  // x
+}
 
 TEST(AnalyticalTaylorVortex)
 {
