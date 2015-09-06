@@ -29,6 +29,8 @@ void BouncebackNodes::AddNode(std::size_t x
   // http://stackoverflow.com/questions/11279715/nullptr-and-checking-if-a-
   // pointer-points-to-a-valid-object
   if (cm_) cm_->AddNodeToSkip(n);
+  // add node position to position vector for cmgui output
+  position.push_back(n);
 }
 
 void BouncebackNodes::UpdateNodes(std::vector<std::vector<double>> &df

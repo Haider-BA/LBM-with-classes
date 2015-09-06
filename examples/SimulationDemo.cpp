@@ -11,12 +11,12 @@
 #include "LatticeD2Q9.hpp"
 #include "ParticleRigid.hpp"
 #include "Printing.hpp"
+#include "Results.hpp"
 #include "StreamD2Q9.hpp"
 #include "StreamPeriodic.hpp"
 #include "UnitTest++.h"
 #include "WriteResultsCmgui.hpp"
 #include "WriteResultsCmguiNavierStokes.hpp"
-#include "WriteToCmgui.hpp"
 #include "ZouHeNodes.hpp"
 #include "ZouHePressureNodes.hpp"
 
@@ -315,29 +315,94 @@ TEST(SimulateNSCDCoupling)
   }
   f.AddBoundaryNodes(&bbnsf);
   g.AddBoundaryNodes(&bbcd);
-  auto rho_ns = 0.0;
+  Results result(lm);
+  result.RegisterNS(&f, &nsf, g_rho0_f);
+  result.RegisterCD(&g, &cd);
   for (auto t = 0u; t < 501; ++t) {
-    if (t > 0) {
-    for (auto n = nx; n < 2 * nx; ++n) {
-      auto u_x = g_dx / g_dt * (f.df[n][1] + f.df[n][5] + f.df[n][8] - f.df[n][3] -
-          f.df[n][6] - f.df[n][7]) / nsf.rho[n];
-      CHECK_CLOSE(u_x, lm.u[n][0], 1e-6);
-    }
-  }
     f.TakeStep();
     g.TakeStep();
-    for (auto n = 0u; n < nx * ny; ++n) {
-      rho_ns = 0.0;
-      for (auto i : f.df[n]) rho_ns += i;
-      CHECK_CLOSE(rho_ns, nsf.rho[n], 1e-6);
-      auto rho_cd = 0.0;
-      for (auto i : g.df[n]) rho_cd += i;
-      CHECK_CLOSE(rho_cd, cd.rho[n], 1e-6);
-      auto u_x = g_dx / g_dt * (f.df[n][1] + f.df[n][5] + f.df[n][8] - f.df[n][3] -
-          f.df[n][6] - f.df[n][7]) / nsf.rho[n];
-      CHECK_CLOSE(u_x, lm.u[n][0], 1e-6);
-    }
-    WriteToCmgui(f.df, g.df, lm.u, nx, ny, t, g_rho0_f, g_dx / g_dt, g_cs_sqr);
+    result.WriteResult(t);
+    std::cout << t << std::endl;
+//    WriteToCmgui(f.df, g.df, lm.u, nx, ny, t, g_rho0_f, g_dx / g_dt, g_cs_sqr);
+//    WriteResultsCmguiNavierStokes(f.df
+//      , g.df
+//      , obs
+//      , nx
+//      , ny
+//      , nx * ny
+//      , t
+//      , g_rho0_f
+//      , g_dx / g_dt
+//      , g_cs_sqr);
+//    WriteResultsCmgui(g.df, nx, ny, t);
+  }
+}
+
+TEST(SimulateNSCDCouplingWithObstacles)
+{
+  std::vector<bool> obs = {false};
+  std::size_t ny = 21;
+  std::size_t nx = 31;
+  std::vector<std::vector<std::size_t>> src_pos_f;
+  std::vector<std::vector<double>> src_str_f(nx * ny, {50.0, -10.0});
+  std::vector<std::vector<std::size_t>> src_pos_g = {{15, 10}};
+  std::vector<double> src_str_g = {50};
+  std::vector<double> u0 = {-5.0, 0.0};
+  for (auto n = 0u; n < nx * ny; ++n) {
+    src_pos_f.push_back({n % nx, static_cast<std::size_t>(n / nx)});
+  }
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt
+    , u0);
+  StreamPeriodic sp(lm);
+  CollisionNSF nsf(lm
+    , src_pos_f
+    , src_str_f
+    , g_k_visco
+    , g_rho0_f);
+  CollisionCD cd(lm
+    , src_pos_g
+    , src_str_g
+    , g_d_coeff
+    , g_rho0_g
+    , !g_is_instant);
+  BouncebackNodes bbnsf(lm
+    , &nsf);
+  BouncebackNodes bbcd(lm
+    , &cd);
+  LatticeBoltzmann f(lm
+    , nsf
+    , sp);
+  LatticeBoltzmann g(lm
+    , cd
+    , sp);
+  for (auto x = 0u; x < nx; ++x) {
+    bbnsf.AddNode(x, 0);
+    bbnsf.AddNode(x, ny - 1);
+    bbcd.AddNode(x, 0);
+    bbcd.AddNode(x, ny - 1);
+  }
+  for (auto y = 3; y < 7; ++y) {
+    bbnsf.AddNode(3, y);
+    bbcd.AddNode(3, y);
+    bbnsf.AddNode(4, y);
+    bbcd.AddNode(4, y);
+  }
+  f.AddBoundaryNodes(&bbnsf);
+  g.AddBoundaryNodes(&bbcd);
+  Results result(lm);
+  result.RegisterNS(&f, &nsf, g_rho0_f);
+  result.RegisterCD(&g, &cd);
+  result.RegisterObstacles(&bbnsf);
+  result.RegisterObstacles(&bbcd);
+  for (auto t = 0u; t < 501; ++t) {
+    f.TakeStep();
+    g.TakeStep();
+    result.WriteResult(t);
+    std::cout << t << std::endl;
+//    WriteToCmgui(f.df, g.df, lm.u, nx, ny, t, g_rho0_f, g_dx / g_dt, g_cs_sqr);
 //    WriteResultsCmguiNavierStokes(f.df
 //      , g.df
 //      , obs
@@ -391,9 +456,12 @@ TEST(SimulateTaylorVortex)
   LatticeBoltzmann f(lm
     , ns
     , sp);
+  Results result(lm);
+  result.RegisterNS(&f, &ns, g_rho0_f);
   for (auto t = 0u; t < 501; ++t) {
     f.TakeStep();
-    WriteToCmgui(f.df, f.df, lm.u, nx, ny, t, g_rho0_f, g_dx / g_dt, g_cs_sqr);
+    result.WriteResult(t);
+//    WriteToCmgui(f.df, f.df, lm.u, nx, ny, t, g_rho0_f, g_dx / g_dt, g_cs_sqr);
 //    WriteResultsCmgui(lm.u, nx, ny, t);
   }
 }
@@ -563,6 +631,8 @@ TEST(SimulateKarmanVortex)
     , center_x
     , center_y
     , lm);
+  Results result(lm);
+  result.RegisterNS(&f, &nsf, g_rho0_f);
   cylinder.CreateCylinder(radius);
   ImmersedBoundaryMethod ibm(interpolation_stencil
     , nsf.source
@@ -583,7 +653,7 @@ TEST(SimulateKarmanVortex)
   f.AddBoundaryNodes(&hwbb);
   ibm.AddParticle(&cylinder);
   outlet.ToggleNormalFlow();
-  auto time = 2001u;
+  auto time = 8001u;
   auto interval = time / 500;
   for (auto t = 0u; t < time; ++t) {
     cylinder.ComputeForces();
@@ -592,7 +662,8 @@ TEST(SimulateKarmanVortex)
     ibm.InterpolateFluidVelocity();
     ibm.UpdateParticlePosition();
     if (t % interval == 0) {
-      WriteResultsCmgui(lm.u, nx, ny, t / interval);
+      result.WriteResult(t / interval);
+//      WriteResultsCmgui(lm.u, nx, ny, t / interval);
       std::cout << t << std::endl;
     }
   }

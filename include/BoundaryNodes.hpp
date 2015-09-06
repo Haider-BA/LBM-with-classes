@@ -47,6 +47,11 @@ class BoundaryNodes {
    */
   bool during_stream;
 
+  /**
+   * Indicates boundary node positions, for outputting results
+   */
+  std::vector<std::size_t> position;
+
  protected:
   /**
    * Enumeration for discrete directions to be used with df

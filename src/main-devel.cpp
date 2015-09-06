@@ -20,7 +20,8 @@ int main()
 //  return Unfit::RunOneTest("SimulateDevelopingPoiseuilleFlow");
 //  return Unfit::RunOneTest("SimulateDevelopingPoiseuilleFlowPressureOutlet");
 //  return Unfit::RunOneTest("SimulateNSCDCoupling");
-  return Unfit::RunOneTest("SimulateTaylorVortex");
+  return Unfit::RunOneTest("SimulateNSCDCouplingWithObstacles");
+//  return Unfit::RunOneTest("SimulateTaylorVortex");
 //  return Unfit::RunOneTest("SimulateTaylorVortexForce");
 //  return Unfit::RunOneTest("SimulateLidDrivenCavityFlow");
 //  return Unfit::RunOneTest("SimulateKarmanVortex");
