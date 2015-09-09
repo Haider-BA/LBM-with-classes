@@ -5,13 +5,13 @@ int main()
 {
 //  return Unfit::RunAllTheTests();
 
-//  return Unfit::RunOneSuite("TestFunctionality");
+  return Unfit::RunOneSuite("TestFunctionality");
 //  return Unfit::RunOneSuite("TestAnalyticalSolutions");
 
 //  return Unfit::RunOneTest("AnalyticalPoiseuille");
 //  return Unfit::RunOneTest("AnalyticalTaylorVortex");
 //  return Unfit::RunOneTest("AnalyticalTaylorVortexForce");
-  return Unfit::RunOneTest("AnalyticalPoiseuilleZH");
+//  return Unfit::RunOneTest("AnalyticalPoiseuilleZH");
 
 //  return Unfit::RunOneTest("SimulateDiffusion");
 //  return Unfit::RunOneTest("SimulateConvectionDiffusion");

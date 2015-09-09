@@ -56,7 +56,7 @@
 		</Compiler>
 		<Linker>
 			<Add option="--coverage" />
-			<Add library="UnitTest++\lib\Debug\libUnitTest++.a" />
+			<Add library="UnitTest++/lib/Debug/libUnitTest++.a" />
 			<Add directory="UnitTest++/lib/Debug" />
 		</Linker>
 		<Unit filename="examples/SimulationDemo.cpp" />
@@ -73,6 +73,7 @@
 		<Unit filename="include/LatticeModel.hpp" />
 		<Unit filename="include/Node.hpp" />
 		<Unit filename="include/Particle.hpp" />
+		<Unit filename="include/ParticleDeformable.hpp" />
 		<Unit filename="include/ParticleNode.hpp" />
 		<Unit filename="include/ParticleRigid.hpp" />
 		<Unit filename="include/Printing.hpp" />
@@ -97,6 +98,7 @@
 		<Unit filename="src/LatticeModel.cpp" />
 		<Unit filename="src/Node.cpp" />
 		<Unit filename="src/Particle.cpp" />
+		<Unit filename="src/ParticleDeformable.cpp" />
 		<Unit filename="src/ParticleNode.cpp" />
 		<Unit filename="src/ParticleRigid.cpp" />
 		<Unit filename="src/Results.cpp" />
