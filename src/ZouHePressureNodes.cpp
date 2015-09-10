@@ -61,7 +61,7 @@ void ZouHePressureNodes::UpdateSide(std::vector<std::vector<double>> &df
     case 0: {  // right
       vel[0] = -1.0 + (df[n][0] + df[n][N] + df[n][S] + 2.0 * (df[n][E] +
           df[n][NE] + df[n][SE])) / rho_node;
-      auto df_diff = 0.5 * (df[n][S] - df[n][N]);
+      const auto df_diff = 0.5 * (df[n][S] - df[n][N]);
       for (auto &u : vel) u *= rho_node;
       df[n][W] = df[n][E] - 2.0 / 3.0 * vel[0];
       df[n][NW] = df[n][SE] + df_diff - vel[0] / 6.0;
@@ -71,7 +71,7 @@ void ZouHePressureNodes::UpdateSide(std::vector<std::vector<double>> &df
     case 1: {  // top
       vel[1] = -1.0 + (df[n][0] + df[n][E] + df[n][W] + 2.0 * (df[n][N] +
           df[n][NE] + df[n][NW])) / rho_node;
-      auto df_diff = 0.5 * (df[n][E] - df[n][W]);
+      const auto df_diff = 0.5 * (df[n][E] - df[n][W]);
       for (auto &u : vel) u *= rho_node;
       df[n][S] = df[n][N] - 2.0 / 3.0 * vel[1];
       df[n][SW] = df[n][NE] + df_diff - vel[1] / 6.0;
@@ -81,7 +81,7 @@ void ZouHePressureNodes::UpdateSide(std::vector<std::vector<double>> &df
     case 2: {  // left
       vel[0] = 1.0 - (df[n][0] + df[n][N] + df[n][S] + 2.0 * (df[n][W] +
           df[n][NW] + df[n][SW])) / rho_node;
-      auto df_diff = 0.5 * (df[n][S] - df[n][N]);
+      const auto df_diff = 0.5 * (df[n][S] - df[n][N]);
       for (auto &u : vel) u *= rho_node;
       df[n][E] = df[n][W] + 2.0 / 3.0 * vel[0];
       df[n][NE] = df[n][SW] + df_diff + vel[0] / 6.0;
@@ -91,7 +91,7 @@ void ZouHePressureNodes::UpdateSide(std::vector<std::vector<double>> &df
     case 3: {  // bottom
       vel[1] = 1.0 - (df[n][0] + df[n][E] + df[n][W] + 2.0 * (df[n][S] +
           df[n][SW] + df[n][SE])) / rho_node;
-      auto df_diff = 0.5 * (df[n][W] - df[n][E]);
+      const auto df_diff = 0.5 * (df[n][W] - df[n][E]);
       for (auto &u : vel) u *= rho_node;
       df[n][N] = df[n][S] + 2.0 / 3.0 * vel[1];
       df[n][NE] = df[n][SW] + df_diff + vel[1] / 6.0;

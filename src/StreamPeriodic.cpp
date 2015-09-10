@@ -18,10 +18,10 @@ std::vector<std::vector<double>> StreamPeriodic::Stream(
   auto temp_df = df;
   // Streaming
   for (auto n = 0u; n < nx * ny; ++n) {
-    auto left = n % nx == 0;
-    auto right = n % nx == nx - 1;
-    auto bottom = n / nx == 0;
-    auto top = n / nx == ny - 1;
+    const auto left = n % nx == 0;
+    const auto right = n % nx == nx - 1;
+    const auto bottom = n / nx == 0;
+    const auto top = n / nx == ny - 1;
     temp_df[n][E] = df[left ? n + width : n - 1][E];
     temp_df[n][N] = df[bottom ? n + height : n - nx][N];
     temp_df[n][W] = df[right ? n - width : n + 1][W];

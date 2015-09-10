@@ -23,7 +23,7 @@ void BouncebackNodes::AddNode(std::size_t x
   , std::size_t y)
 {
   const auto nx = lm_.GetNumberOfColumns();
-  auto n = y * nx + x;
+  const auto n = y * nx + x;
   nodes.push_back(Node(x, y, nx));
   // in C++11 nullptr is implicitly cast to boolean false
   // http://stackoverflow.com/questions/11279715/nullptr-and-checking-if-a-
@@ -40,11 +40,11 @@ void BouncebackNodes::UpdateNodes(std::vector<std::vector<double>> &df
     const auto nx = lm_.GetNumberOfColumns();
     const auto ny = lm_.GetNumberOfRows();
     for (auto &node : nodes) {
-      auto n = node.n;
-      auto left = n % nx == 0;
-      auto right = n % nx == nx - 1;
-      auto bottom = n / nx == 0;
-      auto top = n / nx == ny - 1;
+      const auto n = node.n;
+      const auto left = n % nx == 0;
+      const auto right = n % nx == nx - 1;
+      const auto bottom = n / nx == 0;
+      const auto top = n / nx == ny - 1;
       if (bottom) df[n][N] = node.df_node[S];
       if (top) df[n][S] = node.df_node[N];
       if (left) df[n][E] = node.df_node[W];
@@ -58,7 +58,7 @@ void BouncebackNodes::UpdateNodes(std::vector<std::vector<double>> &df
   else {
     if (cm_) {
       for (auto node : nodes) {
-        auto n = node.n;
+        const auto n = node.n;
         auto temp_node = df[n];
         df[n][E] = temp_node[W];
         df[n][N] = temp_node[S];

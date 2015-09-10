@@ -70,9 +70,9 @@ void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
       if (is_normal_flow_) {
         for (auto &u : vel) u *= scaling;
       }
-      auto rho_node = (df[n][0] + df[n][N] + df[n][S] + 2.0 * (df[n][E] +
+      const auto rho_node = (df[n][0] + df[n][N] + df[n][S] + 2.0 * (df[n][E] +
           df[n][NE] + df[n][SE])) / (1.0 + vel[0]);
-      auto df_diff = 0.5 * (df[n][S] - df[n][N]);
+      const auto df_diff = 0.5 * (df[n][S] - df[n][N]);
       for (auto &u : vel) u *= rho_node;
       df[n][W] = df[n][E] - 2.0 / 3.0 * vel[0];
       df[n][NW] = df[n][SE] + df_diff - vel[0] / 6.0 + vel[1] / 2.0;
@@ -84,9 +84,9 @@ void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
       if (is_normal_flow_) {
         for (auto &u : vel) u *= scaling;
       }
-      auto rho_node = (df[n][0] + df[n][E] + df[n][W] + 2.0 * (df[n][N] +
+      const auto rho_node = (df[n][0] + df[n][E] + df[n][W] + 2.0 * (df[n][N] +
           df[n][NE] + df[n][NW])) / (1.0 + vel[1]);
-      auto df_diff = 0.5 * (df[n][E] - df[n][W]);
+      const auto df_diff = 0.5 * (df[n][E] - df[n][W]);
       for (auto &u : vel) u *= rho_node;
       df[n][S] = df[n][N] - 2.0 / 3.0 * vel[1];
       df[n][SW] = df[n][NE] + df_diff - vel[0] / 2.0 - vel[1] / 6.0;
@@ -98,9 +98,9 @@ void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
       if (is_normal_flow_) {
         for (auto &u : vel) u *= scaling;
       }
-      auto rho_node = (df[n][0] + df[n][N] + df[n][S] + 2.0 * (df[n][W] +
+      const auto rho_node = (df[n][0] + df[n][N] + df[n][S] + 2.0 * (df[n][W] +
           df[n][NW] + df[n][SW])) / (1.0 - vel[0]);
-      auto df_diff = 0.5 * (df[n][S] - df[n][N]);
+      const auto df_diff = 0.5 * (df[n][S] - df[n][N]);
       for (auto &u : vel) u *= rho_node;
       df[n][E] = df[n][W] + 2.0 / 3.0 * vel[0];
       df[n][NE] = df[n][SW] + df_diff + vel[0] / 6.0 + vel[1] / 2.0;
@@ -112,9 +112,9 @@ void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
       if (is_normal_flow_) {
         for (auto &u : vel) u *= scaling;
       }
-      auto rho_node = (df[n][0] + df[n][E] + df[n][W] + 2.0 * (df[n][S] +
+      const auto rho_node = (df[n][0] + df[n][E] + df[n][W] + 2.0 * (df[n][S] +
           df[n][SW] + df[n][SE])) / (1.0 - vel[1]);
-      auto df_diff = 0.5 * (df[n][W] - df[n][E]);
+      const auto df_diff = 0.5 * (df[n][W] - df[n][E]);
       for (auto &u : vel) u *= rho_node;
       df[n][N] = df[n][S] + 2.0 / 3.0 * vel[1];
       df[n][NE] = df[n][SW] + df_diff + vel[0] / 2.0 + vel[1] / 6.0;

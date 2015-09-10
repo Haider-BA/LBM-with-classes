@@ -39,7 +39,7 @@ std::vector<std::vector<double>> CollisionNS::ComputeU(
   for (auto node : df) result.push_back(GetFirstMoment(node, lm_.e));
   for (auto &node : result) {
     for (auto &d : node) d /= rho[index];
-    ++ index;
+    ++index;
   }  // node
   return result;
 }

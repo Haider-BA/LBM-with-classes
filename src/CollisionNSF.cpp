@@ -83,7 +83,7 @@ void CollisionNSF::Collide(std::vector<std::vector<double>> &lattice)
               lm_.e[i][d]) * source[n][d];
         }  // d
         src_dot_product /= cs_sqr_ / rho[n];
-        auto src_i = (1.0 - 0.5 / tau_) * lm_.omega[i] * src_dot_product;
+        const auto src_i = (1.0 - 0.5 / tau_) * lm_.omega[i] * src_dot_product;
         lattice[n][i] += (edf[n][i] - lattice[n][i]) / tau_ + dt * src_i;
       }  // i
     }

@@ -36,10 +36,10 @@ void Particle::CreateCylinder(double radius)
 {
   // particle coordinates stored in real units
   for (auto i = 0u; i < number_of_nodes_; ++i) {
-    auto x = center.coord[0] + radius * sin(2.0 * pi_ * static_cast<double>(i) /
-        number_of_nodes_);
-    auto y = center.coord[1] + radius * cos(2.0 * pi_ * static_cast<double>(i) /
-        number_of_nodes_);
+    const auto x = center.coord[0] + radius * sin(2.0 * pi_ *
+        static_cast<double>(i) / number_of_nodes_);
+    const auto y = center.coord[1] + radius * cos(2.0 * pi_ *
+        static_cast<double>(i) / number_of_nodes_);
     Particle::AddNode(x, y, x, y, 0.0, 0.0, 0.0, 0.0);
     area_ = 2 * pi_ * radius;
   }

@@ -62,8 +62,8 @@ void CollisionCD::Collide(std::vector<std::vector<double>> &df)
         double c_dot_u = InnerProduct(lm_.e[i], lm_.u[n]);
         c_dot_u /= cs_sqr_;
         // source term using forward scheme, theta = 0
-        auto src_i = lm_.omega[i] * source[n] * (1.0 + (1.0 - 0.5 / tau_) *
-            c_dot_u);
+        const auto src_i = lm_.omega[i] * source[n] * (1.0 + (1.0 - 0.5 /
+            tau_) * c_dot_u);
         df[n][i] += (edf[n][i] - df[n][i]) / tau_ + dt * src_i;
       }  // i
     }
