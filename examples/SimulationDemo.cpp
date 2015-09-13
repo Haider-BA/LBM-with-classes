@@ -587,7 +587,6 @@ TEST(SimulateLidDrivenCavityFlow)
 
 TEST(SimulateKarmanVortex)
 {
-  // TODO: try periodic stream
   auto pi = 3.14159265;
   std::size_t nx = 400;
   std::size_t ny = 100;
@@ -600,7 +599,7 @@ TEST(SimulateKarmanVortex)
   auto u_zh = 0.2;
   auto v_zh = 0.0;
   auto radius = dx * ny / 20;
-  auto stiffness = 0.2 / dx;
+  auto stiffness = 2.0 / dx;
   auto center_y = dx * ny / 2.0;
   auto center_x = dx * nx * 0.25;
   // set boundary node spacing to 0.6 * dx
