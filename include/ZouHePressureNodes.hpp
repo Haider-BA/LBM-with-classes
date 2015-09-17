@@ -71,5 +71,13 @@ class ZouHePressureNodes: public BoundaryNodes {
    * Collision model which contains information on lattice density
    */
   CollisionModel &cm_;
+
+  /**
+   * Additional constants beta1, beta2 and beta3 since the dx = dt = 1 condition
+   * is not always maintained
+   */
+  double beta1_;
+  double beta2_;
+  double beta3_;
 };
 #endif  // ZOU_HE_PRESSURE_NODES_HPP_

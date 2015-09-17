@@ -9,8 +9,17 @@ ZouHeNodes::ZouHeNodes(LatticeModel &lm
   : BoundaryNodes(false, false, lm),
     nodes {},
     cm_ (cm),
-    is_normal_flow_ {false}
-{}
+    is_normal_flow_ {false},
+    beta1_ {},
+    beta2_ {},
+    beta3_ {}
+{
+  const auto c = lm_.GetLatticeSpeed();
+  const auto cs_sqr = c * c / 3.0;
+  beta1_ = c / cs_sqr / 9.0;
+  beta2_ = 0.5 / c;
+  beta3_ = beta2_ - beta1_;
+}
 
 void ZouHeNodes::AddNode(std::size_t x
   , std::size_t y
@@ -63,62 +72,50 @@ void ZouHeNodes::UpdateSide(std::vector<std::vector<double>> &df
 {
   const auto n = node.n;
   const auto nx = lm_.GetNumberOfColumns();
-  const auto scaling = lm_.GetTimeStep() / lm_.GetSpaceStep();
+  const auto c = lm_.GetLatticeSpeed();
   switch(node.i1) {
     case 0: {  // right
       auto vel = is_normal_flow_ ? lm_.u[n - 1] : node.v1;
-      if (is_normal_flow_) {
-        for (auto &u : vel) u *= scaling;
-      }
       const auto rho_node = (df[n][0] + df[n][N] + df[n][S] + 2.0 * (df[n][E] +
-          df[n][NE] + df[n][SE])) / (1.0 + vel[0]);
+          df[n][NE] + df[n][SE])) / (1.0 + vel[0] / c);
       const auto df_diff = 0.5 * (df[n][S] - df[n][N]);
       for (auto &u : vel) u *= rho_node;
-      df[n][W] = df[n][E] - 2.0 / 3.0 * vel[0];
-      df[n][NW] = df[n][SE] + df_diff - vel[0] / 6.0 + vel[1] / 2.0;
-      df[n][SW] = df[n][NE] - df_diff - vel[0] / 6.0 - vel[1] / 2.0;
+      df[n][W] = df[n][E] - 2.0 * beta1_ * vel[0];
+      df[n][NW] = df[n][SE] + df_diff - beta3_ * vel[0] + beta2_ * vel[1];
+      df[n][SW] = df[n][NE] - df_diff - beta3_ * vel[0] - beta2_ * vel[1];
       break;
     }
     case 1: {  // top
       auto vel = is_normal_flow_ ? lm_.u[n - nx] : node.v1;
-      if (is_normal_flow_) {
-        for (auto &u : vel) u *= scaling;
-      }
       const auto rho_node = (df[n][0] + df[n][E] + df[n][W] + 2.0 * (df[n][N] +
-          df[n][NE] + df[n][NW])) / (1.0 + vel[1]);
+          df[n][NE] + df[n][NW])) / (1.0 + vel[1] / c);
       const auto df_diff = 0.5 * (df[n][E] - df[n][W]);
       for (auto &u : vel) u *= rho_node;
-      df[n][S] = df[n][N] - 2.0 / 3.0 * vel[1];
-      df[n][SW] = df[n][NE] + df_diff - vel[0] / 2.0 - vel[1] / 6.0;
-      df[n][SE] = df[n][NW] - df_diff + vel[0] / 2.0 - vel[1] / 6.0;
+      df[n][S] = df[n][N] - 2.0 * beta1_ * vel[1];
+      df[n][SW] = df[n][NE] + df_diff - beta2_ * vel[0] - beta3_ * vel[1];
+      df[n][SE] = df[n][NW] - df_diff + beta2_ * vel[0] - beta3_ * vel[1];
       break;
     }
     case 2: {  // left
       auto vel = is_normal_flow_ ? lm_.u[n + 1] : node.v1;
-      if (is_normal_flow_) {
-        for (auto &u : vel) u *= scaling;
-      }
       const auto rho_node = (df[n][0] + df[n][N] + df[n][S] + 2.0 * (df[n][W] +
-          df[n][NW] + df[n][SW])) / (1.0 - vel[0]);
+          df[n][NW] + df[n][SW])) / (1.0 - vel[0] / c);
       const auto df_diff = 0.5 * (df[n][S] - df[n][N]);
       for (auto &u : vel) u *= rho_node;
-      df[n][E] = df[n][W] + 2.0 / 3.0 * vel[0];
-      df[n][NE] = df[n][SW] + df_diff + vel[0] / 6.0 + vel[1] / 2.0;
-      df[n][SE] = df[n][NW] - df_diff + vel[0] / 6.0 - vel[1] / 2.0;
+      df[n][E] = df[n][W] + 2.0 * beta1_ * vel[0];
+      df[n][NE] = df[n][SW] + df_diff + beta3_ * vel[0] + beta2_ * vel[1];
+      df[n][SE] = df[n][NW] - df_diff + beta3_ * vel[0] - beta2_ * vel[1];
       break;
     }
     case 3: {  // bottom
       auto vel = is_normal_flow_ ? lm_.u[n + nx] : node.v1;
-      if (is_normal_flow_) {
-        for (auto &u : vel) u *= scaling;
-      }
       const auto rho_node = (df[n][0] + df[n][E] + df[n][W] + 2.0 * (df[n][S] +
-          df[n][SW] + df[n][SE])) / (1.0 - vel[1]);
+          df[n][SW] + df[n][SE])) / (1.0 - vel[1] / c);
       const auto df_diff = 0.5 * (df[n][W] - df[n][E]);
       for (auto &u : vel) u *= rho_node;
-      df[n][N] = df[n][S] + 2.0 / 3.0 * vel[1];
-      df[n][NE] = df[n][SW] + df_diff + vel[0] / 2.0 + vel[1] / 6.0;
-      df[n][NW] = df[n][SE] - df_diff - vel[0] / 2.0 + vel[1] / 6.0;
+      df[n][N] = df[n][S] + 2.0 * beta1_ * vel[1];
+      df[n][NE] = df[n][SW] + df_diff + beta2_ * vel[0] + beta3_ * vel[1];
+      df[n][NW] = df[n][SE] - df_diff - beta2_ * vel[0] + beta3_ * vel[1];
       break;
     }
     default: {
@@ -138,11 +135,11 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
     case 0: {  // bottom-left
       auto rho_node = 0.5 * (cm_.rho[n + nx] + cm_.rho[n + 1]);
       for (auto &u : vel) u *= rho_node;
-      df[n][E] = df[n][W] + 2.0 / 3.0 * vel[0];
-      df[n][N] = df[n][S] + 2.0 / 3.0 * vel[1];
-      df[n][NE] = df[n][SW] + vel[0] / 6.0 + vel[1] / 6.0;
-      df[n][NW] = -vel[0] / 12.0 + vel[1] / 12.0;
-      df[n][SE] = vel[0] / 12.0 - vel[1] / 12.0;
+      df[n][E] = df[n][W] + 2.0 * beta1_ * vel[0];
+      df[n][N] = df[n][S] + 2.0 * beta1_ * vel[1];
+      df[n][NE] = df[n][SW] + 0.5 * beta1_ * vel[0] + 0.5 * beta1_ * vel[1];
+      df[n][NW] = -0.5 * beta3_ * vel[0] + 0.5 * beta3_ * vel[1];
+      df[n][SE] = 0.5 * beta3_ * vel[0] - 0.5 * beta3_ * vel[1];
       for (auto i = 1u; i < nc; ++i) rho_node -= df[n][i];
       df[n][0] = rho_node;
       break;
@@ -150,11 +147,11 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
     case 1: {  // bottom-right
       auto rho_node = 0.5 * (cm_.rho[n + nx] + cm_.rho[n - 1]);
       for (auto &u : vel) u *= rho_node;
-      df[n][W] = df[n][E] - 2.0 / 3.0 * vel[0];
-      df[n][N] = df[n][S] + 2.0 / 3.0 * vel[1];
-      df[n][NW] = df[n][SE] - vel[0] / 6.0 + vel[1] / 6.0;
-      df[n][NE] = vel[0] / 12.0 + vel[1] / 12.0;
-      df[n][SW] = -vel[0] / 12.0 - vel[1] / 12.0;
+      df[n][W] = df[n][E] - 2.0 * beta1_ * vel[0];
+      df[n][N] = df[n][S] + 2.0 * beta1_ * vel[1];
+      df[n][NW] = df[n][SE] - 0.5 * beta1_ * vel[0] + 0.5 * beta1_ * vel[1];
+      df[n][NE] = 0.5 * beta3_ * vel[0] + 0.5 * beta3_ * vel[1];
+      df[n][SW] = -0.5 * beta3_ * vel[0] - 0.5 * beta3_ * vel[1];
       for (auto i = 1u; i < nc; ++i) rho_node -= df[n][i];
       df[n][0] = rho_node;
       break;
@@ -162,11 +159,11 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
     case 2: {  // top-left
       auto rho_node = 0.5 * (cm_.rho[n - nx] + cm_.rho[n + 1]);
       for (auto &u : vel) u *= rho_node;
-      df[n][E] = df[n][W] + 2.0 / 3.0 * vel[0];
-      df[n][S] = df[n][N] - 2.0 / 3.0 * vel[1];
-      df[n][SE] = df[n][NW] + vel[0] / 6.0 - vel[1] / 6.0;
-      df[n][NE] = vel[0] / 12.0 + vel[1] / 12.0;
-      df[n][SW] = -vel[0] / 12.0 - vel[1] / 12.0;
+      df[n][E] = df[n][W] + 2.0 * beta1_ * vel[0];
+      df[n][S] = df[n][N] - 2.0 * beta1_ * vel[1];
+      df[n][SE] = df[n][NW] + 0.5 * beta1_ * vel[0] - 0.5 * beta1_ * vel[1];
+      df[n][NE] = 0.5 * beta3_ * vel[0] + 0.5 * beta3_ * vel[1];
+      df[n][SW] = -0.5 * beta3_ * vel[0] - 0.5 * beta3_ * vel[1];
       for (auto i = 1u; i < nc; ++i) rho_node -= df[n][i];
       df[n][0] = rho_node;
       break;
@@ -174,11 +171,11 @@ void ZouHeNodes::UpdateCorner(std::vector<std::vector<double>> &df
     case 3: {  // top-right
       auto rho_node = 0.5 * (cm_.rho[n - nx] + cm_.rho[n - 1]);
       for (auto &u : vel) u *= rho_node;
-      df[n][W] = df[n][E] - 2.0 / 3.0 * vel[0];
-      df[n][S] = df[n][N] - 2.0 / 3.0 * vel[1];
-      df[n][SW] = df[n][NE] - vel[0] / 6.0 - vel[1] / 6.0;
-      df[n][NW] = -vel[0] / 12.0 + vel[1] / 12.0;
-      df[n][SE] = vel[0] / 12.0 - vel[1] / 12.0;
+      df[n][W] = df[n][E] - 2.0 * beta1_ * vel[0];
+      df[n][S] = df[n][N] - 2.0 * beta1_ * vel[1];
+      df[n][SW] = df[n][NE] - 0.5 * beta1_ * vel[0] - 0.5 * beta1_ * vel[1];
+      df[n][NW] = -0.5 * beta3_ * vel[0] + 0.5 * beta3_ * vel[1];
+      df[n][SE] = 0.5 * beta3_ * vel[0] - 0.5 * beta3_ * vel[1];
       for (auto i = 1u; i < nc; ++i) rho_node -= df[n][i];
       df[n][0] = rho_node;
       break;

@@ -78,7 +78,18 @@ class ZouHeNodes: public BoundaryNodes {
    */
   CollisionModel &cm_;
 
+  /**
+   * Boolean toggle for open boundary condition (outlet)
+   */
   bool is_normal_flow_;
+
+  /**
+   * Additional constants beta1, beta2 and beta3 since the dx = dt = 1 condition
+   * is not always maintained
+   */
+  double beta1_;
+  double beta2_;
+  double beta3_;
 //  std::vector<bool> is_corner_;
 //  std::vector<bool> knowns_;
 

@@ -127,8 +127,8 @@ TEST(AnalyticalPoiseuilleZH)
   std::size_t ny = 38;
   std::size_t nx = 100;
   std::vector<double> u0 = {0.0, 0};
-  auto u_in = 0.04272;
-  auto time_steps = 1001;
+  auto u_in = 0.4272;
+  auto time_steps = 1501;
   LatticeD2Q9 lm(ny
     , nx
     , g_dx
@@ -139,7 +139,7 @@ TEST(AnalyticalPoiseuilleZH)
   CollisionNS ns(lm
     , g_k_visco
     , g_rho0_f);
-  BouncebackNodes hwbb(lm
+  BouncebackNodes fwbb(lm
     , &ns);
   ZouHeNodes inlet(lm
     , ns);
@@ -149,21 +149,21 @@ TEST(AnalyticalPoiseuilleZH)
     , ns
     , sp);
   for (auto x = 0u; x < nx; ++x) {
-    hwbb.AddNode(x, 0);
-    hwbb.AddNode(x, ny - 1);
+    fwbb.AddNode(x, 0);
+    fwbb.AddNode(x, ny - 1);
   }
-  for (auto y = 0u; y < ny; ++y) {
+  for (auto y = 1u; y < ny - 1; ++y) {
     inlet.AddNode(0, y, u_in, 0);
     outlet.AddNode(nx - 1, y, 0.0, 0.0);
   }
   outlet.ToggleNormalFlow();
-  f.AddBoundaryNodes(&hwbb);
+  f.AddBoundaryNodes(&fwbb);
   f.AddBoundaryNodes(&inlet);
   f.AddBoundaryNodes(&outlet);
   for (auto t = 0; t < time_steps; ++t) f.TakeStep();
   auto length = static_cast<double>(ny / 2 - 1);
   auto length_an = static_cast<double>(ny / 2 - 1) * g_dx;
-  double u_max = u_in * g_dx / g_dt * 1.5;
+  double u_max = u_in * 1.5;
   // check against velocities in the middle of the channel
   for (auto x = 74; x < 75; ++x) {
     for (auto y = 1u; y < ny - 1; ++y) {
@@ -171,7 +171,7 @@ TEST(AnalyticalPoiseuilleZH)
       auto y_an = fabs(static_cast<double>(y - 1) - length + 0.5) * g_dx;
       double u_an = u_max * (1.0 - y_an * y_an / (length_an * length_an));
       auto u_sim = lm.u[n][0];
-      CHECK_CLOSE(u_an, u_sim, u_an * 0.03);
+      CHECK_CLOSE(u_an, u_sim, u_an * 0.015);
     }  // y
   }  // x
 }

@@ -18,13 +18,13 @@ int main()
 //  return Unfit::RunOneTest("SimulatePoiseuilleFlow");
 //  return Unfit::RunOneTest("SimulatePoiseuilleFlowHw");
 //  return Unfit::RunOneTest("SimulateDevelopingPoiseuilleFlow");
-//  return Unfit::RunOneTest("SimulateDevelopingPoiseuilleFlowPressureOutlet");
+  return Unfit::RunOneTest("SimulateDevelopingPoiseuilleFlowPressureOutlet");
 //  return Unfit::RunOneTest("SimulateNSCDCoupling");
 //  return Unfit::RunOneTest("SimulateNSCDCouplingWithObstacles");
 //  return Unfit::RunOneTest("SimulateTaylorVortex");
 //  return Unfit::RunOneTest("SimulateTaylorVortexForce");
 //  return Unfit::RunOneTest("SimulateLidDrivenCavityFlow");
-  return Unfit::RunOneTest("SimulateKarmanVortex");
+//  return Unfit::RunOneTest("SimulateKarmanVortex");
 //  return Unfit::RunOneTest("SimulateLinearShearFlow");
 
 

@@ -737,17 +737,17 @@ TEST(BoundaryZouHeSide)
   auto v_lid = 0.1;
   std::vector<double> nums = {1, 2, 3, 4, 5, 6, 7, 8, 9};
   std::vector<double> right_ans = {1,
-                                   2, 3, -0.60606, 5,
-                                   6, 11.30303, 2.393939, 9};
+                                   2, 3, 1.909569, 5,
+                                   6, 10.045216, 4.909569, 9};
   std::vector<double> top_ans = {1,
-                                 2, 3, 4, 0.636364,
-                                 6, 7, 2.636364, 9.181818};
+                                 2, 3, 4, 2.917981,
+                                 6, 7, 4.917981, 8.041009};
   std::vector<double> left_ans = {1,
-                                  7.481481, 3, 4, 5,
-                                  12.481481, 7, 8, 4.259259};
+                                  4.099471, 3, 4, 5,
+                                  9.099471, 7, 8, 5.950265};
   std::vector<double> bottom_ans = {1,
-                                    2, 8.777778, 4, 5,
-                                    12.77778, 6.111111, 8, 9};
+                                    2, 5.107937, 4, 5,
+                                    9.107937, 7.946032, 8, 9};
   for (auto y = 1u; y < g_ny - 1; ++y) {
     auto left = y * g_nx;
     auto right = left + g_nx - 1;
@@ -798,18 +798,18 @@ TEST(BoundaryZouHeCorner)
   auto u_lid = 0.1;
   auto v_lid = 0.1;
   std::vector<double> nums = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-  std::vector<double> bottom_left = {3.5,
-                                     7, 8, 4, 5,
-                                     9.5, 0, 8, 0};
+  std::vector<double> bottom_left = {10.762658,
+                                     4.094937, 5.094937, 4, 5,
+                                     8.047468, 0, 8, 0};
   std::vector<double> bottom_right = {13,
-                                      2, 8, -1, 5,
-                                      0.75, 9, -0.75, 9};
+                                      2, 5.094937, 1.905063, 5,
+                                      0.023734, 9, -0.023734, 9};
   std::vector<double> top_left = {17,
-                                  7, 3, 4, 0,
-                                  0.75, 7, -0.75, 7};
-  std::vector<double> top_right = {30.5,
-                                   2, 3, -1, 0,
-                                   6, 0, 4.5, 0};
+                                  4.094937, 3, 4, 2.905063,
+                                  0.023734, 7, -0.023734, 7};
+  std::vector<double> top_right = {23.23734,
+                                   2, 3, 1.905063, 2.905063,
+                                   6, 0, 5.952532, 0};
   for (auto &node : f.df) node = nums;
   ns.rho = ns.ComputeRho(f.df);
   zhns.AddNode(0, 0, u_lid, v_lid);

@@ -211,7 +211,7 @@ TEST(SimulateDevelopingPoiseuilleFlowPressureOutlet)
   std::size_t nx = 151;
   auto dx = 0.0316;
   auto dt = dx * dx;
-  auto k_visco = 0.005;
+  auto k_visco = 0.05;
   auto rho0_f = 1.0;
   std::vector<double> u0 = {0.0, 0.0};
   LatticeD2Q9 lm(ny
@@ -227,7 +227,9 @@ TEST(SimulateDevelopingPoiseuilleFlowPressureOutlet)
     , &sd);
   BouncebackNodes fwbb(lm
     , &ns);
-  ZouHeNodes zhns(lm
+  ZouHeNodes v_inlet(lm
+    , ns);
+  ZouHeNodes v_outlet(lm
     , ns);
   ZouHePressureNodes inlet(lm
     , ns);
@@ -244,26 +246,30 @@ TEST(SimulateDevelopingPoiseuilleFlowPressureOutlet)
   auto radius = ny / 4;
   auto x_offset = ny / 2;
   auto y_offset = ny / 2;
-  for (auto y = 0u; y < ny; ++y) {
-    auto y_pos = abs(y - y_offset);
-    for (auto x = 0u; x < nx; ++x) {
-      auto x_pos = abs(x - x_offset);
-      if (sqrt(y_pos * y_pos + x_pos * x_pos) < radius) fwbb.AddNode(x, y);
-    }  // x
-  }  // y
+//  for (auto y = 0u; y < ny; ++y) {
+//    auto y_pos = abs(y - y_offset);
+//    for (auto x = 0u; x < nx; ++x) {
+//      auto x_pos = abs(x - x_offset);
+//      if (sqrt(y_pos * y_pos + x_pos * x_pos) < radius) fwbb.AddNode(x, y);
+//    }  // x
+//  }  // y
   // zou/he velocity inlet, pressure outlet
   for (auto y = 1u; y < ny - 1; ++y) {
-    inlet.AddNode(0, y, 1.005);
-    outlet.AddNode(nx - 1, y, 1.0);
+//    v_inlet.AddNode(0, y, 0.005, 0.0);
+//    v_outlet.AddNode(nx - 1, y, 0.0, 0.0);
+    inlet.AddNode(0, y, 1.5);
+    outlet.AddNode(nx - 1, y, 1.6);
   }
   f.AddBoundaryNodes(&inlet);
+//  f.AddBoundaryNodes(&v_inlet);
+//  f.AddBoundaryNodes(&v_outlet);
   f.AddBoundaryNodes(&outlet);
   f.AddBoundaryNodes(&hwbb);
-  f.AddBoundaryNodes(&fwbb);
-  for (auto t = 0u; t < 5001; ++t) {
+//  f.AddBoundaryNodes(&fwbb);
+  for (auto t = 0u; t < 1001; ++t) {
     std::cout << t << std::endl;
     f.TakeStep();
-    if (t % 10 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 10);
+    if (t % 2 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 2);
   }
 }
 
