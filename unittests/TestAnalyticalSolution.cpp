@@ -1,4 +1,5 @@
 #include <cmath>  // exp, sin, cos
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <vector>
@@ -32,10 +33,11 @@ TEST(AnalyticalDiffusion)
 {
   std::size_t ny = 201;
   std::size_t nx = 201;
+  auto d_coeff = 0.1;
   std::vector<std::vector<std::size_t>> src_pos_g = {{100, 100}};
   std::vector<double> src_str_g = {1000.0};  // unit conversion
   std::vector<double> u0 = {0.0, 0.0};
-  auto time_steps = 100;
+  auto time_steps = 200;
   LatticeD2Q9 lm(ny
     , nx
     , g_dx
@@ -45,7 +47,7 @@ TEST(AnalyticalDiffusion)
   CollisionCD cd(lm
     , src_pos_g
     , src_str_g
-    , g_d_coeff
+    , d_coeff
     , g_rho0_g
     , g_is_instant);
   LatticeBoltzmann g(lm
@@ -61,13 +63,37 @@ TEST(AnalyticalDiffusion)
       auto y = abs(n / nx - 100);
       auto x = abs(n % nx - 100);
       // Analytical solution from http://nptel.ac.in/courses/105103026/34
-      double rho = exp(-1.0 * (y * y + x * x) / 4.0 / g_d_coeff / t) /
-          (4.0 * g_pi * t * g_d_coeff);
+      double rho = exp(-1.0 * (y * y + x * x) / 4.0 / d_coeff / t) /
+          (4.0 * g_pi * t * d_coeff);
       // ignoring the first 6 time steps
-      if (t > 6) CHECK_CLOSE(rho, node - 1.0, 0.0068);
+//      if (t > 6) CHECK_CLOSE(rho, node - 1.0, 0.0068);
       ++n;
     }  // n
   }  // t
+  std::ofstream myfile;
+  myfile.open("diffusion.csv");
+  myfile << "rho_y,rho_x" << std::endl;
+  for (auto i = 0; i < nx; ++i) {
+    auto y = nx / 2 * nx + i;
+    auto x = i * nx + nx / 2;
+    myfile << cd.rho[y] << "," << cd.rho[x] << std::endl;
+  }
+  myfile.close();
+  auto n = 0;
+  auto std_error = 0.0;
+  auto ana_sum = 0.0;
+  for (auto node : cd.rho) {
+    auto y = abs(n / nx - 100);
+    auto x = abs(n % nx - 100);
+    // Analytical solution from http://nptel.ac.in/courses/105103026/34
+    double rho = exp(-1.0 * (y * y + x * x) / 4.0 / d_coeff / 199) /
+        (4.0 * g_pi * 199 * d_coeff);
+    // ignoring the first 6 time steps
+    std_error += fabs(node - rho - 1.0);
+    ana_sum += rho;
+    ++n;
+  }  // n
+  std::cout << std_error / ana_sum << std::endl;
 }
 
 TEST(AnalyticalPoiseuille)
@@ -117,6 +143,7 @@ TEST(AnalyticalPoiseuille)
       auto y_an = fabs(static_cast<double>(y) - length + 0.5) * g_dx;
       double u_an = u_max * (1.0 - y_an * y_an / (length_an * length_an));
       auto u_sim = lm.u[n][0] + lm.u[n][1];
+      std::cout << u_sim << std::endl;
       CHECK_CLOSE(u_an, u_sim, u_an * 0.02);
     }  // y
   }  // x
@@ -125,10 +152,10 @@ TEST(AnalyticalPoiseuille)
 TEST(AnalyticalPoiseuilleZH)
 {
   std::size_t ny = 38;
-  std::size_t nx = 100;
-  std::vector<double> u0 = {0.0, 0};
-  auto u_in = 0.4272;
-  auto time_steps = 1501;
+  std::size_t nx = 150;
+  std::vector<double> u0 = {0.0, 0.0};
+  auto u_in = 1.35;
+  auto time_steps = 3000;
   LatticeD2Q9 lm(ny
     , nx
     , g_dx
@@ -165,13 +192,14 @@ TEST(AnalyticalPoiseuilleZH)
   auto length_an = static_cast<double>(ny / 2 - 1) * g_dx;
   double u_max = u_in * 1.5;
   // check against velocities in the middle of the channel
-  for (auto x = 74; x < 75; ++x) {
+  for (auto x = 100; x < 101; ++x) {
     for (auto y = 1u; y < ny - 1; ++y) {
       auto n = y * nx + x;
       auto y_an = fabs(static_cast<double>(y - 1) - length + 0.5) * g_dx;
       double u_an = u_max * (1.0 - y_an * y_an / (length_an * length_an));
       auto u_sim = lm.u[n][0];
-      CHECK_CLOSE(u_an, u_sim, u_an * 0.015);
+      CHECK_CLOSE(u_an, u_sim, u_an * 0.0175);
+      std::cout << u_sim << std::endl;
     }  // y
   }  // x
 }

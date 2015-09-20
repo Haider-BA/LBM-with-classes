@@ -546,8 +546,8 @@ TEST(SimulateLidDrivenCavityFlow)
   auto dt = 0.0001;
   auto dx = sqrt(dt);
   std::vector<double> u0 = {0.0, 0.0};
-  auto k_visco = 0.080896;
-  auto u_lid = 0.316;
+  auto k_visco = 1.0 / 18.0;
+  auto u_lid = 31.6;
   auto v_lid = 0.0;
   LatticeD2Q9 lm(ny
     , nx
@@ -575,13 +575,13 @@ TEST(SimulateLidDrivenCavityFlow)
   }
   f.AddBoundaryNodes(&bbns);
   f.AddBoundaryNodes(&zhns);
-  for (auto t = 0u; t < 32001; ++t) {
+  for (auto t = 0u; t < 64001; ++t) {
     f.TakeStep();
-    if (t % 64 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 64);
+    if (t % 128 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 128);
     std::cout << t << std::endl;
   }
   std::ofstream myfile;
-  myfile.open ("velocities.csv");
+  myfile.open("velocities.csv");
   myfile << "u_y,u_x" << std::endl;
   for (auto i = 0u; i < 256; ++i) {
     auto y = 128 * nx + i;

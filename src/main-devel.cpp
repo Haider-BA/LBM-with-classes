@@ -8,8 +8,9 @@ int main()
 //  return Unfit::RunOneSuite("TestFunctionality");
 //  return Unfit::RunOneSuite("TestAnalyticalSolutions");
 
+//  return Unfit::RunOneTest("AnalyticalDiffusion");
 //  return Unfit::RunOneTest("AnalyticalPoiseuille");
-//  return Unfit::RunOneTest("AnalyticalTaylorVortex");
+  return Unfit::RunOneTest("AnalyticalTaylorVortex");
 //  return Unfit::RunOneTest("AnalyticalTaylorVortexForce");
 //  return Unfit::RunOneTest("AnalyticalPoiseuilleZH");
 
@@ -18,7 +19,7 @@ int main()
 //  return Unfit::RunOneTest("SimulatePoiseuilleFlow");
 //  return Unfit::RunOneTest("SimulatePoiseuilleFlowHw");
 //  return Unfit::RunOneTest("SimulateDevelopingPoiseuilleFlow");
-  return Unfit::RunOneTest("SimulateDevelopingPoiseuilleFlowPressureOutlet");
+//  return Unfit::RunOneTest("SimulateDevelopingPoiseuilleFlowPressureOutlet");
 //  return Unfit::RunOneTest("SimulateNSCDCoupling");
 //  return Unfit::RunOneTest("SimulateNSCDCouplingWithObstacles");
 //  return Unfit::RunOneTest("SimulateTaylorVortex");
