@@ -65,4 +65,3 @@ gfx modify spectrum default autorange;
 #gfx modify g_element "/" surfaces coordinate coordinates tessellation default LOCAL native_discretization pressure select_on material default data vmag spectrum default selected_material default_selected render_shaded;
 
 # avconv -framerate 10 -f image2 -i lbm%d.png -c:v h264 -crf 1 out.mov
-

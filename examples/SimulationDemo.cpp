@@ -594,8 +594,8 @@ TEST(SimulateLidDrivenCavityFlow)
 TEST(SimulateKarmanVortex)
 {
   auto pi = 3.14159265;
-  std::size_t nx = 400;
-  std::size_t ny = 100;
+  std::size_t nx = 500;
+  std::size_t ny = 150;
   auto dx = 0.0316;
   auto dt = 0.001;
   std::vector<double> u0 = {3.0, 0.0};
@@ -604,7 +604,7 @@ TEST(SimulateKarmanVortex)
   auto k_visco = 0.08;
   auto u_zh = 0.2;
   auto v_zh = 0.0;
-  auto radius = dx * ny / 20;
+  auto radius = dx * ny / 30;
   auto stiffness = 2.0 / dx;
   auto center_y = dx * ny / 2.0;
   auto center_x = dx * nx * 0.25;

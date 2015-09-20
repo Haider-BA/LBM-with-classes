@@ -10,7 +10,7 @@ int main()
 
 //  return Unfit::RunOneTest("AnalyticalDiffusion");
 //  return Unfit::RunOneTest("AnalyticalPoiseuille");
-  return Unfit::RunOneTest("AnalyticalTaylorVortex");
+//  return Unfit::RunOneTest("AnalyticalTaylorVortex");
 //  return Unfit::RunOneTest("AnalyticalTaylorVortexForce");
 //  return Unfit::RunOneTest("AnalyticalPoiseuilleZH");
 
@@ -25,7 +25,7 @@ int main()
 //  return Unfit::RunOneTest("SimulateTaylorVortex");
 //  return Unfit::RunOneTest("SimulateTaylorVortexForce");
 //  return Unfit::RunOneTest("SimulateLidDrivenCavityFlow");
-//  return Unfit::RunOneTest("SimulateKarmanVortex");
+  return Unfit::RunOneTest("SimulateKarmanVortex");
 //  return Unfit::RunOneTest("SimulateLinearShearFlow");
 
 
