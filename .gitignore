@@ -8,3 +8,4 @@ main.cpp
 *.exelem
 *.exnode
 *.7z
+*.vtk

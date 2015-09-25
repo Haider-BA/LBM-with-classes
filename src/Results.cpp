@@ -1,6 +1,7 @@
 #include "Results.hpp"
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 #include "BoundaryNodes.hpp"
 #include "LatticeModel.hpp"
 #include "LatticeD2Q9.hpp"
@@ -192,4 +193,39 @@ void Results::WriteResult(int time)
   cmgui_elem_file << "   Scale factors:" << std::endl;
   cmgui_elem_file << "       1.0   1.0   1.0   1.0" << std::endl;
   cmgui_elem_file.close();
+}
+
+void Results::WriteResultVTK(int time)
+{
+  if (!ns_) throw std::runtime_error("Not NS");
+  const auto nx = lm_.GetNumberOfColumns();
+  const auto ny = lm_.GetNumberOfRows();
+  std::ofstream vtk_file;
+  vtk_file.open("vtk_fluid/fluid_" + std::to_string(time) + ".vtk");
+  vtk_file << "# vtk DataFile Version 3.0" << std::endl;
+  vtk_file << "fluid_state" << std::endl;
+  vtk_file << "ASCII" << std::endl;
+  vtk_file << "DATASET RECTILINEAR_GRID" << std::endl;
+  vtk_file << "DIMENSIONS " << nx << " " << ny << " 1" << std::endl;
+
+  // Write x, y, z coordinates. z set to be 1 since it's 2D
+  vtk_file << "X_COORDINATES " << nx << " float" << std::endl;
+  for (auto x = 0; x < nx; ++x) vtk_file << x << " ";
+  vtk_file << std::endl;
+  vtk_file << "Y_COORDINATES " << ny << " float" << std::endl;
+  for (auto y = 0; y < ny; ++y) vtk_file << y << " ";
+  vtk_file << std::endl;
+  vtk_file << "Z_COORDINATES " << 1 << " float" << std::endl;
+  vtk_file << 0 << std::endl;
+  vtk_file << "POINT_DATA " << nx * ny << std::endl;
+
+  // Write density difference
+  vtk_file << "SCALARS density_difference float 1" << std::endl;
+  vtk_file << "LOOKUP_TABLE default" << std::endl;
+  for (auto density : ns_->rho) vtk_file << density - 1.0 << std::endl;
+
+  // Write velocity as vectors
+  vtk_file << "VECTORS velocity_vector float" << std::endl;
+  for (auto v : lm_.u) vtk_file << v[0] << " " << v[1] << " 0" << std::endl;
+  vtk_file.close();
 }

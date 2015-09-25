@@ -390,11 +390,11 @@ TEST(SimulateNSCDCouplingWithObstacles)
     bbcd.AddNode(x, 0);
     bbcd.AddNode(x, ny - 1);
   }
-  for (auto y = 10; y < 14; ++y) {
-    bbnsf.AddNode(13, y);
-    bbcd.AddNode(13, y);
-    bbnsf.AddNode(14, y);
-    bbcd.AddNode(14, y);
+  for (auto y = 5; y < 9; ++y) {
+    bbnsf.AddNode(9, y);
+    bbcd.AddNode(9, y);
+    bbnsf.AddNode(10, y);
+    bbcd.AddNode(10, y);
   }
   f.AddBoundaryNodes(&bbnsf);
   g.AddBoundaryNodes(&bbcd);
@@ -406,20 +406,9 @@ TEST(SimulateNSCDCouplingWithObstacles)
   for (auto t = 0u; t < 501; ++t) {
     f.TakeStep();
     g.TakeStep();
-    result.WriteResult(t);
+//    result.WriteResult(t);
+    result.WriteResultVTK(t);
     std::cout << t << std::endl;
-//    WriteToCmgui(f.df, g.df, lm.u, nx, ny, t, g_rho0_f, g_dx / g_dt, g_cs_sqr);
-//    WriteResultsCmguiNavierStokes(f.df
-//      , g.df
-//      , obs
-//      , nx
-//      , ny
-//      , nx * ny
-//      , t
-//      , g_rho0_f
-//      , g_dx / g_dt
-//      , g_cs_sqr);
-//    WriteResultsCmgui(g.df, nx, ny, t);
   }
 }
 

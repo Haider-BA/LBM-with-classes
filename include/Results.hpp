@@ -72,10 +72,18 @@ class Results {
    * velocity in x- and y- direction, pressure and density of NS (if NS is
    * present), solute concentration and density of CD (if CD is present)
    * \param time time point
-   * \return void
-   *
    */
   void WriteResult(int time);
+
+  /**
+   * Writes results at a particular time point to .vtk files for post-processing
+   * with ParaView. Currently writes: coordinates, density difference
+   * velocity in x- and y- direction, for NS only. Will throw exception if NS
+   * collision model is not registered
+   * NOTE: Cannot create new folder at the moment
+   * \param time time point
+   */
+  void WriteResultVTK(int time);
 
  private:
   /**
