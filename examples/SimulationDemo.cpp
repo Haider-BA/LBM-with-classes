@@ -390,11 +390,11 @@ TEST(SimulateNSCDCouplingWithObstacles)
     bbcd.AddNode(x, 0);
     bbcd.AddNode(x, ny - 1);
   }
-  for (auto y = 3; y < 7; ++y) {
-    bbnsf.AddNode(3, y);
-    bbcd.AddNode(3, y);
-    bbnsf.AddNode(4, y);
-    bbcd.AddNode(4, y);
+  for (auto y = 10; y < 14; ++y) {
+    bbnsf.AddNode(13, y);
+    bbcd.AddNode(13, y);
+    bbnsf.AddNode(14, y);
+    bbcd.AddNode(14, y);
   }
   f.AddBoundaryNodes(&bbnsf);
   g.AddBoundaryNodes(&bbcd);

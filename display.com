@@ -38,30 +38,43 @@ gfx modify window 1 set transform_tool current_pane 1 std_view_angle 40 normal_l
 
 gfx modify spectrum default clear overwrite_colour;
 gfx modify spectrum default linear reverse range 0 0.1 extend_above extend_below rainbow colour_range 0 1 component 1;
-gfx create spectrum "vectors" clear overwrite_colour;
-gfx modify spectrum "vectors" linear range 0 1 extend_above extend_below monochrome colour_range 0 1 component 1;
+# gfx create spectrum "vectors" clear overwrite_colour;
+# gfx modify spectrum "vectors" linear range 0 1 extend_above extend_below monochrome colour_range 0 1 component 1;
+gfx create spectrum "streamlines" clear overwrite_colour;
+gfx modify spectrum "streamlines" linear range 0 0 extend_above extend_below alpha colour_range 0 1 component 1;
 
-#gfx create spectrum "porosity";
-#gfx modify spectrum "porosity" clear overlay_colour;
-#gfx modify spectrum "porosity" linear range 0 1 extend_above extend_below monochrome colour_range 0 1 component 1;
-#gfx modify spectrum "porosity" log exaggeration 100 right range 0 1 extend_above extend_below alpha colour_range 0 0.3 component 1;
+
+# gfx create spectrum "porosity";
+# gfx modify spectrum "porosity" clear overlay_colour;
+# gfx modify spectrum "porosity" linear range 0 1 extend_above extend_below monochrome colour_range 0 1 component 1;
+# gfx modify spectrum "porosity" log exaggeration 100 right range 0 1 extend_above extend_below alpha colour_range 0 0.3 component 1;
 
 gfx modify g_element "/" general clear;
 gfx modify g_element "/" lines as "border" coordinate coordinates tessellation default LOCAL select_on material default selected_material default_selected;
-gfx modify g_element "/" streamlines as "velocity vectors" coordinate coordinates discretization "1*1*1" tessellation NONE LOCAL cell_corners native_discretization pressure line vector velocity length 10 width 2 travel_scalar select_on material black selected_material default_selected spectrum "vectors";
+
+$x_pos = 0;
+$num_lines = 20;
+# slightly smaller spacing so all lines can be displayed
+$spacing = 1 / ($num_lines + 1);
+for ($i = 0; $i < $num_lines; $i = $i + 1) {
+  $y_pos = ($i + 1) * $spacing;
+  gfx modify g_element "/" streamlines as "vel line $i" coordinate coordinates discretization "1*1*1" tessellation NONE LOCAL exact_xi native_discretization pressure xi $x_pos,$y_pos,0.5 line vector velocity length 100 width 2 travel_scalar select_on material black selected_material black spectrum "streamlines";
+}
+
+# gfx modify g_element "/" streamlines as "velocity vectors" coordinate coordinates discretization "1*1*1" tessellation NONE LOCAL cell_corners native_discretization pressure line vector velocity length 10 width 2 travel_scalar select_on material black selected_material default_selected spectrum "vectors";
 gfx modify g_element "/" surfaces as "velocity magnitude" coordinate coordinates tessellation default LOCAL native_discretization pressure select_on material default data vmag spectrum default selected_material default_selected render_shaded;
 
-#gfx modify g_element "/" element_points coordinate coordinates discretization "1*1*1" tessellation NONE LOCAL glyph cube_solid general size "1*1*1" centre 0,0,0 font default use_elements cell_centres native_discretization porosity select_on material default data porosity spectrum "porosity" selected_material default_selected;
+# gfx modify g_element "/" element_points coordinate coordinates discretization "1*1*1" tessellation NONE LOCAL glyph cube_solid general size "1*1*1" centre 0,0,0 font default use_elements cell_centres native_discretization porosity select_on material default data porosity spectrum "porosity" selected_material default_selected;
 
 gfx modify spectrum default autorange;
 
-#gfx modify g_element "/" general clear;
-#gfx modify g_element "/" lines coordinate coordinates tessellation default LOCAL select_on material default selected_material default_selected;
-#gfx modify g_element "/" surfaces coordinate coordinates tessellation default LOCAL native_discretization pressure select_on material default data u_x spectrum default selected_material default_selected render_shaded;
-#
-#gfx modify g_element "/" general clear;
-#gfx modify g_element "/" lines coordinate coordinates tessellation default LOCAL select_on material default selected_material default_selected;
-#gfx modify g_element "/" streamlines coordinate coordinates discretization "30*20*20" tessellation NONE LOCAL cell_random line vector velocity length 10 width 2 no_data select_on material black selected_material default_selected;
-#gfx modify g_element "/" surfaces coordinate coordinates tessellation default LOCAL native_discretization pressure select_on material default data vmag spectrum default selected_material default_selected render_shaded;
+# gfx modify g_element "/" general clear;
+# gfx modify g_element "/" lines coordinate coordinates tessellation default LOCAL select_on material default selected_material default_selected;
+# gfx modify g_element "/" surfaces coordinate coordinates tessellation default LOCAL native_discretization pressure select_on material default data u_x spectrum default selected_material default_selected render_shaded;
+
+# gfx modify g_element "/" general clear;
+# gfx modify g_element "/" lines coordinate coordinates tessellation default LOCAL select_on material default selected_material default_selected;
+# gfx modify g_element "/" streamlines coordinate coordinates discretization "30*20*20" tessellation NONE LOCAL cell_random line vector velocity length 10 width 2 no_data select_on material black selected_material default_selected;
+# gfx modify g_element "/" surfaces coordinate coordinates tessellation default LOCAL native_discretization pressure select_on material default data vmag spectrum default selected_material default_selected render_shaded;
 
 # avconv -framerate 10 -f image2 -i lbm%d.png -c:v h264 -crf 1 out.mov
