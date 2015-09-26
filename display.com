@@ -54,11 +54,12 @@ gfx modify g_element "/" lines as "border" coordinate coordinates tessellation d
 
 $x_pos = 0;
 $num_lines = 20;
+$len = 10000;
 # slightly smaller spacing so all lines can be displayed
 $spacing = 1 / ($num_lines + 1);
 for ($i = 0; $i < $num_lines; $i = $i + 1) {
   $y_pos = ($i + 1) * $spacing;
-  gfx modify g_element "/" streamlines as "vel line $i" coordinate coordinates discretization "1*1*1" tessellation NONE LOCAL exact_xi native_discretization pressure xi $x_pos,$y_pos,0.5 line vector velocity length 100 width 2 travel_scalar select_on material black selected_material black spectrum "streamlines";
+  gfx modify g_element "/" streamlines as "vel line $i" coordinate coordinates discretization "1*1*1" tessellation NONE LOCAL exact_xi native_discretization pressure xi $x_pos,$y_pos,0.5 line vector velocity length $len width 2 travel_scalar select_on material black selected_material black spectrum "streamlines";
 }
 
 # gfx modify g_element "/" streamlines as "velocity vectors" coordinate coordinates discretization "1*1*1" tessellation NONE LOCAL cell_corners native_discretization pressure line vector velocity length 10 width 2 travel_scalar select_on material black selected_material default_selected spectrum "vectors";
