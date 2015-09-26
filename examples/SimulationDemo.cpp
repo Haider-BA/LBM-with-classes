@@ -591,7 +591,8 @@ TEST(SimulateKarmanVortex)
   std::vector<std::vector<std::size_t>> src_pos_f;
   std::vector<std::vector<double>> src_str_f;
   auto k_visco = 0.08;
-  auto u_zh = 4.74;
+  // Re5: 0.158, Re40: 1.264, Re150: 4.74
+  auto u_zh = 1.264;
   auto v_zh = 0.0;
   auto radius = dx * ny / 5;
   auto stiffness = 2.0 / dx;
