@@ -591,7 +591,7 @@ TEST(SimulateKarmanVortex)
   std::vector<std::vector<std::size_t>> src_pos_f;
   std::vector<std::vector<double>> src_str_f;
   auto k_visco = 0.08;
-  auto u_zh = 5.0;
+  auto u_zh = 4.74;
   auto v_zh = 0.0;
   auto radius = dx * ny / 5;
   auto stiffness = 2.0 / dx;
@@ -647,7 +647,7 @@ TEST(SimulateKarmanVortex)
   f.AddBoundaryNodes(&hwbb);
   ibm.AddParticle(&cylinder);
   outlet.ToggleNormalFlow();
-  auto time = 8001u;
+  auto time = 16001u;
   auto interval = time / 500;
   for (auto t = 0u; t < time; ++t) {
     cylinder.ComputeForces();
@@ -657,6 +657,7 @@ TEST(SimulateKarmanVortex)
     ibm.UpdateParticlePosition();
     if (t % interval == 0) {
       result.WriteResult(t / interval);
+      result.WriteResultVTK(t / interval);
 //      WriteResultsCmgui(lm.u, nx, ny, t / interval);
       std::cout << t << std::endl;
     }

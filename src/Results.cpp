@@ -201,7 +201,7 @@ void Results::WriteResultVTK(int time)
   const auto nx = lm_.GetNumberOfColumns();
   const auto ny = lm_.GetNumberOfRows();
   std::ofstream vtk_file;
-  vtk_file.open("vtk_fluid/fluid_" + std::to_string(time) + ".vtk");
+  vtk_file.open("vtk_fluid/fluid_t" + std::to_string(time) + ".vtk");
   vtk_file << "# vtk DataFile Version 3.0" << std::endl;
   vtk_file << "fluid_state" << std::endl;
   vtk_file << "ASCII" << std::endl;
