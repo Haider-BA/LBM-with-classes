@@ -1877,4 +1877,42 @@ TEST(RigidParticleComputeParticleForce)
     CHECK_CLOSE(force, node.force[1], loose_tol);
   }  // node
 }
+
+TEST(TerminationConditionSteadyState)
+{
+  std::size_t ny = 21;
+  std::size_t nx = 31;
+  std::vector<std::vector<std::size_t>> src_pos_f;
+  std::vector<std::vector<double>> src_str_f(nx * ny, {10.0, 0.0});
+  std::vector<double> u0 = {0.0, 0.0};
+  for (auto n = 0u; n < nx * ny; ++n) src_pos_f.push_back({n % nx, n / nx});
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt
+    , u0);
+  StreamPeriodic sp(lm);
+  CollisionNSF nsf(lm
+    , src_pos_f
+    , src_str_f
+    , g_k_visco
+    , g_rho0_f);
+  BouncebackNodes bbnsf(lm
+    , &nsf);
+  LatticeBoltzmann f(lm
+    , nsf
+    , sp);
+  for (auto x = 0u; x < nx; ++x) {
+    bbnsf.AddNode(x, 0);
+    bbnsf.AddNode(x, ny - 1);
+  }
+  f.AddBoundaryNodes(&bbnsf);
+  auto u_prev = lm.u;
+  for (auto t = 0u; t < 2001; ++t) {
+    u_prev = lm.u;
+    f.TakeStep();
+    CheckSteadyState(u_prev, lm.u, loose_tol);
+  }
+//  if (CheckSteadyState(lm.u, lm.u, loose_tol)) std::cout << 123 << std::endl;
+}
 }

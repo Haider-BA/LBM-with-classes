@@ -55,4 +55,29 @@ T GetFirstMoment(const T &node
   }  // d
   return result;
 }
+
+template <typename T>
+T MagnitudeDifference(const std::vector<T> &a
+  , const std::vector<T> &b)
+{
+  T difference = 0;
+  auto it_b = begin(b);
+  for (auto i : a) difference += fabs(i - *it_b++) / i;
+  return difference;
+}
+
+template <typename T, typename U>
+bool CheckSteadyState(const T &u_prev
+  , const T &u_curr
+  , U tolerance)
+{
+  U diff_sum = 0;
+  U sum = 0;
+  auto it_u_prev = begin(u_prev);
+  for (auto n : u_curr) {
+    diff_sum += MagnitudeDifference(n, *it_u_prev++);
+  }
+  std::cout << diff_sum << std::endl;
+  return true;
+}
 #endif  // ALGORITHM_HPP_
