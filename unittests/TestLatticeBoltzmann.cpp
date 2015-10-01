@@ -1898,7 +1898,7 @@ TEST(TerminationConditionSteadyState)
     , g_k_visco
     , g_rho0_f);
   BouncebackNodes bbnsf(lm
-    , &nsf);
+    , &sp);
   LatticeBoltzmann f(lm
     , nsf
     , sp);
@@ -1908,11 +1908,76 @@ TEST(TerminationConditionSteadyState)
   }
   f.AddBoundaryNodes(&bbnsf);
   auto u_prev = lm.u;
-  for (auto t = 0u; t < 2001; ++t) {
+  auto t = 0;
+  // this simulation is known to reach steady state in 1000 < t < 1500 ts
+  for (auto t = 0; t < 1000; ++t) {
     u_prev = lm.u;
     f.TakeStep();
-    CheckSteadyState(u_prev, lm.u, loose_tol);
+    CHECK_EQUAL(false, CheckSteadyState(u_prev, lm.u, loose_tol));
   }
-//  if (CheckSteadyState(lm.u, lm.u, loose_tol)) std::cout << 123 << std::endl;
+  for (auto t = 0; t < 500; ++t) {
+    u_prev = lm.u;
+    f.TakeStep();
+  }
+  CHECK_EQUAL(true, CheckSteadyState(u_prev, lm.u, loose_tol));
+}
+
+TEST(TerminationConditionSteadyStateZHInlet)
+{
+  std::size_t ny = 38;
+  std::size_t nx = 150;
+  std::vector<double> u0 = {0.0, 0.0};
+  auto u_in = 1.35;
+  auto time_steps = 3000;
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt
+    , u0);
+  StreamD2Q9 sd(lm);
+  StreamPeriodic sp(lm);
+  CollisionNS ns(lm
+    , g_k_visco
+    , g_rho0_f);
+  BouncebackNodes fwbb(lm
+    , &ns);
+  ZouHeNodes inlet(lm
+    , ns);
+  ZouHeNodes outlet(lm
+    , ns);
+  LatticeBoltzmann f(lm
+    , ns
+    , sp);
+  for (auto x = 0u; x < nx; ++x) {
+    fwbb.AddNode(x, 0);
+    fwbb.AddNode(x, ny - 1);
+  }
+  for (auto y = 1u; y < ny - 1; ++y) {
+    inlet.AddNode(0, y, u_in, 0);
+    outlet.AddNode(nx - 1, y, 0.0, 0.0);
+  }
+  outlet.ToggleNormalFlow();
+  f.AddBoundaryNodes(&fwbb);
+  f.AddBoundaryNodes(&inlet);
+  f.AddBoundaryNodes(&outlet);
+  std::vector<std::vector<double>> u_curr;
+  auto u_prev = u_curr;
+  for (auto n = nx; n < nx * (ny - 1); ++n) u_curr.push_back(lm.u[n]);
+  auto t = 0;
+  // this simulation is known to reach steady state in 1500 < t < 2000 ts
+  for (auto t = 0; t < 1500; ++t) {
+    u_prev = u_curr;
+    f.TakeStep();
+    auto i = 0;
+    for (auto n = nx; n < nx * (ny - 1); ++n) u_curr[i++] = lm.u[n];
+    CHECK_EQUAL(false, CheckSteadyState(u_prev, u_curr, loose_tol));
+  }
+  for (auto t = 0; t < 500; ++t) {
+    u_prev = u_curr;
+    f.TakeStep();
+    auto i = 0;
+    for (auto n = nx; n < nx * (ny - 1); ++n) u_curr[i++] = lm.u[n];
+  }
+  CHECK_EQUAL(true, CheckSteadyState(u_prev, u_curr, loose_tol));
 }
 }
