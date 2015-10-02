@@ -135,6 +135,7 @@ void ImmersedBoundaryMethod::InterpolateFluidVelocity()
           const auto n = (y % ny) * nx + x % nx;
           const auto weight = ImmersedBoundaryMethod::Dirac2((x_particle - x) *
               dx, (y_particle - y) * dx, dx);
+          // node velocity maybe calculated in dimensionless units (check)
           node.u[0] += lm_.u[n][0] / scaling * weight;
           node.u[1] += lm_.u[n][1] / scaling * weight;
         }  // y
