@@ -31,17 +31,21 @@ static const auto g_2pi = 3.14159265 * 2;
 
 TEST(AnalyticalDiffusion)
 {
+  // checking at end of simulation, sum(abs(rho_sim - rho_an)) / sum(rho_an)
+  // appears to be unable to display rho values, rho < 5e-6
+  // dx value cannot be too small, error greatest at src
   std::size_t ny = 201;
   std::size_t nx = 201;
-  auto dx = 0.001;
+  auto dx = 0.0316;
   auto dt = dx * dx;
-  auto d_coeff = 0.01;
-  auto src_g = 1000.0;
-  auto src_g_an = src_g * dt * dx * dx;
-  std::vector<std::vector<std::size_t>> src_pos_g = {{100, 100}};
+  auto d_coeff = 0.05;
+  auto src_g_an = 1.0;
+  auto src_g = src_g_an / dt / dx / dx;
+  auto src_coord = static_cast<std::size_t>(nx / 2);
+  std::vector<std::vector<std::size_t>> src_pos_g = {{src_coord, src_coord}};
   std::vector<double> src_str_g = {src_g};  // unit conversion
   std::vector<double> u0 = {0.0, 0.0};
-  auto time_steps = 200;
+  auto time_steps = 3000;
   LatticeD2Q9 lm(ny
     , nx
     , dx
@@ -57,51 +61,34 @@ TEST(AnalyticalDiffusion)
   LatticeBoltzmann g(lm
     , cd
     , sp);
-  // ignoring comparison with t = 0 since it will cause divide by zero error
-  g.TakeStep();
-  for (auto t = 1; t < 100; ++t) {
-    g.TakeStep();
-    auto n = 0;
-    std::cout << t << std::endl;
-    for (auto node : cd.rho) {
-      auto y = abs(n / nx - 100);
-      auto x = abs(n % nx - 100);
-      auto y_an = static_cast<double>(y) * g_dx;
-      auto x_an = static_cast<double>(x) * g_dx;
-      auto t_an = static_cast<double>(t) * g_dt;
-      // Analytical solution from http://nptel.ac.in/courses/105103026/34
-      // since src_g is g/m^2/s
-      double rho_an = src_g_an * exp(-1.0 * (y_an * y_an + x_an * x_an) / 4.0 /
-          d_coeff / t_an) / (4.0 * g_pi * t_an * d_coeff);
-      // ignoring the first 6 time steps
-      if (t > 7) CHECK_CLOSE(rho_an, node - 1.0, 0.007);
-      ++n;
-    }  // n
-  }  // t
-//  std::ofstream myfile;
-//  myfile.open("diffusion.csv");
-//  myfile << "rho_y,rho_x" << std::endl;
-//  for (auto i = 0; i < nx; ++i) {
-//    auto y = nx / 2 * nx + i;
-//    auto x = i * nx + nx / 2;
-//    myfile << cd.rho[y] << "," << cd.rho[x] << std::endl;
-//  }
-//  myfile.close();
-//  auto n = 0;
-//  auto std_error = 0.0;
-//  auto ana_sum = 0.0;
-//  for (auto node : cd.rho) {
-//    auto y = abs(n / nx - 100);
-//    auto x = abs(n % nx - 100);
-//    // Analytical solution from http://nptel.ac.in/courses/105103026/34
-//    double rho = exp(-1.0 * (y * y + x * x) / 4.0 / d_coeff / 199) /
-//        (4.0 * g_pi * 199 * d_coeff);
-//    // ignoring the first 6 time steps
-//    std_error += fabs(node - rho - 1.0);
-//    ana_sum += rho;
-//    ++n;
-//  }  // n
-//  std::cout << std_error / ana_sum << std::endl;
+  for (auto t = 0; t < time_steps; ++t) g.TakeStep();
+  std::ofstream myfile;
+  myfile.open("diffusion.csv");
+  myfile << "rho_y,rho_x" << std::endl;
+  for (auto i = 0; i < nx; ++i) {
+    auto y = src_coord * nx + i;
+    auto x = i * nx + src_coord;
+    myfile << cd.rho[y] << "," << cd.rho[x] << std::endl;
+  }
+  myfile.close();
+  auto n = 0;
+  auto std_error = 0.0;
+  auto ana_sum = 0.0;
+  auto t_an = static_cast<double>(time_steps) * g_dt;
+  for (auto node : cd.rho) {
+    auto y = abs(n / nx - src_coord);
+    auto x = abs(n % nx - src_coord);
+    auto y_an = static_cast<double>(y) * g_dx;
+    auto x_an = static_cast<double>(x) * g_dx;
+    // Analytical solution from http://nptel.ac.in/courses/105103026/34
+    // since src_g is g/m^2/s
+    double rho_an = src_g_an * exp(-1.0 * (y_an * y_an + x_an * x_an) / 4.0 /
+        d_coeff / t_an) / (4.0 * g_pi * t_an * d_coeff);
+    std_error += fabs(node - rho_an - 1.0);
+    ana_sum += rho_an;
+    ++n;
+  }  // n
+  CHECK_CLOSE(0.0, std_error / ana_sum, 1e-3);
 }
 
 TEST(AnalyticalPoiseuille)
