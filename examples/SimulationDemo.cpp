@@ -257,8 +257,8 @@ TEST(SimulateDevelopingPoiseuilleFlowPressureOutlet)
   for (auto y = 1u; y < ny - 1; ++y) {
 //    v_inlet.AddNode(0, y, 0.005, 0.0);
 //    v_outlet.AddNode(nx - 1, y, 0.0, 0.0);
-    inlet.AddNode(0, y, 1.5);
-    outlet.AddNode(nx - 1, y, 1.6);
+    inlet.AddNode(0, y, 1.2);
+    outlet.AddNode(nx - 1, y, 1.1);
   }
   f.AddBoundaryNodes(&inlet);
 //  f.AddBoundaryNodes(&v_inlet);
@@ -266,10 +266,10 @@ TEST(SimulateDevelopingPoiseuilleFlowPressureOutlet)
   f.AddBoundaryNodes(&outlet);
   f.AddBoundaryNodes(&hwbb);
 //  f.AddBoundaryNodes(&fwbb);
-  for (auto t = 0u; t < 1001; ++t) {
+  for (auto t = 0u; t < 4001; ++t) {
     std::cout << t << std::endl;
     f.TakeStep();
-    if (t % 2 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 2);
+    if (t % 8 == 0) WriteResultsCmgui(lm.u, nx, ny, t / 8);
   }
 }
 
