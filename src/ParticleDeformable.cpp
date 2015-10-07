@@ -7,7 +7,7 @@ ParticleDeformable::ParticleDeformable(double stiffness
   , double center_x
   , double center_y
   , LatticeModel &lm)
-  : Particle(stiffness, num_nodes, center_x, center_y, lm)
+  : Particle(stiffness, num_nodes, center_x, center_y, true, lm)
 {}
 
 void ParticleDeformable::ComputeForces()

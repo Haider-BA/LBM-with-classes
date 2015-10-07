@@ -5,7 +5,8 @@ int main()
 {
 //  return Unfit::RunAllTheTests();
 
-  return Unfit::RunOneSuite("TestFunctionality");
+//  return Unfit::RunOneSuite("TestFunctionality");
+//  return Unfit::RunOneSuite("TestSteadyState");
 //  return Unfit::RunOneSuite("TestAnalyticalSolutions");
 
 //  return Unfit::RunOneTest("AnalyticalDiffusion");
@@ -26,6 +27,7 @@ int main()
 //  return Unfit::RunOneTest("SimulateTaylorVortexForce");
 //  return Unfit::RunOneTest("SimulateLidDrivenCavityFlow");
 //  return Unfit::RunOneTest("SimulateKarmanVortex");
+  return Unfit::RunOneTest("SimulateParticleMigration");
 //  return Unfit::RunOneTest("SimulateLinearShearFlow");
 
 

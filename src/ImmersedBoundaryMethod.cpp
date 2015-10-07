@@ -148,6 +148,8 @@ void ImmersedBoundaryMethod::InterpolateFluidVelocity()
 void ImmersedBoundaryMethod::UpdateParticlePosition()
 {
   const auto dt = lm_.GetTimeStep();
+  // channel length = nx * dx
+  const auto chn_length = lm_.GetNumberOfColumns() * lm_.GetSpaceStep();
   for (auto particle : particles) {
     const auto nn = particle->GetNumberOfNodes();
     particle->center.coord = {0.0, 0.0};
@@ -157,5 +159,22 @@ void ImmersedBoundaryMethod::UpdateParticlePosition()
       particle->center.coord[0] += node.coord[0] / nn;
       particle->center.coord[1] += node.coord[1] / nn;
     }  // node
+    if (particle->is_mobile) particle->UpdateReferencePosition();
+    if (particle->center.coord[0] < 0) {
+      particle->center.coord[0] += chn_length;
+      for (auto &node : particle->nodes) node.coord[0] += chn_length;
+      if (particle->is_mobile) {
+        particle->center.coord_ref[0] += chn_length;
+        for (auto &node : particle->nodes) node.coord_ref[0] += chn_length;
+      }
+    }
+    else if (particle->center.coord[0] >= chn_length) {
+      particle->center.coord[0] -= chn_length;
+      for (auto &node : particle->nodes) node.coord[0] -= chn_length;
+      if (particle->is_mobile) {
+        particle->center.coord_ref[0] -= chn_length;
+        for (auto &node : particle->nodes) node.coord_ref[0] -= chn_length;
+      }
+    }
   }  // particle
 }

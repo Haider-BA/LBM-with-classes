@@ -46,7 +46,6 @@ static const std::size_t g_ny = 6;
 static const std::size_t g_nx = 8;
 static const double g_dx = 0.0316;
 static const double g_dt = 0.001;
-static const double g_t_total = 1.0;
 static const double g_d_coeff = 0.2;
 static const double g_k_visco = 0.2;
 static const double g_rho0_f = 1.1;
@@ -60,62 +59,10 @@ static const std::vector<std::vector<double>> g_src_str_f = {{1.5, 1.6},
 static const std::vector<std::vector<std::size_t>> g_src_pos_g = {{2, 2},
     {3, 4}};
 static const std::vector<double> g_src_str_g = {1.9, 2.0};
-static const std::vector<std::vector<std::size_t>> g_obs_pos;
-static const double g_u_lid = 0.01;
 static const bool g_is_prestream = true;
 static const bool g_is_modify_stream = true;
-static const bool g_is_ns = true;
-static const bool g_is_cd = true;
-static const bool g_is_taylor = true;
-static const bool g_is_lid = true;
 static const bool g_is_instant = true;
-static const bool g_no_obstacles = false;
-/*
-TEST(InitObstacles)
-{
-  std::vector<bool> obstacle(g_nx * g_ny, false);
-  std::vector<std::vector<std::size_t>> obs_pos = {{1, 2}, {3, 4}};
-  LatticeD2Q9 lm(g_ny
-    , g_nx
-    , g_dx
-    , g_dt
-    , g_u0);
-  CollisionNS ns(lm
-    , g_src_pos_f
-    , g_src_str_f
-    , g_k_visco
-    , g_rho0_f);
-  CollisionCD cd(lm
-    , g_src_pos_g
-    , g_src_str_g
-    , g_d_coeff
-    , g_rho0_g);
-  LatticeBoltzmann lbm(g_t_total
-    , g_u_lid
-    , obs_pos
-    , g_is_ns
-    , g_is_cd
-    , !g_is_taylor
-    , !g_is_lid
-    , g_is_instant
-    , !g_no_obstacles
-    , lm
-    , ns
-    , cd);
-  std::size_t index = 0;
-  std::size_t counter = 0;
-  for (auto obs : lbm.obstacles) {
-    if (counter == obs_pos[index][1] * g_nx + obs_pos[index][0]) {
-      CHECK_EQUAL(true, obs);
-      if (index < obs_pos.size() - 1) ++index;
-    }
-    else {
-      CHECK_EQUAL(false, obs);
-    }
-    ++counter;
-  }  // obs
-}
-*/
+
 TEST(InitDensity)
 {
   LatticeD2Q9 lm(g_ny
@@ -1806,6 +1753,8 @@ TEST(ImmersedBoundarySpreadForce)
 
 TEST(ImmersedBoundaryUpdateParticlePosition)
 {
+  auto nx = 30u;
+  auto ny = 20u;
   std::size_t num_nodes = 36;
   auto radius = 2.0 * g_dx;
   auto stiffness = -1.0;
@@ -1813,8 +1762,8 @@ TEST(ImmersedBoundaryUpdateParticlePosition)
   auto center_y = 11.0 * g_dx;
   auto particle_u = 1.0;
   auto particle_v = 1.1;
-  LatticeD2Q9 lm(g_ny
-    , g_nx
+  LatticeD2Q9 lm(ny
+    , nx
     , g_dx
     , g_dt
     , g_u0);
@@ -1876,6 +1825,65 @@ TEST(RigidParticleComputeParticleForce)
     CHECK_CLOSE(force, node.force[1], loose_tol);
   }  // node
 }
+
+TEST(MobileRigidParticle)
+{
+  auto nx = 30u;
+  auto ny = 20u;
+  std::size_t num_nodes = 36;
+  auto radius = 2.0 * g_dx;
+  auto stiffness = -1.0;
+  auto center_x = 11.0 * g_dx;
+  auto center_y = 11.0 * g_dx;
+  auto particle_u = 1.0;
+  auto particle_v = 1.1;
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  CollisionNSF nsf(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f);
+  ParticleRigid cylinder(stiffness
+    , num_nodes
+    , center_x
+    , center_y
+    , lm);
+  cylinder.CreateCylinder(radius);
+  cylinder.ChangeMobility(true);
+  ImmersedBoundaryMethod ibm(2
+    , nsf.source
+    , lm);
+  std::vector<std::vector<double>> exp_coord;
+  for (auto &node : cylinder.nodes) {
+    exp_coord.push_back({node.coord[0] + particle_u * g_dt, node.coord[1] +
+        particle_v * g_dt});
+    node.u = {particle_u, particle_v};
+  }
+  ibm.AddParticle(&cylinder);
+  ibm.UpdateParticlePosition();
+  for (auto n = 0u; n < num_nodes; ++n) {
+    CHECK_CLOSE(exp_coord[n][0], cylinder.nodes[n].coord[0], loose_tol);
+    CHECK_CLOSE(exp_coord[n][1], cylinder.nodes[n].coord[1], loose_tol);
+    CHECK_CLOSE(exp_coord[n][0], cylinder.nodes[n].coord_ref[0], loose_tol);
+    CHECK_CLOSE(exp_coord[n][1], cylinder.nodes[n].coord_ref[1], loose_tol);
+  }  // n
+}
+}
+
+SUITE(TestSteadyState)
+{
+static const double zero_tol = 1e-20;
+static const double loose_tol = 1e-5;
+static const double g_dx = 0.0316;
+static const double g_dt = 0.001;
+static const double g_d_coeff = 0.2;
+static const double g_k_visco = 0.2;
+static const double g_rho0_f = 1.1;
+static const double g_rho0_g = 1.2;
 
 TEST(TerminationConditionSteadyState)
 {

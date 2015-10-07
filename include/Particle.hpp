@@ -16,6 +16,7 @@ class Particle {
    * \param num_nodes number of boundary nodes in the particle
    * \param center_x particle center's x-coordinate
    * \param center_y particle center's y-coordinate
+   * \param mobility toggle to determine whether particle can move in fluid
    * \param lm reference to LatticeModel to provide information on number of
    *        rows, columns, dimensions, discrete directions and lattice velocity
    */
@@ -23,18 +24,13 @@ class Particle {
     , std::size_t num_nodes
     , double center_x
     , double center_y
+    , bool mobility
     , LatticeModel &lm);
 
   /**
    * Virtual destructor since we are deriving from this class
    */
   virtual ~Particle() = default;
-
-  /**
-   * Returns number of boundary nodes in the particle
-   * \return number of nodes in particle
-   */
-  std::size_t GetNumberOfNodes() const;
 
   /**
    * Adds a boundary nodes for the particle
@@ -57,15 +53,31 @@ class Particle {
     , double force_y);
 
   /**
+   * Creates a cylinder-shaped particle
+   * \param radius radius of particle
+   */
+  void CreateCylinder(double radius);
+
+  /**
+   * Updates the reference positions of the boundary nodes and the center node
+   */
+  void UpdateReferencePosition();
+
+  /**
+   * Enables the rigid particle to move in the fluid
+   */
+  void ChangeMobility(bool mobility);
+
+  /**
    * Pure virtual method for computing particle forces
    */
   virtual void ComputeForces() = 0;
 
   /**
-   * Creates a cylinder-shaped particle
-   * \param radius radius of particle
+   * Returns number of boundary nodes in the particle
+   * \return number of nodes in particle
    */
-  void CreateCylinder(double radius);
+  std::size_t GetNumberOfNodes() const;
 
   /**
    * Particle node used to store information such as coordinate of particle
@@ -78,6 +90,12 @@ class Particle {
    */
   std::vector<ParticleNode> nodes;
 
+  /**
+   * Particle mobility toggle. Set to TRUE to allow particle to move in fluid.
+   * Rigid particles: FALSE by default. Deformable particles: TRUE by default.
+   */
+  bool is_mobile;
+
  protected:
   /**
    * Pi, used for calculating areas for cylinder-shaped particles
@@ -85,9 +103,15 @@ class Particle {
   double pi_ = 3.14159265;
 
   /**
-   * Particle area
+   * Particle boundary area
    */
   double area_;
+
+  /**
+   * Characteristic lengths of shapes used to recalculate reference node
+   * positions. For cylinder, it's radius.
+   */
+  double char_length_;
 
   /**
    * Particle stiffness

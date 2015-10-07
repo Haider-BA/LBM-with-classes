@@ -651,6 +651,92 @@ TEST(SimulateKarmanVortex)
   }
 }
 
+TEST(SimulateParticleMigration)
+{
+  auto pi = 3.14159265;
+  std::size_t nx = 200;
+  std::size_t ny = 100;
+  auto dx = 0.316;
+  auto dt = 0.1;
+  std::vector<double> u0 = {1.0, 0.0};
+  std::vector<std::vector<std::size_t>> src_pos_f;
+  std::vector<std::vector<double>> src_str_f;
+  auto k_visco = 0.08;
+  // Re5: 0.158, Re40: 1.264, Re150: 4.74
+//  auto u_zh = 0.7;
+//  auto v_zh = 0.0;
+  auto radius = dx * ny / 5;
+  auto stiffness = 2.0 / dx;
+  auto center_y = dx * ny / 2.0;
+  auto center_x = dx * nx * 0.25;
+  // set boundary node spacing to 0.6 * dx
+  std::size_t num_nodes = 2 * pi * radius / 0.6 / dx;
+  auto interpolation_stencil = 2;
+  LatticeD2Q9 lm(ny
+    , nx
+    , dx
+    , dt
+    , u0);
+  StreamPeriodic sp(lm);
+  CollisionNSF nsf(lm
+    , src_pos_f
+    , src_str_f
+    , k_visco
+    , g_rho0_f);
+  BouncebackNodes hwbb(lm
+    , &sp);
+//  ZouHeNodes inlet(lm
+//    , nsf);
+//  ZouHeNodes outlet(lm
+//    , nsf);
+  LatticeBoltzmann f(lm
+    , nsf
+    , sp);
+  ParticleRigid cylinder(stiffness
+    , num_nodes
+    , center_x
+    , center_y
+    , lm);
+  Results result(lm);
+  result.RegisterNS(&f, &nsf, g_rho0_f);
+  cylinder.CreateCylinder(radius);
+  cylinder.ChangeMobility(true);
+  ImmersedBoundaryMethod ibm(interpolation_stencil
+    , nsf.source
+    , lm);
+  for (auto x = 0u; x < nx; ++x) {
+    hwbb.AddNode(x, 0);
+    hwbb.AddNode(x, ny - 1);
+  }  // x
+//  for (auto y = 1u; y < ny - 1; ++y) {
+//    // parabolic velocity profile for inlet so flow reach fully developed state
+//    // quicker
+//    inlet.AddNode(0, y, 1.5 * u_zh * (1 - static_cast<double>(abs(y - ny / 2) *
+//        abs(y - ny / 2)) / ny / ny * 4), v_zh);
+//    outlet.AddNode(nx - 1, y, 0.0, 0.0);
+//  }  // y
+//  f.AddBoundaryNodes(&inlet);
+//  f.AddBoundaryNodes(&outlet);
+  f.AddBoundaryNodes(&hwbb);
+  ibm.AddParticle(&cylinder);
+//  outlet.ToggleNormalFlow();
+  auto time = 2001u;
+  auto interval = time / 500;
+  for (auto t = 0u; t < time; ++t) {
+    cylinder.ComputeForces();
+    ibm.SpreadForce();
+    f.TakeStep();
+    ibm.InterpolateFluidVelocity();
+    ibm.UpdateParticlePosition();
+    if (t % interval == 0) {
+      result.WriteResult(t / interval);
+      result.WriteResultVTK(t / interval);
+//      WriteResultsCmgui(lm.u, nx, ny, t / interval);
+      std::cout << t << std::endl;
+    }
+  }
+}
+
 TEST(SimulateLinearShearFlow)
 {
   // TODO: try periodic stream
@@ -662,8 +748,8 @@ TEST(SimulateLinearShearFlow)
   std::vector<double> u0 = {0.0, 0.0};
   std::vector<std::vector<std::size_t>> src_pos_f;
   std::vector<std::vector<double>> src_str_f;
-  auto k_visco = 0.5;
-  auto u_zh = 0.2;
+  auto k_visco = 0.158;
+  auto u_zh = 4.0;
   auto v_zh = 0.0;
   auto radius = dx * ny / 8;
   auto stiffness = 2.0 / dx;
@@ -696,12 +782,13 @@ TEST(SimulateLinearShearFlow)
     , center_y
     , lm);
   cylinder.CreateCylinder(radius);
+  cylinder.ChangeMobility(true);
   ImmersedBoundaryMethod ibm(interpolation_stencil
     , nsf.source
     , lm);
   for (auto x = 0u; x < nx; ++x) {
-    bottom.AddNode(x, 0, -u_zh, v_zh);
-    top.AddNode(x, ny - 1, u_zh, v_zh);
+    bottom.AddNode(x, 0, u_zh, v_zh);
+    top.AddNode(x, ny - 1, -u_zh, v_zh);
   }  // x
   f.AddBoundaryNodes(&top);
   f.AddBoundaryNodes(&bottom);
