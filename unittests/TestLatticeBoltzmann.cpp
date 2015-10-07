@@ -1533,347 +1533,347 @@ TEST(InterpolationStencils)
   }
 }
 
-//TEST(CreateParticle)
-//{
-//  auto stiffness = -1.0;
-//  auto center_x = 10.0 * g_dx;
-//  auto center_y = 5.0 * g_dx;
-//  auto num_nodes = 10;
-//  LatticeD2Q9 lm(g_ny
-//    , g_nx
-//    , g_dx
-//    , g_dt
-//    , g_u0);
-//  ParticleRigid cylinder(stiffness
-//    , num_nodes
-//    , center_x
-//    , center_y
-//    , lm);
-//  CHECK_CLOSE(center_x, cylinder.center.coord[0], zero_tol);
-//  CHECK_CLOSE(center_y, cylinder.center.coord[1], zero_tol);
-//  CHECK_CLOSE(center_x, cylinder.center.coord_ref[0], zero_tol);
-//  CHECK_CLOSE(center_y, cylinder.center.coord_ref[1], zero_tol);
-//  for (auto i = 0u; i < 2; ++i) {
-//    CHECK_CLOSE(0.0, cylinder.center.u[i], zero_tol);
-//    CHECK_CLOSE(0.0, cylinder.center.force[i], zero_tol);
-//  }  // i
-//  std::vector<double> x = {1.1 * g_dx, 2.1 * g_dx};
-//  std::vector<double> y = {1.2 * g_dx, 2.2 * g_dx};
-//  std::vector<double> x_ref = {1.3 * g_dx, 2.3 * g_dx};
-//  std::vector<double> y_ref = {1.4 * g_dx, 2.4 * g_dx};
-//  std::vector<double> u_x = {1.5, 2.5};
-//  std::vector<double> u_y = {1.6, 2.6};
-//  std::vector<double> force_x = {1.7, 2.7};
-//  std::vector<double> force_y = {1.8, 2.8};
-//  for (auto i = 0u; i < 2; ++i) {
-//    cylinder.AddNode(x[i]
-//    , y[i]
-//    , x_ref[i]
-//    , y_ref[i]
-//    , u_x[i]
-//    , u_y[i]
-//    , force_x[i]
-//    , force_y[i]);
-//  }  // i
-//  for (auto i = 0u; i < 2; ++i) {
-//    CHECK_CLOSE(x[i], cylinder.nodes[i].coord[0], zero_tol);
-//    CHECK_CLOSE(y[i], cylinder.nodes[i].coord[1], zero_tol);
-//    CHECK_CLOSE(x_ref[i], cylinder.nodes[i].coord_ref[0], zero_tol);
-//    CHECK_CLOSE(y_ref[i], cylinder.nodes[i].coord_ref[1], zero_tol);
-//    CHECK_CLOSE(u_x[i], cylinder.nodes[i].u[0], zero_tol);
-//    CHECK_CLOSE(u_y[i], cylinder.nodes[i].u[1], zero_tol);
-//    CHECK_CLOSE(force_x[i], cylinder.nodes[i].force[0], zero_tol);
-//    CHECK_CLOSE(force_y[i], cylinder.nodes[i].force[1], zero_tol);
-//  }  // i
-//}
-//
-//TEST(CreateCylinderParticle)
-//{
-//  std::size_t num_nodes = 36;
-//  auto radius = 2.0;
-//  auto stiffness = -1.0;
-//  auto center_x = 11.0 * g_dx;
-//  auto center_y = 11.0 * g_dx;
-//  LatticeD2Q9 lm(g_ny
-//    , g_nx
-//    , g_dx
-//    , g_dt
-//    , g_u0);
-//  ParticleRigid cylinder(stiffness
-//    , num_nodes
-//    , center_x
-//    , center_y
-//    , lm);
-//  cylinder.CreateCylinder(radius);
-//  for (auto node : cylinder.nodes) {
-//    auto x = node.coord[0] - center_x;
-//    auto y = node.coord[1] - center_y;
-//    // check is radius in lattice units
-//    CHECK_CLOSE(radius, sqrt(x * x + y * y), loose_tol);
-//  }  // node
-//}
-//
-//TEST(ImmersedBoundaryForceReferencing)
-//{
-//  LatticeD2Q9 lm(g_ny
-//    , g_nx
-//    , g_dx
-//    , g_dt
-//    , g_u0);
-//  CollisionNSF nsf(lm
-//    , g_src_pos_f
-//    , g_src_str_f
-//    , g_k_visco
-//    , g_rho0_f);
-//  ImmersedBoundaryMethod ibm(2
-//    , nsf.source
-//    , lm);
-//  for (auto n = 0u; n < g_nx * g_ny; ++n) {
-//    CHECK_CLOSE(nsf.source[n][0], ibm.fluid_force[n][0], zero_tol);
-//    CHECK_CLOSE(nsf.source[n][1], ibm.fluid_force[n][1], zero_tol);
-//  }  // n
-//}
-//
-//TEST(ImmersedBoundaryClearVelocityForInterpolation)
-//{
-//  std::vector<double> u0 = {1.1, 1.2};
-//  std::size_t num_nodes = 36;
-//  auto radius = 2.0 * g_dx;  // 2 lattice units
-//  auto stiffness = -1.0;
-//  auto center_x = 11.0 * g_dx;
-//  auto center_y = 11.0 * g_dx;
-//  auto scaling = g_dx / g_dt;
-//  LatticeD2Q9 lm(g_ny
-//    , g_nx
-//    , g_dx
-//    , g_dt
-//    , u0);
-//  CollisionNSF nsf(lm
-//    , g_src_pos_f
-//    , g_src_str_f
-//    , g_k_visco
-//    , g_rho0_f);
-//  ParticleRigid cylinder(stiffness
-//    , num_nodes
-//    , center_x
-//    , center_y
-//    , lm);
-//  cylinder.CreateCylinder(radius);
-//  ImmersedBoundaryMethod ibm(2
-//    , nsf.source
-//    , lm);
-//  ibm.AddParticle(&cylinder);
-//  for (auto n = 0u; n < num_nodes; ++n) cylinder.nodes[n].u = {1.0, 1.1};
-//  ibm.InterpolateFluidVelocity();
-//  for (auto n = 0u; n < num_nodes; ++n) {
-//    CHECK_CLOSE(u0[0] / scaling, cylinder.nodes[n].u[0], loose_tol);
-//    CHECK_CLOSE(u0[1] / scaling, cylinder.nodes[n].u[1], loose_tol);
-//  }  // n
-//}
-//
-//TEST(ImmersedBoundarySpreadForce)
-//{
-//  auto nx = 30u;
-//  auto ny = 20u;
-//  std::size_t num_nodes = 36;
-//  auto radius = 5.0 * g_dx;
-//  auto stiffness = -1.0;
-//  auto center_x = 11.0 * g_dx;
-//  auto center_y = 11.0 * g_dx;
-//  std::vector<std::size_t> cylinder_index = {188, 189, 190, 191, 192, 193, 194,
-//      217, 218, 219, 220, 221, 222, 223, 224, 225, 246, 247, 248, 254, 255, 256,
-//      276, 277, 285, 286, 306, 307, 315, 316, 336, 337, 345, 346, 347, 366, 367,
-//      375, 376, 377, 396, 397, 405, 406, 426, 427, 428, 434, 435, 436, 457, 458,
-//      459, 460, 461, 462, 463, 464, 465, 488, 489, 490, 491, 492, 493, 494, 521,
-//      522};
-//  std::vector<double> x_ans = {5737.607563, 22977.842969, 34925.881401,
-//      43224.096066, 34925.882030, 22977.842816, 5737.607608, 12347.872719,
-//      35589.530966, 19085.257920, 5331.070970, 695.796821, 5331.071022,
-//      19085.258165, 35589.530244, 12347.872719, 5737.607619, 35589.530063,
-//      9277.851160, 9277.851160, 35589.530786, 5737.607574, 22977.842778,
-//      19085.258226, 19085.257982, 22977.842930, 34925.882343, 5331.071035,
-//      5331.070983, 34925.881402, 43224.095754, 695.796821, 695.796821,
-//      43224.096378, 0.000000, 34925.881400, 5331.070957, 5331.071009,
-//      34925.881717, 0.000000, 22977.843007, 19085.257859, 19085.258104,
-//      22977.842854, 5737.607552, 35589.531147, 9277.851160, 9277.851160,
-//      35589.530424, 5737.607596, 12347.872719, 35589.529883, 19085.258287,
-//      5331.071048, 695.796757, 5331.070996, 19085.258043, 35589.530605,
-//      12347.872719, 5737.607630, 22977.842739, 34925.881408, 43224.095526,
-//      34925.881403, 22977.842892, 5737.607585, 0.000000, 0.000000};
-//  std::vector<double> y_ans = {6259.208250, 25066.737784, 38100.961528,
-//      47153.559345, 38100.962214, 25066.737617, 6259.208299, 13470.406603,
-//      38824.942872, 20820.281368, 5815.713786, 759.051078, 5815.713842,
-//      20820.281635, 38824.942084, 13470.406603, 6259.208311, 38824.941887,
-//      10121.292174, 10121.292174, 38824.942675, 6259.208262, 25066.737576,
-//      20820.281701, 20820.281434, 25066.737742, 38100.962556, 5815.713856,
-//      5815.713800, 38100.961530, 47153.559004, 759.051078, 759.051078,
-//      47153.559685, 0.000000, 38100.961527, 5815.713772, 5815.713828,
-//      38100.961873, 0.000000, 25066.737826, 20820.281301, 20820.281568,
-//      25066.737659, 6259.208238, 38824.943069, 10121.292174, 10121.292174,
-//      38824.942281, 6259.208287, 13470.406603, 38824.941690, 20820.281768,
-//      5815.713870, 759.051007, 5815.713814, 20820.281501, 38824.942478,
-//      13470.406603, 6259.208324, 25066.737534, 38100.961536, 47153.558755,
-//      38100.961531, 25066.737701, 6259.208275, 0.000000, 0.000000};
-//  LatticeD2Q9 lm(ny
-//    , nx
-//    , g_dx
-//    , g_dt
-//    , g_u0);
-//  CollisionNSF nsf(lm
-//    , g_src_pos_f
-//    , g_src_str_f
-//    , g_k_visco
-//    , g_rho0_f);
-//  ParticleRigid cylinder(stiffness
-//    , num_nodes
-//    , center_x
-//    , center_y
-//    , lm);
-//  cylinder.CreateCylinder(radius);
-//  for (auto &node : cylinder.nodes) {
-//    node.force = {1.1, 1.2};
-//  }
-//  ImmersedBoundaryMethod ibm(2
-//    , nsf.source
-//    , lm);
-//  ibm.AddParticle(&cylinder);
-//  ibm.SpreadForce();
-//  auto i = 0;
-//  for (auto n = 0u; n < nx * ny; ++n) {
-//    if (n != cylinder_index[i]) {
-//      // checks that none IBM nodes are not affected by spread force
-//      CHECK_CLOSE(0.0, nsf.source[n][0], loose_tol);
-//      CHECK_CLOSE(0.0, nsf.source[n][1], loose_tol);
-//    }
-//    else {
-//      CHECK_CLOSE(x_ans[i], nsf.source[n][0], loose_tol);
-//      CHECK_CLOSE(y_ans[i], nsf.source[n][1], loose_tol);
-//      ++i;
-//    }
-//  }  // n
-//}
-//
-//TEST(ImmersedBoundaryUpdateParticlePosition)
-//{
-//  auto nx = 30u;
-//  auto ny = 20u;
-//  std::size_t num_nodes = 36;
-//  auto radius = 2.0 * g_dx;
-//  auto stiffness = -1.0;
-//  auto center_x = 11.0 * g_dx;
-//  auto center_y = 11.0 * g_dx;
-//  auto particle_u = 1.0;
-//  auto particle_v = 1.1;
-//  LatticeD2Q9 lm(ny
-//    , nx
-//    , g_dx
-//    , g_dt
-//    , g_u0);
-//  CollisionNSF nsf(lm
-//    , g_src_pos_f
-//    , g_src_str_f
-//    , g_k_visco
-//    , g_rho0_f);
-//  ParticleRigid cylinder(stiffness
-//    , num_nodes
-//    , center_x
-//    , center_y
-//    , lm);
-//  cylinder.CreateCylinder(radius);
-//  ImmersedBoundaryMethod ibm(2
-//    , nsf.source
-//    , lm);
-//  std::vector<std::vector<double>> exp_coord;
-//  for (auto &node : cylinder.nodes) {
-//    exp_coord.push_back({node.coord[0] + particle_u * g_dt, node.coord[1] +
-//        particle_v * g_dt});
-//    node.u = {particle_u, particle_v};
-//  }
-//  ibm.AddParticle(&cylinder);
-//  ibm.UpdateParticlePosition();
-//  for (auto n = 0u; n < num_nodes; ++n) {
-//    CHECK_CLOSE(exp_coord[n][0], cylinder.nodes[n].coord[0], loose_tol);
-//    CHECK_CLOSE(exp_coord[n][1], cylinder.nodes[n].coord[1], loose_tol);
-//  }  // n
-//}
-//
-//TEST(RigidParticleComputeParticleForce)
-//{
-//  std::size_t num_nodes = 36;
-//  auto radius = 2.0 * g_dx;
-//  auto stiffness = -1.0;
-//  auto center_x = 11.0 * g_dx;
-//  auto center_y = 11.0 * g_dx;
-//  auto displacement = 0.1;
-//  LatticeD2Q9 lm(g_ny
-//    , g_nx
-//    , g_dx
-//    , g_dt
-//    , g_u0);
-//  ParticleRigid cylinder(stiffness
-//    , num_nodes
-//    , center_x
-//    , center_y
-//    , lm);
-//  cylinder.CreateCylinder(radius);
-//  auto force = -stiffness * 2.0 * g_pi * radius / num_nodes * displacement;
-//  for (auto &node : cylinder.nodes) {
-//    node.coord[0] += displacement;
-//    node.coord[1] += displacement;
-//  }  // node
-//  cylinder.ComputeForces();
-//  for (auto node : cylinder.nodes) {
-//    CHECK_CLOSE(force, node.force[0], loose_tol);
-//    CHECK_CLOSE(force, node.force[1], loose_tol);
-//  }  // node
-//}
-//
-//TEST(MobileRigidParticle)
-//{
-//  auto nx = 30u;
-//  auto ny = 20u;
-//  std::size_t num_nodes = 36;
-//  auto radius = 2.0 * g_dx;
-//  auto stiffness = -1.0;
-//  auto center_x = 11.0 * g_dx;
-//  auto center_y = 11.0 * g_dx;
-//  auto particle_u = 1.0;
-//  auto particle_v = 1.1;
-//  LatticeD2Q9 lm(ny
-//    , nx
-//    , g_dx
-//    , g_dt
-//    , g_u0);
-//  CollisionNSF nsf(lm
-//    , g_src_pos_f
-//    , g_src_str_f
-//    , g_k_visco
-//    , g_rho0_f);
-//  ParticleRigid cylinder(stiffness
-//    , num_nodes
-//    , center_x
-//    , center_y
-//    , lm);
-//  cylinder.CreateCylinder(radius);
-//  cylinder.ChangeMobility(true);
-//  ImmersedBoundaryMethod ibm(2
-//    , nsf.source
-//    , lm);
-//  std::vector<std::vector<double>> exp_coord;
-//  for (auto &node : cylinder.nodes) {
-//    exp_coord.push_back({node.coord[0] + particle_u * g_dt, node.coord[1] +
-//        particle_v * g_dt});
-//    node.u = {particle_u, particle_v};
-//  }
-//  ibm.AddParticle(&cylinder);
-//  ibm.UpdateParticlePosition();
-//  for (auto n = 0u; n < num_nodes; ++n) {
-//    CHECK_CLOSE(exp_coord[n][0], cylinder.nodes[n].coord[0], loose_tol);
-//    CHECK_CLOSE(exp_coord[n][1], cylinder.nodes[n].coord[1], loose_tol);
-//    CHECK_CLOSE(exp_coord[n][0], cylinder.nodes[n].coord_ref[0], loose_tol);
-//    CHECK_CLOSE(exp_coord[n][1], cylinder.nodes[n].coord_ref[1], loose_tol);
-//  }  // n
-//}
+TEST(CreateParticle)
+{
+  auto stiffness = -1.0;
+  auto center_x = 10.0 * g_dx;
+  auto center_y = 5.0 * g_dx;
+  auto num_nodes = 10;
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  ParticleRigid cylinder(stiffness
+    , num_nodes
+    , center_x
+    , center_y
+    , lm);
+  CHECK_CLOSE(center_x, cylinder.center.coord[0], zero_tol);
+  CHECK_CLOSE(center_y, cylinder.center.coord[1], zero_tol);
+  CHECK_CLOSE(center_x, cylinder.center.coord_ref[0], zero_tol);
+  CHECK_CLOSE(center_y, cylinder.center.coord_ref[1], zero_tol);
+  for (auto i = 0u; i < 2; ++i) {
+    CHECK_CLOSE(0.0, cylinder.center.u[i], zero_tol);
+    CHECK_CLOSE(0.0, cylinder.center.force[i], zero_tol);
+  }  // i
+  std::vector<double> x = {1.1, 2.1};
+  std::vector<double> y = {1.2, 2.2};
+  std::vector<double> x_ref = {1.3, 2.3};
+  std::vector<double> y_ref = {1.4, 2.4};
+  std::vector<double> u_x = {1.5, 2.5};
+  std::vector<double> u_y = {1.6, 2.6};
+  std::vector<double> force_x = {1.7, 2.7};
+  std::vector<double> force_y = {1.8, 2.8};
+  for (auto i = 0u; i < 2; ++i) {
+    cylinder.AddNode(x[i]
+    , y[i]
+    , x_ref[i]
+    , y_ref[i]
+    , u_x[i]
+    , u_y[i]
+    , force_x[i]
+    , force_y[i]);
+  }  // i
+  for (auto i = 0u; i < 2; ++i) {
+    CHECK_CLOSE(x[i], cylinder.nodes[i].coord[0], zero_tol);
+    CHECK_CLOSE(y[i], cylinder.nodes[i].coord[1], zero_tol);
+    CHECK_CLOSE(x_ref[i], cylinder.nodes[i].coord_ref[0], zero_tol);
+    CHECK_CLOSE(y_ref[i], cylinder.nodes[i].coord_ref[1], zero_tol);
+    CHECK_CLOSE(u_x[i], cylinder.nodes[i].u[0], zero_tol);
+    CHECK_CLOSE(u_y[i], cylinder.nodes[i].u[1], zero_tol);
+    CHECK_CLOSE(force_x[i], cylinder.nodes[i].force[0], zero_tol);
+    CHECK_CLOSE(force_y[i], cylinder.nodes[i].force[1], zero_tol);
+  }  // i
+}
+
+TEST(CreateCylinderParticle)
+{
+  std::size_t num_nodes = 36;
+  auto radius = 2.0;
+  auto stiffness = -1.0;
+  auto center_x = 11.0;
+  auto center_y = 11.0;
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  ParticleRigid cylinder(stiffness
+    , num_nodes
+    , center_x
+    , center_y
+    , lm);
+  cylinder.CreateCylinder(radius);
+  for (auto node : cylinder.nodes) {
+    auto x = node.coord[0] - center_x;
+    auto y = node.coord[1] - center_y;
+    // check is radius in lattice units
+    CHECK_CLOSE(radius, sqrt(x * x + y * y), loose_tol);
+  }  // node
+}
+
+TEST(ImmersedBoundaryForceReferencing)
+{
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  CollisionNSF nsf(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f);
+  ImmersedBoundaryMethod ibm(2
+    , nsf.source
+    , lm);
+  for (auto n = 0u; n < g_nx * g_ny; ++n) {
+    CHECK_CLOSE(nsf.source[n][0], ibm.fluid_force[n][0], zero_tol);
+    CHECK_CLOSE(nsf.source[n][1], ibm.fluid_force[n][1], zero_tol);
+  }  // n
+}
+
+TEST(ImmersedBoundaryClearVelocityForInterpolation)
+{
+  std::vector<double> u0 = {1.1, 1.2};
+  std::size_t num_nodes = 36;
+  auto radius = 2.0;  // 2 lattice units
+  auto stiffness = -1.0;
+  auto center_x = 11.0;
+  auto center_y = 11.0;
+  auto scaling = g_dx / g_dt;
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , u0);
+  CollisionNSF nsf(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f);
+  ParticleRigid cylinder(stiffness
+    , num_nodes
+    , center_x
+    , center_y
+    , lm);
+  cylinder.CreateCylinder(radius);
+  ImmersedBoundaryMethod ibm(2
+    , nsf.source
+    , lm);
+  ibm.AddParticle(&cylinder);
+  for (auto n = 0u; n < num_nodes; ++n) cylinder.nodes[n].u = {1.0, 1.1};
+  ibm.InterpolateFluidVelocity();
+  for (auto n = 0u; n < num_nodes; ++n) {
+    CHECK_CLOSE(u0[0] / scaling, cylinder.nodes[n].u[0], loose_tol);
+    CHECK_CLOSE(u0[1] / scaling, cylinder.nodes[n].u[1], loose_tol);
+  }  // n
+}
+
+TEST(ImmersedBoundarySpreadForce)
+{
+  auto nx = 30u;
+  auto ny = 20u;
+  std::size_t num_nodes = 36;
+  auto radius = 5.0;
+  auto stiffness = -1.0;
+  auto center_x = 11.0;
+  auto center_y = 11.0;
+  std::vector<std::size_t> cylinder_index = {188, 189, 190, 191, 192, 193, 194,
+      217, 218, 219, 220, 221, 222, 223, 224, 225, 246, 247, 248, 254, 255, 256,
+      276, 277, 285, 286, 306, 307, 315, 316, 336, 337, 345, 346, 347, 366, 367,
+      375, 376, 377, 396, 397, 405, 406, 426, 427, 428, 434, 435, 436, 457, 458,
+      459, 460, 461, 462, 463, 464, 465, 488, 489, 490, 491, 492, 493, 494, 521,
+      522};
+  std::vector<double> x_ans = {5737.607563, 22977.842969, 34925.881401,
+      43224.096066, 34925.882030, 22977.842816, 5737.607608, 12347.872719,
+      35589.530966, 19085.257920, 5331.070970, 695.796821, 5331.071022,
+      19085.258165, 35589.530244, 12347.872719, 5737.607619, 35589.530063,
+      9277.851160, 9277.851160, 35589.530786, 5737.607574, 22977.842778,
+      19085.258226, 19085.257982, 22977.842930, 34925.882343, 5331.071035,
+      5331.070983, 34925.881402, 43224.095754, 695.796821, 695.796821,
+      43224.096378, 0.000000, 34925.881400, 5331.070957, 5331.071009,
+      34925.881717, 0.000000, 22977.843007, 19085.257859, 19085.258104,
+      22977.842854, 5737.607552, 35589.531147, 9277.851160, 9277.851160,
+      35589.530424, 5737.607596, 12347.872719, 35589.529883, 19085.258287,
+      5331.071048, 695.796757, 5331.070996, 19085.258043, 35589.530605,
+      12347.872719, 5737.607630, 22977.842739, 34925.881408, 43224.095526,
+      34925.881403, 22977.842892, 5737.607585, 0.000000, 0.000000};
+  std::vector<double> y_ans = {6259.208250, 25066.737784, 38100.961528,
+      47153.559345, 38100.962214, 25066.737617, 6259.208299, 13470.406603,
+      38824.942872, 20820.281368, 5815.713786, 759.051078, 5815.713842,
+      20820.281635, 38824.942084, 13470.406603, 6259.208311, 38824.941887,
+      10121.292174, 10121.292174, 38824.942675, 6259.208262, 25066.737576,
+      20820.281701, 20820.281434, 25066.737742, 38100.962556, 5815.713856,
+      5815.713800, 38100.961530, 47153.559004, 759.051078, 759.051078,
+      47153.559685, 0.000000, 38100.961527, 5815.713772, 5815.713828,
+      38100.961873, 0.000000, 25066.737826, 20820.281301, 20820.281568,
+      25066.737659, 6259.208238, 38824.943069, 10121.292174, 10121.292174,
+      38824.942281, 6259.208287, 13470.406603, 38824.941690, 20820.281768,
+      5815.713870, 759.051007, 5815.713814, 20820.281501, 38824.942478,
+      13470.406603, 6259.208324, 25066.737534, 38100.961536, 47153.558755,
+      38100.961531, 25066.737701, 6259.208275, 0.000000, 0.000000};
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  CollisionNSF nsf(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f);
+  ParticleRigid cylinder(stiffness
+    , num_nodes
+    , center_x
+    , center_y
+    , lm);
+  cylinder.CreateCylinder(radius);
+  for (auto &node : cylinder.nodes) {
+    node.force = {1.1, 1.2};
+  }
+  ImmersedBoundaryMethod ibm(2
+    , nsf.source
+    , lm);
+  ibm.AddParticle(&cylinder);
+  ibm.SpreadForce();
+  auto i = 0;
+  for (auto n = 0u; n < nx * ny; ++n) {
+    if (n != cylinder_index[i]) {
+      // checks that none IBM nodes are not affected by spread force
+      CHECK_CLOSE(0.0, nsf.source[n][0], loose_tol);
+      CHECK_CLOSE(0.0, nsf.source[n][1], loose_tol);
+    }
+    else {
+      CHECK_CLOSE(x_ans[i], nsf.source[n][0], loose_tol);
+      CHECK_CLOSE(y_ans[i], nsf.source[n][1], loose_tol);
+      ++i;
+    }
+  }  // n
+}
+
+TEST(ImmersedBoundaryUpdateParticlePosition)
+{
+  auto nx = 30u;
+  auto ny = 20u;
+  std::size_t num_nodes = 36;
+  auto radius = 2.0;
+  auto stiffness = -1.0;
+  auto center_x = 11.0;
+  auto center_y = 11.0;
+  auto particle_u = 1.0;
+  auto particle_v = 1.1;
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  CollisionNSF nsf(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f);
+  ParticleRigid cylinder(stiffness
+    , num_nodes
+    , center_x
+    , center_y
+    , lm);
+  cylinder.CreateCylinder(radius);
+  ImmersedBoundaryMethod ibm(2
+    , nsf.source
+    , lm);
+  std::vector<std::vector<double>> exp_coord;
+  for (auto &node : cylinder.nodes) {
+    exp_coord.push_back({node.coord[0] + particle_u * g_dt, node.coord[1] +
+        particle_v * g_dt});
+    node.u = {particle_u, particle_v};
+  }
+  ibm.AddParticle(&cylinder);
+  ibm.UpdateParticlePosition();
+  for (auto n = 0u; n < num_nodes; ++n) {
+    CHECK_CLOSE(exp_coord[n][0], cylinder.nodes[n].coord[0], loose_tol);
+    CHECK_CLOSE(exp_coord[n][1], cylinder.nodes[n].coord[1], loose_tol);
+  }  // n
+}
+
+TEST(RigidParticleComputeParticleForce)
+{
+  std::size_t num_nodes = 36;
+  auto radius = 2.0;
+  auto stiffness = -1.0;
+  auto center_x = 11.0;
+  auto center_y = 11.0;
+  auto displacement = 0.1;
+  LatticeD2Q9 lm(g_ny
+    , g_nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  ParticleRigid cylinder(stiffness
+    , num_nodes
+    , center_x
+    , center_y
+    , lm);
+  cylinder.CreateCylinder(radius);
+  auto force = -stiffness * 2.0 * g_pi * radius / num_nodes * displacement;
+  for (auto &node : cylinder.nodes) {
+    node.coord[0] += displacement;
+    node.coord[1] += displacement;
+  }  // node
+  cylinder.ComputeForces();
+  for (auto node : cylinder.nodes) {
+    CHECK_CLOSE(force, node.force[0], loose_tol);
+    CHECK_CLOSE(force, node.force[1], loose_tol);
+  }  // node
+}
+
+TEST(MobileRigidParticle)
+{
+  auto nx = 30u;
+  auto ny = 20u;
+  std::size_t num_nodes = 36;
+  auto radius = 2.0 * g_dx;
+  auto stiffness = -1.0;
+  auto center_x = 11.0 * g_dx;
+  auto center_y = 11.0 * g_dx;
+  auto particle_u = 1.0;
+  auto particle_v = 1.1;
+  LatticeD2Q9 lm(ny
+    , nx
+    , g_dx
+    , g_dt
+    , g_u0);
+  CollisionNSF nsf(lm
+    , g_src_pos_f
+    , g_src_str_f
+    , g_k_visco
+    , g_rho0_f);
+  ParticleRigid cylinder(stiffness
+    , num_nodes
+    , center_x
+    , center_y
+    , lm);
+  cylinder.CreateCylinder(radius);
+  cylinder.ChangeMobility(true);
+  ImmersedBoundaryMethod ibm(2
+    , nsf.source
+    , lm);
+  std::vector<std::vector<double>> exp_coord;
+  for (auto &node : cylinder.nodes) {
+    exp_coord.push_back({node.coord[0] + particle_u * g_dt, node.coord[1] +
+        particle_v * g_dt});
+    node.u = {particle_u, particle_v};
+  }
+  ibm.AddParticle(&cylinder);
+  ibm.UpdateParticlePosition();
+  for (auto n = 0u; n < num_nodes; ++n) {
+    CHECK_CLOSE(exp_coord[n][0], cylinder.nodes[n].coord[0], loose_tol);
+    CHECK_CLOSE(exp_coord[n][1], cylinder.nodes[n].coord[1], loose_tol);
+    CHECK_CLOSE(exp_coord[n][0], cylinder.nodes[n].coord_ref[0], loose_tol);
+    CHECK_CLOSE(exp_coord[n][1], cylinder.nodes[n].coord_ref[1], loose_tol);
+  }  // n
+}
 }
 
 SUITE(TestSteadyState)
