@@ -578,12 +578,12 @@ TEST(SimulateKarmanVortex)
   std::vector<std::vector<double>> src_str_f;
   auto k_visco = 0.08;
   // Re5: 0.158, Re40: 1.264, Re150: 4.74
-  auto u_zh = 1.264;
+  auto u_zh = 0.158;
   auto v_zh = 0.0;
-  auto radius = dx * ny / 5;
+  auto radius = ny / 5;
   auto stiffness = 2.0 / dx;
-  auto center_y = dx * ny / 2.0;
-  auto center_x = dx * nx * 0.25;
+  auto center_y = ny / 2.0;
+  auto center_x = nx * 0.25;
   // set boundary node spacing to 0.6 * dx
   std::size_t num_nodes = 2 * pi * radius / 0.6 / dx;
   auto interpolation_stencil = 2;
@@ -636,6 +636,7 @@ TEST(SimulateKarmanVortex)
   outlet.ToggleNormalFlow();
   auto time = 16001u;
   auto interval = time / 500;
+  result.WriteNode();
   for (auto t = 0u; t < time; ++t) {
     cylinder.ComputeForces();
     ibm.SpreadForce();
@@ -658,17 +659,17 @@ TEST(SimulateParticleMigration)
   std::size_t ny = 100;
   auto dx = 0.316;
   auto dt = 0.1;
-  std::vector<double> u0 = {1.0, 0.0};
+  std::vector<double> u0 = {1.25, 0.0};
   std::vector<std::vector<std::size_t>> src_pos_f;
   std::vector<std::vector<double>> src_str_f;
   auto k_visco = 0.08;
   // Re5: 0.158, Re40: 1.264, Re150: 4.74
 //  auto u_zh = 0.7;
 //  auto v_zh = 0.0;
-  auto radius = dx * ny / 5;
+  auto radius = ny / 5;
   auto stiffness = 2.0 / dx;
-  auto center_y = dx * ny / 2.0;
-  auto center_x = dx * nx * 0.25;
+  auto center_y = ny / 2.0;
+  auto center_x = nx - 1.0;
   // set boundary node spacing to 0.6 * dx
   std::size_t num_nodes = 2 * pi * radius / 0.6 / dx;
   auto interpolation_stencil = 2;
@@ -700,7 +701,7 @@ TEST(SimulateParticleMigration)
   Results result(lm);
   result.RegisterNS(&f, &nsf, g_rho0_f);
   cylinder.CreateCylinder(radius);
-  cylinder.ChangeMobility(true);
+//  cylinder.ChangeMobility(true);
   ImmersedBoundaryMethod ibm(interpolation_stencil
     , nsf.source
     , lm);
@@ -720,7 +721,7 @@ TEST(SimulateParticleMigration)
   f.AddBoundaryNodes(&hwbb);
   ibm.AddParticle(&cylinder);
 //  outlet.ToggleNormalFlow();
-  auto time = 2001u;
+  auto time = 100u;
   auto interval = time / 500;
   for (auto t = 0u; t < time; ++t) {
     cylinder.ComputeForces();
@@ -728,12 +729,13 @@ TEST(SimulateParticleMigration)
     f.TakeStep();
     ibm.InterpolateFluidVelocity();
     ibm.UpdateParticlePosition();
-    if (t % interval == 0) {
-      result.WriteResult(t / interval);
-      result.WriteResultVTK(t / interval);
-//      WriteResultsCmgui(lm.u, nx, ny, t / interval);
-      std::cout << t << std::endl;
-    }
+    std::cout << t << std::endl;
+//    if (t % interval == 0) {
+//      result.WriteResult(t / interval);
+//      result.WriteResultVTK(t / interval);
+////      WriteResultsCmgui(lm.u, nx, ny, t / interval);
+//      std::cout << t << std::endl;
+//    }
   }
 }
 
