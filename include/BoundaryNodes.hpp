@@ -1,5 +1,6 @@
 #ifndef BOUNDARY_NODES_HPP_
 #define BOUNDARY_NODES_HPP_
+#include <vector>
 #include "LatticeModel.hpp"
 
 class BoundaryNodes {
@@ -73,4 +74,4 @@ class BoundaryNodes {
    */
   LatticeModel &lm_;
 };
-#endif // BOUNDARY_NODES_HPP_
+#endif  // BOUNDARY_NODES_HPP_

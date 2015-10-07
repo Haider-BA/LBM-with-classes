@@ -67,7 +67,7 @@ void ZouHePressureNodes::UpdateSide(std::vector<std::vector<double>> &df
   const auto rho_node = node.d1;
   const auto c = lm_.GetLatticeSpeed();
   std::vector<double> vel = {0.0, 0.0};
-  switch(node.i1) {
+  switch (node.i1) {
     case 0: {  // right
       vel[0] = -1.0 + (df[n][0] + df[n][N] + df[n][S] + 2.0 * (df[n][E] +
           df[n][NE] + df[n][SE])) / rho_node;

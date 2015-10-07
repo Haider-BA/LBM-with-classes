@@ -40,4 +40,4 @@ class Node {
    */
   std::vector<double> df_node;
 };
-#endif // NODE_HPP_
+#endif  // NODE_HPP_

@@ -1,0 +1,94 @@
+#!/bin/bash
+
+######
+# Runs all code checks:
+#   memory        (valgrind)
+#   coverage      (lcov)
+#   documentation (doxygen)
+#   style         (cpplint)
+#
+# By default, the Debug version of the code is tested, if you want
+# to test the Release version, use "./CheckAll release"
+######
+
+BUILD_TYPE=Debug
+BUILD_STRING=""
+BROWSE=Yes
+
+#parse command line arguments
+for thing in "$@"
+do
+    if [ "${thing}" = "-release" ]; then
+        BUILD_TYPE=Release
+	BUILD_STRING="-release"
+    fi
+    if [ "${thing}" = "-no-display" ]; then
+	BROWSE=No
+    fi
+    if [ "${thing}" = "-help" ]; then
+	echo ' '
+	echo '  Usage: ./CheckAll [options]'
+	echo '  '
+	echo '  Options:'
+	echo '    -help        Print this message'
+	echo '    -no-display  Do not open a web browser to show the output'
+	echo '    -release     Check the release version (default=debug)'
+	echo '  '
+	exit
+    fi
+done
+
+./CheckMemory $BUILD_STRING -no-display
+./CheckCoverage $BUILD_STRING -no-display
+./CreateDocumentation -no-display
+./CheckStyle -no-display
+
+#clean up the existing check index file, if any
+if [ -e check_index.html ]; then
+    rm check_index.html
+fi
+
+#generate an index html page for the checks
+echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">' > 'check_index.html'
+echo '<html lang="en">' >> 'check_index.html'
+echo '<head>' >> 'check_index.html'
+echo '    <title>Code Analysis Summary</title>' >> 'check_index.html'
+echo '</head>' >> 'check_index.html'
+echo '<body>' >> 'check_index.html'
+echo '  <p>  ' >> 'check_index.html'
+if [ "$BUILD_TYPE" = "Release" ]; then
+    echo '    <h1>(Release version)</h1>' >> 'check_index.html'
+else
+    echo '    <h1>(Debug version)</h1>' >> 'check_index.html'
+fi
+echo '  </p>  ' >> 'check_index.html'
+echo '  <p>  ' >> 'check_index.html'
+echo '    <h3>Code documentation</h3>' >> 'check_index.html'
+echo '  </p>  ' >> 'check_index.html'
+echo '  <p>  ' >> 'check_index.html'
+echo '    <a href="./documentation/html/index.html">Project doxygen documentation</a>' >> 'check_index.html'
+echo '  </p>  ' >> 'check_index.html'
+echo '  <p>  ' >> 'check_index.html'
+echo '    <h3>Code warnings and errors</h3>' >> 'check_index.html'
+echo '  </p>  ' >> 'check_index.html'
+echo '  <p>  ' >> 'check_index.html'
+echo '    <a href="./memcheck/valgrind.html">Memory errors</a>' >> 'check_index.html'
+echo '  </p>  ' >> 'check_index.html'
+echo '  <p>  ' >> 'check_index.html'
+echo '    <a href="./coverage/index.html">Coverage statistics</a>' >> 'check_index.html'
+echo '  </p>  ' >> 'check_index.html'
+echo '  <p>  ' >> 'check_index.html'
+echo '    <a href="./documentation/warnings.html">Undocumented methods and members</a>' >> 'check_index.html'
+echo '  </p>  ' >> 'check_index.html'
+echo '  <p>  ' >> 'check_index.html'
+echo '    <a href="./cpplint/cpplint.html">Coding style warnings</a>' >> 'check_index.html'
+echo '  </p>  ' >> 'check_index.html'
+echo '    </body>' >> 'check_index.html'
+echo '</html>' >> 'check_index.html'
+
+#display the results online
+if [ "$BROWSE" = "Yes" ]; then
+    firefox check_index.html
+fi
+
+

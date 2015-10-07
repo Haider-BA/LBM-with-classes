@@ -329,18 +329,6 @@ TEST(SimulateNSCDCoupling)
     g.TakeStep();
     result.WriteResult(t);
     std::cout << t << std::endl;
-//    WriteToCmgui(f.df, g.df, lm.u, nx, ny, t, g_rho0_f, g_dx / g_dt, g_cs_sqr);
-//    WriteResultsCmguiNavierStokes(f.df
-//      , g.df
-//      , obs
-//      , nx
-//      , ny
-//      , nx * ny
-//      , t
-//      , g_rho0_f
-//      , g_dx / g_dt
-//      , g_cs_sqr);
-//    WriteResultsCmgui(g.df, nx, ny, t);
   }
 }
 
@@ -456,8 +444,6 @@ TEST(SimulateTaylorVortex)
   for (auto t = 0u; t < 501; ++t) {
     f.TakeStep();
     result.WriteResult(t);
-//    WriteToCmgui(f.df, f.df, lm.u, nx, ny, t, g_rho0_f, g_dx / g_dt, g_cs_sqr);
-//    WriteResultsCmgui(lm.u, nx, ny, t);
   }
 }
 

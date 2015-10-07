@@ -64,4 +64,4 @@ class CollisionNSF: public CollisionNS {
    */
   std::vector<std::vector<double>> source;
 };
-#endif // COLLISION_NSF_HPP_
+#endif  // COLLISION_NSF_HPP_

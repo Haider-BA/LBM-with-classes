@@ -1,0 +1,67 @@
+#!/bin/bash
+
+######
+# Checks the source in the current directory (including header files) to see if they
+# comply with the google style guide, then greps the result to find the style errors
+# we are interested in.
+######
+
+DIRECTORY=./cpplint
+BROWSE=Yes
+
+#parse command line arguments
+for thing in "$@"
+do
+    if [ "${thing}" = "-no-display" ]; then
+	BROWSE=No
+    fi
+    if [ "${thing}" = "-help" ]; then
+	echo ' '
+	echo '  Usage: ./CheckStyle [options]'
+	echo '  '
+	echo '  Options:'
+	echo '    -help        Print this message'
+	echo '    -no-display  Do not open a web browser to show the output'
+	echo '  '
+	exit
+    fi
+done
+
+#make a directory $DIRECTORY if it doesn't exist
+if [ ! -d "$DIRECTORY" ]; then
+    mkdir -p $DIRECTORY
+fi
+
+#clean the old output
+if [ -e $DIRECTORY/cpplint.html ]; then
+    rm $DIRECTORY/cpplint.html
+fi
+if [ -e $DIRECTORY/whitespace_errors ]; then
+    rm $DIRECTORY/whitespace_errors
+fi
+if [ -e $DIRECTORY/include_order_errors ]; then
+    rm $DIRECTORY/include_order_errors
+fi
+if [ -e $DIRECTORY/include_what_you_use_errors ]; then
+    rm $DIRECTORY/include_what_you_use_errors
+fi
+
+#perform the style check and parse out those rules we do differently
+$DIRECTORY/cpplint.py ../*.cpp ../*.hpp ../*/*.cpp ../*/*.hpp ../*/*/*.cpp ../*/*/*.hpp >& $DIRECTORY/tmp
+grep -v 'UnitTest++/' $DIRECTORY/tmp >& $DIRECTORY/lint
+grep whitespace $DIRECTORY/lint >& $DIRECTORY/whitespace_errors
+grep -v 'An else should appear on the same line as the preceding' $DIRECTORY/whitespace_errors >& $DIRECTORY/tmp
+grep -v 'should almost always be at the end of the previous line' $DIRECTORY/tmp >& $DIRECTORY/whitespace_errors
+grep include_order $DIRECTORY/lint >& $DIRECTORY/include_order_errors
+grep include_what_you_use $DIRECTORY/lint >& $DIRECTORY/include_what_you_use_errors
+rm -r $DIRECTORY/tmp $DIRECTORY/lint
+
+#make an html file so we can see the errors online
+cat $DIRECTORY/HEADER $DIRECTORY/I_O_ERR $DIRECTORY/include_order_errors $DIRECTORY/I_W_Y_U_ERR $DIRECTORY/include_what_you_use_errors $DIRECTORY/WHITE_ERR $DIRECTORY/whitespace_errors $DIRECTORY/FOOTER > $DIRECTORY/cpplint.html
+
+#display, if we are running this as an individual test
+if [ "$BROWSE" = "Yes" ]; then
+    firefox $DIRECTORY/cpplint.html
+fi
+
+

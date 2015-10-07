@@ -1,5 +1,6 @@
 #ifndef ZOU_HE_PRESSURE_NODES_HPP_
 #define ZOU_HE_PRESSURE_NODES_HPP_
+#include <vector>
 #include "BoundaryNodes.hpp"
 #include "CollisionModel.hpp"
 #include "ValueNode.hpp"

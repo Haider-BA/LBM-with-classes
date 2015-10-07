@@ -4,7 +4,8 @@
 #include "LatticeModel.hpp"
 #include "Particle.hpp"
 
-///All inputs and and variables in IBM are calculated in real life units for now
+/// All inputs and and variables in IBM are calculated in real life units for
+/// now
 // TODO: change phi3 and phi4 to work with real units
 
 class ImmersedBoundaryMethod {

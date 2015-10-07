@@ -1,5 +1,6 @@
 #ifndef BOUNCE_BACK_NODES_HPP_
 #define BOUNCE_BACK_NODES_HPP_
+#include <vector>
 #include "BoundaryNodes.hpp"
 #include "CollisionModel.hpp"
 #include "Node.hpp"
@@ -86,4 +87,4 @@ class BouncebackNodes: public BoundaryNodes {
    */
   StreamModel* sm_ = nullptr;
 };
-#endif // BOUNCE_BACK_NODES_HPP_
+#endif  // BOUNCE_BACK_NODES_HPP_

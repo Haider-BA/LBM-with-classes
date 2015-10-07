@@ -28,4 +28,4 @@ class StreamPeriodic: public StreamModel {
       const std::vector<std::vector<double>> &df);
 };
 
-#endif // STREAM_PERIODIC_HPP_
+#endif  // STREAM_PERIODIC_HPP_

@@ -1,0 +1,67 @@
+#!/bin/bash
+
+######
+# Checks coverage of a codeblocks project (Debug build) and generates html output.
+# Code must be compiled and linked with --coverage as gcc options and then run first.
+######
+
+DIRECTORY=./coverage
+BUILD_TYPE=Debug
+BROWSE=Yes
+
+#parse command line arguments
+for thing in "$@"
+do
+    if [ "${thing}" = "-release" ]; then
+        BUILD_TYPE=Release
+    fi
+    if [ "${thing}" = "-no-display" ]; then
+	BROWSE=No
+    fi
+    if [ "${thing}" = "-help" ]; then
+	echo ' '
+	echo '  Usage: ./CheckCoverage [options]'
+	echo '  '
+	echo '  Options:'
+	echo '    -help        Print this message'
+	echo '    -no-display  Do not open a web browser to show the output'
+	echo '    -release     Check the release version (default=debug)'
+	echo '  '
+	exit
+    fi
+done
+
+#make a directory $DIRECTORY if it doesn't exist
+if [ ! -d "$DIRECTORY" ]; then
+    mkdir -p $DIRECTORY
+fi
+
+#clean the old output
+rm -rf $DIRECTORY/*
+
+#perform the coverage check
+lcov --directory ../obj/$BUILD_TYPE/ --capture --rc lcov_branch_coverage=1 --output-file $DIRECTORY/gcov.info
+
+#hacking the gcov info file to eliminate standard header information (/usr/include, /usr/local/include)
+sed '/SF:\/usr\/.*include/,/end_of_record/d' $DIRECTORY/gcov.info > $DIRECTORY/gcov_parsed.info
+
+#hacking the gcov file to get rid of UnitTest++ coverage
+#sed '/obj\/Debug\/UnitTest++/,/end_of_record/d' $DIRECTORY/gcov_parsed.info > $DIRECTORY/gcov.info
+#sed '/obj\/UnitTest++/,/end_of_record/d' $DIRECTORY/gcov.info > $DIRECTORY/gcov_parsed.info
+sed '/UnitTest++/,/end_of_record/d' $DIRECTORY/gcov_parsed.info > $DIRECTORY/gcov.info
+
+#hacking the gcov file to get rid of unwanted obj coverage
+sed '/obj/,/end_of_record/d' $DIRECTORY/gcov.info > $DIRECTORY/gcov_parsed.info
+
+grep -v 'D0Ev' $DIRECTORY/gcov_parsed.info > $DIRECTORY/gcov.info
+grep -v 'D2Ev' $DIRECTORY/gcov.info > $DIRECTORY/gcov_parsed.info
+cp $DIRECTORY/gcov_parsed.info $DIRECTORY/gcov.info
+
+#generate html output
+genhtml $DIRECTORY/gcov.info --branch-coverage --output-directory $DIRECTORY
+
+#display, if we are running this as an individual test
+if [ "$BROWSE" = "Yes" ]; then
+    firefox $DIRECTORY/index.html
+fi
+

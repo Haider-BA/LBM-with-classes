@@ -1,5 +1,6 @@
 #ifndef VALUE_NODE_HPP_
 #define VALUE_NODE_HPP_
+#include <vector>
 #include "Node.hpp"
 
 class ValueNode: public Node {

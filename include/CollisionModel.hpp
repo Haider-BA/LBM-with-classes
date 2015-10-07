@@ -104,4 +104,4 @@ class CollisionModel {
    */
   double cs_sqr_ = c_ * c_ / 3.0;
 };
-#endif // COLLISION_MODEL_HPP_
+#endif  // COLLISION_MODEL_HPP_

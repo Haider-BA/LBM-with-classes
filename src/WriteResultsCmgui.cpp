@@ -37,7 +37,8 @@ void WriteResultsCmgui(
     cmgui_node_file.open("lbm.exnode");
     cmgui_node_file << " Group name : lbm" << std::endl;
     cmgui_node_file << " #Fields=1" << std::endl;
-    cmgui_node_file << " 1) coordinates, coordinate, rectangular cartesian, #Components=2" << std::endl;
+    cmgui_node_file << " 1) coordinates, coordinate, rectangular cartesian, "
+        "#Components=2" << std::endl;
     cmgui_node_file << "   x.  Value index= 1, #Derivatives= 0" << std::endl;
     cmgui_node_file << "   y.  Value index= 2, #Derivatives= 0" << std::endl;
     cmgui_node_file << " Node:     1" << std::endl;
@@ -71,8 +72,10 @@ void WriteResultsCmgui(
   cmgui_elem_file << "   l.Lagrange*l.Lagrange, #Scale factors= 4" << std::endl;
   cmgui_elem_file << " #Nodes=           4" << std::endl;
   cmgui_elem_file << " #Fields=2" << std::endl;
-  cmgui_elem_file << " 1) coordinates, coordinate, rectangular cartesian, #Components=2" << std::endl;
-  cmgui_elem_file << "   x.  l.Lagrange*l.Lagrange, no modify, standard node based." << std::endl;
+  cmgui_elem_file << " 1) coordinates, coordinate, rectangular cartesian, "
+      "#Components=2" << std::endl;
+  cmgui_elem_file << "   x.  l.Lagrange*l.Lagrange, no modify, standard node "
+      "based." << std::endl;
   cmgui_elem_file << "     #Nodes= 4" << std::endl;
   cmgui_elem_file << "      1.  #Values=1" << std::endl;
   cmgui_elem_file << "       Value indices:     1" << std::endl;
@@ -86,7 +89,8 @@ void WriteResultsCmgui(
   cmgui_elem_file << "      4.  #Values=1" << std::endl;
   cmgui_elem_file << "       Value indices:     1" << std::endl;
   cmgui_elem_file << "       Scale factor indices:   4" << std::endl;
-  cmgui_elem_file << "   y.  l.Lagrange*l.Lagrange, no modify, standard node based." << std::endl;
+  cmgui_elem_file << "   y.  l.Lagrange*l.Lagrange, no modify, standard node "
+      "based." << std::endl;
   cmgui_elem_file << "     #Nodes= 4" << std::endl;
   cmgui_elem_file << "      1.  #Values=1" << std::endl;
   cmgui_elem_file << "       Value indices:     1" << std::endl;
@@ -100,9 +104,12 @@ void WriteResultsCmgui(
   cmgui_elem_file << "      4.  #Values=1" << std::endl;
   cmgui_elem_file << "       Value indices:     1" << std::endl;
   cmgui_elem_file << "       Scale factor indices:   4" << std::endl;
-  cmgui_elem_file << " 2) solute, field, rectangular cartesian, #Components=1" << std::endl;
-  cmgui_elem_file << "   solute.  l.Lagrange*l.Lagrange, no modify, grid based." << std::endl;
-  cmgui_elem_file << "   #xi1=" << num_nodes_x -1 << ", #xi2=" << num_nodes_y - 1 << std::endl;
+  cmgui_elem_file << " 2) solute, field, rectangular cartesian, #Components=1"
+      << std::endl;
+  cmgui_elem_file << "   solute.  l.Lagrange*l.Lagrange, no modify, grid based."
+      << std::endl;
+  cmgui_elem_file << "   #xi1=" << num_nodes_x - 1 << ", #xi2=" << num_nodes_y -
+      1 << std::endl;
   cmgui_elem_file << " Element:            1 0 0" << std::endl;
   cmgui_elem_file << "   Faces:" << std::endl;
   cmgui_elem_file << "   0 0     1" << std::endl;
@@ -112,7 +119,8 @@ void WriteResultsCmgui(
   cmgui_elem_file << "   Values:" << std::endl;
   for (auto n : solute_conc) cmgui_elem_file << "  " << n << std::endl;
   cmgui_elem_file << "   Nodes:" << std::endl;
-  cmgui_elem_file << "                4            3            2            1" << std::endl;  // BASED ON THE INCORRECT LATTICE ORDER; NEEDS TO BE CHANGED IN OUR CODE, AND THIS SHOULD GO BACK TO 1 2 3 4
+  cmgui_elem_file << "                4            3            2            1"
+      << std::endl;
   cmgui_elem_file << "   Scale factors:" << std::endl;
   cmgui_elem_file << "       1.0   1.0   1.0   1.0" << std::endl;
 

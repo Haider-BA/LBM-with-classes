@@ -44,4 +44,4 @@ class StreamModel {
    */
   LatticeModel &lm_;
 };
-#endif // STREAM_MODEL_CPP_
+#endif  // STREAM_MODEL_CPP_

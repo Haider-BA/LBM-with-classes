@@ -1,5 +1,6 @@
 #include "ImmersedBoundaryMethod.hpp"
 #include <iostream>
+#include <vector>
 #include "Algorithm.hpp"
 #include "LatticeModel.hpp"
 

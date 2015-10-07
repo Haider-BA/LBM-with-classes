@@ -1,0 +1,57 @@
+#!/bin/bash
+
+######
+# Runs doxygen with the config file unfit.doxygen and writes the errors to
+# warnings.log.
+######
+
+DIRECTORY=./documentation
+BROWSE=Yes
+
+#parse command line arguments
+for thing in "$@"
+do
+    if [ "${thing}" = "-no-display" ]; then
+	BROWSE=No
+    fi
+    if [ "${thing}" = "-help" ]; then
+	echo ' '
+	echo '  Usage: ./CreateDocumentation [options]'
+	echo '  '
+	echo '  Options:'
+	echo '    -help        Print this message'
+	echo '    -no-display  Do not open a web browser to show the output'
+	echo '  '
+	exit
+    fi
+done
+
+#make a directory $DIRECTORY if it doesn't exist
+if [ ! -d "$DIRECTORY" ]; then
+    mkdir -p $DIRECTORY
+fi
+
+#clean the old output
+if [ -e $DIRECTORY/warnings.log ]; then
+    rm $DIRECTORY/warnings.log
+fi
+if [ -e $DIRECTORY/warnings.html ]; then
+    rm $DIRECTORY/warnings.html
+fi
+if [ -d $DIRECTORY/html ]; then
+    rm -rf $DIRECTORY/html
+fi
+
+#generate the documentation
+doxygen $DIRECTORY/project.doxygen
+
+#convert the warnings about undocumented features to html
+cat $DIRECTORY/HEADER $DIRECTORY/warnings.log $DIRECTORY/FOOTER > $DIRECTORY/warnings.html
+
+#display, if we are running this as an individual test
+if [ "$BROWSE" = "Yes" ]; then
+    firefox $DIRECTORY/html/index.html
+    firefox $DIRECTORY/warnings.html
+fi
+
+

@@ -28,5 +28,5 @@ class StreamD2Q9: public StreamModel {
       const std::vector<std::vector<double>> &df);
 };
 
-#endif // STREAM_D2Q9_HPP_
+#endif  // STREAM_D2Q9_HPP_
 

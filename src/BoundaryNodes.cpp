@@ -1,4 +1,5 @@
 #include "BoundaryNodes.hpp"
+#include <vector>
 #include "LatticeModel.hpp"
 
 // have to use parenthesis for reference initializing in initializer list due to

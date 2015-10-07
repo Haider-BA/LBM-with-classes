@@ -22,7 +22,6 @@
 
 SUITE(TestException)
 {
-
 TEST(ConstructorException)
 {
 //  CHECK_THROW(LatticeBoltzmann lbm, std::runtime_error);

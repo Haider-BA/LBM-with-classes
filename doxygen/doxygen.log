@@ -1,0 +1,46 @@
+/home/ubuntu/code/LBM-with-classes/include/CollisionCD.hpp:9: warning: The following parameters of CollisionCD::CollisionCD(LatticeModel &lm, const std::vector< std::vector< std::size_t >> &source_position, const std::vector< double > &source_strength, double diffusion_coefficient, double initial_density_g, bool is_instant) are not documented:
+  parameter 'is_instant'
+/home/ubuntu/code/LBM-with-classes/include/CollisionCD.hpp:49: warning: argument 'lattice' of command @param is not found in the argument list of CollisionCD::Collide(std::vector< std::vector< double >> &df)
+/home/ubuntu/code/LBM-with-classes/include/CollisionCD.hpp:49: warning: The following parameters of CollisionCD::Collide(std::vector< std::vector< double >> &df) are not documented:
+  parameter 'df'
+/home/ubuntu/code/LBM-with-classes/include/CollisionCD.hpp:29: warning: argument 'position' of command @param is not found in the argument list of CollisionCD::InitSource(const std::vector< std::vector< std::size_t >> &source_position, const std::vector< double > &source_strength)
+/home/ubuntu/code/LBM-with-classes/include/CollisionCD.hpp:29: warning: argument 'strength' of command @param is not found in the argument list of CollisionCD::InitSource(const std::vector< std::vector< std::size_t >> &source_position, const std::vector< double > &source_strength)
+/home/ubuntu/code/LBM-with-classes/include/CollisionCD.hpp:29: warning: The following parameters of CollisionCD::InitSource(const std::vector< std::vector< std::size_t >> &source_position, const std::vector< double > &source_strength) are not documented:
+  parameter 'source_position'
+  parameter 'source_strength'
+/home/ubuntu/code/LBM-with-classes/include/CollisionModel.hpp:56: warning: argument 'lattice' of command @param is not found in the argument list of CollisionModel::Collide(std::vector< std::vector< double >> &df)=0
+/home/ubuntu/code/LBM-with-classes/include/CollisionModel.hpp:56: warning: The following parameters of CollisionModel::Collide(std::vector< std::vector< double >> &df)=0 are not documented:
+  parameter 'df'
+/home/ubuntu/code/LBM-with-classes/include/CollisionModel.hpp:37: warning: argument 'lattice' of command @param is not found in the argument list of CollisionModel::ComputeRho(const std::vector< std::vector< double >> &df)
+/home/ubuntu/code/LBM-with-classes/include/CollisionModel.hpp:37: warning: The following parameters of CollisionModel::ComputeRho(const std::vector< std::vector< double >> &df) are not documented:
+  parameter 'df'
+/home/ubuntu/code/LBM-with-classes/include/CollisionNS.hpp:10: warning: argument 'kinematic' of command @param is not found in the argument list of CollisionNS::CollisionNS(LatticeModel &lm, double kinematic_viscosity, double initial_density_f)
+/home/ubuntu/code/LBM-with-classes/include/CollisionNS.hpp:10: warning: The following parameters of CollisionNS::CollisionNS(LatticeModel &lm, double kinematic_viscosity, double initial_density_f) are not documented:
+  parameter 'kinematic_viscosity'
+/home/ubuntu/code/LBM-with-classes/include/CollisionNS.hpp:21: warning: argument 'kinematic' of command @param is not found in the argument list of CollisionNS::CollisionNS(LatticeModel &lm, double kinematic_viscosity, const std::vector< double > &initial_density_f)
+/home/ubuntu/code/LBM-with-classes/include/CollisionNS.hpp:21: warning: The following parameters of CollisionNS::CollisionNS(LatticeModel &lm, double kinematic_viscosity, const std::vector< double > &initial_density_f) are not documented:
+  parameter 'kinematic_viscosity'
+/home/ubuntu/code/LBM-with-classes/include/CollisionNSF.hpp:9: warning: argument 'position' of command @param is not found in the argument list of CollisionNSF::CollisionNSF(LatticeModel &lm, const std::vector< std::vector< std::size_t >> &source_position, const std::vector< std::vector< double >> &source_strength, double kinematic_viscosity, double initial_density_f)
+/home/ubuntu/code/LBM-with-classes/include/CollisionNSF.hpp:9: warning: argument 'strenght' of command @param is not found in the argument list of CollisionNSF::CollisionNSF(LatticeModel &lm, const std::vector< std::vector< std::size_t >> &source_position, const std::vector< std::vector< double >> &source_strength, double kinematic_viscosity, double initial_density_f)
+/home/ubuntu/code/LBM-with-classes/include/CollisionNSF.hpp:9: warning: argument 'kinematic' of command @param is not found in the argument list of CollisionNSF::CollisionNSF(LatticeModel &lm, const std::vector< std::vector< std::size_t >> &source_position, const std::vector< std::vector< double >> &source_strength, double kinematic_viscosity, double initial_density_f)
+/home/ubuntu/code/LBM-with-classes/include/CollisionNSF.hpp:9: warning: The following parameters of CollisionNSF::CollisionNSF(LatticeModel &lm, const std::vector< std::vector< std::size_t >> &source_position, const std::vector< std::vector< double >> &source_strength, double kinematic_viscosity, double initial_density_f) are not documented:
+  parameter 'source_position'
+  parameter 'source_strength'
+  parameter 'kinematic_viscosity'
+/home/ubuntu/code/LBM-with-classes/include/CollisionNSF.hpp:29: warning: argument 'position' of command @param is not found in the argument list of CollisionNSF::InitSource(const std::vector< std::vector< std::size_t >> &source_position, const std::vector< std::vector< double >> &source_strength)
+/home/ubuntu/code/LBM-with-classes/include/CollisionNSF.hpp:29: warning: argument 'strength' of command @param is not found in the argument list of CollisionNSF::InitSource(const std::vector< std::vector< std::size_t >> &source_position, const std::vector< std::vector< double >> &source_strength)
+/home/ubuntu/code/LBM-with-classes/include/CollisionNSF.hpp:29: warning: The following parameters of CollisionNSF::InitSource(const std::vector< std::vector< std::size_t >> &source_position, const std::vector< std::vector< double >> &source_strength) are not documented:
+  parameter 'source_position'
+  parameter 'source_strength'
+/home/ubuntu/code/LBM-with-classes/include/ImmersedBoundaryMethod.hpp:71: warning: The following parameters of ImmersedBoundaryMethod::Dirac2(double x, double y, double h) are not documented:
+  parameter 'h'
+/home/ubuntu/code/LBM-with-classes/include/ImmersedBoundaryMethod.hpp:81: warning: The following parameters of ImmersedBoundaryMethod::Dirac3(double x, double y, double h) are not documented:
+  parameter 'h'
+/home/ubuntu/code/LBM-with-classes/include/ImmersedBoundaryMethod.hpp:91: warning: The following parameters of ImmersedBoundaryMethod::Dirac4(double x, double y, double h) are not documented:
+  parameter 'h'
+/home/ubuntu/code/LBM-with-classes/include/ImmersedBoundaryMethod.hpp:38: warning: The following parameters of ImmersedBoundaryMethod::Phi2(double x, double h) are not documented:
+  parameter 'h'
+/home/ubuntu/code/LBM-with-classes/include/ImmersedBoundaryMethod.hpp:49: warning: The following parameters of ImmersedBoundaryMethod::Phi3(double x, double h) are not documented:
+  parameter 'h'
+/home/ubuntu/code/LBM-with-classes/include/ImmersedBoundaryMethod.hpp:60: warning: The following parameters of ImmersedBoundaryMethod::Phi4(double x, double h) are not documented:
+  parameter 'h'

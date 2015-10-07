@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <vector>
 #include "BoundaryNodes.hpp"
 #include "LatticeModel.hpp"
 #include "LatticeD2Q9.hpp"

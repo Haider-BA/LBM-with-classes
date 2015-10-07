@@ -1,0 +1,68 @@
+#!/bin/bash
+
+######
+# Checks the for memory leaks and invalid memory access using valgrind. 
+######
+
+QUALITY_CHECKS_DIR=quality_checks
+DIRECTORY=memcheck
+EXECUTABLE=LatticeBoltzmann
+BUILD_TYPE=Debug
+BROWSE=Yes
+
+#parse command line arguments
+for thing in "$@"
+do
+    if [ "${thing}" = "-release" ]; then
+        BUILD_TYPE=Release
+    fi
+    if [ "${thing}" = "-no-display" ]; then
+	BROWSE=No
+    fi
+    if [ "${thing}" = "-help" ]; then
+	echo ' '
+	echo '  Usage: ./CheckMemory [options]'
+	echo '  '
+	echo '  Options:'
+	echo '    -help        Print this message'
+	echo '    -no-display  Do not open a web browser to show the output'
+	echo '    -release     Check the release version (default=debug)'
+	echo '  '
+	exit
+    fi
+done
+
+#make a directory $DIRECTORY if it doesn't exist
+if [ ! -d "$DIRECTORY" ]; then
+    mkdir -p $DIRECTORY
+fi
+
+#clean the old output
+if [ -e $DIRECTORY/valgrind.html ]; then
+    rm $DIRECTORY/valgrind.html
+fi
+if [ -e $DIRECTORY/valgrind.log ]; then
+    rm $DIRECTORY/valgrind.log
+fi
+
+#perform the memory check
+if [ -e ../bin/$BUILD_TYPE/$EXECUTABLE ]; then
+    #up one level to run the executable as codeblocks does
+    cd ..
+    valgrind --leak-check=full --track-origins=yes --log-file=./$QUALITY_CHECKS_DIR/$DIRECTORY/valgrind.log bin/$BUILD_TYPE/$EXECUTABLE
+else
+    echo 'CheckMemory->ERROR: Executable does not exist '
+    exit
+fi
+
+#back into the checks directory
+cd $QUALITY_CHECKS_DIR
+
+#wrap the output in an html header and footer so we can see it nicely online
+cat $DIRECTORY/HEADER $DIRECTORY/valgrind.log $DIRECTORY/FOOTER > $DIRECTORY/valgrind.html
+
+#display, if we are running this as an individual test
+if [ "$BROWSE" = "Yes" ]; then
+    firefox $DIRECTORY/valgrind.html
+fi
+

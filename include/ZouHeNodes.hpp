@@ -1,5 +1,6 @@
 #ifndef ZOU_HE_NODES_HPP_
 #define ZOU_HE_NODES_HPP_
+#include <vector>
 #include "BoundaryNodes.hpp"
 #include "CollisionModel.hpp"
 #include "ValueNode.hpp"
@@ -92,7 +93,6 @@ class ZouHeNodes: public BoundaryNodes {
   double beta3_;
 //  std::vector<bool> is_corner_;
 //  std::vector<bool> knowns_;
-
 };
 
 #endif  // ZOU_HE_NODES_HPP_
