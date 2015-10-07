@@ -23,7 +23,8 @@ double ImmersedBoundaryMethod::Phi2(double x
 {
   double phi = 0;
   auto x_abs = fabs(x);
-  if (x_abs <= h) phi = (1 - x_abs / h);
+//  if (x_abs <= h) phi = (1 - x_abs / h);
+  if (x_abs <= 1) phi = 1 - x_abs;
   return phi;
 }
 
