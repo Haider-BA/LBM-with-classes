@@ -100,8 +100,8 @@ void ImmersedBoundaryMethod::SpreadForce()
 //      const auto y_particle = node.coord[1] / dx;
       const auto x_particle = node.coord[0];
       const auto y_particle = node.coord[1];
-      const auto x_fluid = static_cast<std::size_t>(x_particle);
-      const auto y_fluid = static_cast<std::size_t>(y_particle);
+      const auto x_fluid = static_cast<std::size_t>(x_particle + nx) % nx;
+      const auto y_fluid = static_cast<std::size_t>(y_particle + ny) % ny;
       // Consider unrolling these 2 loops
       for (auto x = x_fluid; x < x_fluid + 2; ++x) {
         for (auto y = y_fluid; y < y_fluid + 2; ++y) {
@@ -136,8 +136,8 @@ void ImmersedBoundaryMethod::InterpolateFluidVelocity()
 //      const auto y_particle = node.coord[1] / dx;
       const auto x_particle = node.coord[0];
       const auto y_particle = node.coord[1];
-      const auto x_fluid = static_cast<std::size_t>(x_particle);
-      const auto y_fluid = static_cast<std::size_t>(y_particle);
+      const auto x_fluid = static_cast<std::size_t>(x_particle + nx) % nx;
+      const auto y_fluid = static_cast<std::size_t>(y_particle + ny) % ny;
       for (auto x = x_fluid; x < x_fluid + 2; ++x) {
         for (auto y = y_fluid; y < y_fluid + 2; ++y) {
           const auto n = (y % ny) * nx + x % nx;

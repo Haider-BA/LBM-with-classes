@@ -1636,6 +1636,8 @@ TEST(ImmersedBoundaryForceReferencing)
 
 TEST(ImmersedBoundaryClearVelocityForInterpolation)
 {
+  auto nx = 30u;
+  auto ny = 20u;
   std::vector<double> u0 = {1.1, 1.2};
   std::size_t num_nodes = 36;
   auto radius = 2.0;  // 2 lattice units
@@ -1643,8 +1645,8 @@ TEST(ImmersedBoundaryClearVelocityForInterpolation)
   auto center_x = 11.0;
   auto center_y = 11.0;
   auto scaling = g_dx / g_dt;
-  LatticeD2Q9 lm(g_ny
-    , g_nx
+  LatticeD2Q9 lm(ny
+    , nx
     , g_dx
     , g_dt
     , u0);
