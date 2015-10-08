@@ -721,7 +721,7 @@ TEST(SimulateParticleMigration)
   f.AddBoundaryNodes(&hwbb);
   ibm.AddParticle(&cylinder);
 //  outlet.ToggleNormalFlow();
-  auto time = 100u;
+  auto time = 501u;
   auto interval = time / 500;
   for (auto t = 0u; t < time; ++t) {
     cylinder.ComputeForces();
@@ -729,13 +729,13 @@ TEST(SimulateParticleMigration)
     f.TakeStep();
     ibm.InterpolateFluidVelocity();
     ibm.UpdateParticlePosition();
-    std::cout << t << std::endl;
-//    if (t % interval == 0) {
+//    std::cout << t << std::endl;
+    if (t % interval == 0) {
 //      result.WriteResult(t / interval);
-//      result.WriteResultVTK(t / interval);
-////      WriteResultsCmgui(lm.u, nx, ny, t / interval);
-//      std::cout << t << std::endl;
-//    }
+      result.WriteResultVTK(t / interval);
+//      WriteResultsCmgui(lm.u, nx, ny, t / interval);
+      std::cout << t << std::endl;
+    }
   }
 }
 

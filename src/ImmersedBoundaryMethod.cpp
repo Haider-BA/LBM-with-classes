@@ -100,19 +100,19 @@ void ImmersedBoundaryMethod::SpreadForce()
 //      const auto y_particle = node.coord[1] / dx;
       const auto x_particle = node.coord[0];
       const auto y_particle = node.coord[1];
-      const auto x_fluid = static_cast<std::size_t>(x_particle + nx) % nx;
-      const auto y_fluid = static_cast<std::size_t>(y_particle + ny) % ny;
+      const auto x_fluid = static_cast<int>(floor(x_particle + 0.00000003));
+      const auto y_fluid = static_cast<int>(floor(y_particle + 0.00000003));
       // Consider unrolling these 2 loops
       for (auto y = y_fluid; y < y_fluid + 2; ++y) {
         for (auto x = x_fluid; x < x_fluid + 2; ++x) {
-          const auto n = (y % ny) * nx + x % nx;
+          const auto n = ((y + ny) % ny) * nx + (x + nx) % nx;
           // Compute interpolation weights based on distance using interpolation
           // stencil, still need to implement others
 //          const auto weight = ImmersedBoundaryMethod::Dirac2((x_particle - x) *
 //              dx, (y_particle - y) * dx, dx);
           const auto weight = ImmersedBoundaryMethod::Dirac2(x_particle - x,
               y_particle - y, dx);
-          std::cout << weight << std::endl;
+//          std::cout << weight << std::endl;
           // Compute fluid force
           fluid_force[n][0] += node.force[0] * scaling * weight;
           fluid_force[n][1] += node.force[1] * scaling * weight;
@@ -142,13 +142,13 @@ void ImmersedBoundaryMethod::InterpolateFluidVelocity()
       const auto x_fluid = static_cast<int>(floor(x_particle + 0.00000003));
       const auto y_fluid = static_cast<int>(floor(y_particle + 0.00000003));
 //      std::cout << x_particle << " " << y_particle << " " << x_fluid << " " << y_fluid << std::endl;
-      std::cout << "[" << x_particle << "," << y_particle << "]";
+//      std::cout << "[" << x_particle << "," << y_particle << "]";
       for (auto y = y_fluid; y < y_fluid + 2; ++y) {
         for (auto x = x_fluid; x < x_fluid + 2; ++x) {
           const auto n = ((y + ny) % ny) * nx + (x + nx) % nx;
-          std::cout << "(" << x << "," << y << ") ";
-          std::cout << n << ", xd: " << x_particle - x << ", yd: " <<
-              y_particle - y << " ";
+//          std::cout << "(" << x << "," << y << ") ";
+//          std::cout << n << ", xd: " << x_particle - x << ", yd: " <<
+//              y_particle - y << " ";
 //          const auto weight = ImmersedBoundaryMethod::Dirac2((x_particle - x) *
 //              dx, (y_particle - y) * dx, dx);
           const auto weight = ImmersedBoundaryMethod::Dirac2(x_particle - x,
@@ -158,7 +158,7 @@ void ImmersedBoundaryMethod::InterpolateFluidVelocity()
           node.u[1] += lm_.u[n][1] / scaling * weight;
         }  // x
       }  // y
-      std::cout << std::endl;
+//      std::cout << std::endl;
     }  // node
   }  // particle
 }

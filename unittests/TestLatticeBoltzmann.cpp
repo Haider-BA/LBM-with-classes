@@ -1680,7 +1680,7 @@ TEST(ImmersedBoundarySpreadForce)
   std::size_t num_nodes = 36;
   auto radius = 5.0;
   auto stiffness = -1.0;
-  auto center_x = 0.0;
+  auto center_x = 11.0;
   auto center_y = 11.0;
   std::vector<std::size_t> cylinder_index = {188, 189, 190, 191, 192, 193, 194,
       217, 218, 219, 220, 221, 222, 223, 224, 225, 246, 247, 248, 254, 255, 256,
@@ -1741,18 +1741,18 @@ TEST(ImmersedBoundarySpreadForce)
   ibm.AddParticle(&cylinder);
   ibm.SpreadForce();
   auto i = 0;
-//  for (auto n = 0u; n < nx * ny; ++n) {
-//    if (n != cylinder_index[i]) {
-//      // checks that none IBM nodes are not affected by spread force
-//      CHECK_CLOSE(0.0, nsf.source[n][0], loose_tol);
-//      CHECK_CLOSE(0.0, nsf.source[n][1], loose_tol);
-//    }
-//    else {
-//      CHECK_CLOSE(x_ans[i], nsf.source[n][0], loose_tol);
-//      CHECK_CLOSE(y_ans[i], nsf.source[n][1], loose_tol);
-//      ++i;
-//    }
-//  }  // n
+  for (auto n = 0u; n < nx * ny; ++n) {
+    if (n != cylinder_index[i]) {
+      // checks that none IBM nodes are not affected by spread force
+      CHECK_CLOSE(0.0, nsf.source[n][0], loose_tol);
+      CHECK_CLOSE(0.0, nsf.source[n][1], loose_tol);
+    }
+    else {
+      CHECK_CLOSE(x_ans[i], nsf.source[n][0], 5e-3);
+      CHECK_CLOSE(y_ans[i], nsf.source[n][1], 5e-3);
+      ++i;
+    }
+  }  // n
 }
 
 TEST(ImmersedBoundaryUpdateParticlePosition)
