@@ -57,6 +57,98 @@ T GetFirstMoment(const T &node
 }
 
 /**
+ * Immersed Boundary Method Interpolation Stencil
+ * An immersed boundary technique for simulating complex flows
+ * with rigid boundary
+ * \param x position in one of the lattice directions
+ * \return contribution towards the interpolation function in one of the
+ *         lattice directions
+ */
+template <typename T>
+T Phi2(T x)
+{
+  T phi = 0;
+  T x_abs = fabs(x);
+  if (x_abs <= 1) phi = 1 - x_abs;
+  return phi;
+}
+/**
+ * Immersed Boundary Method Interpolation Stencil
+ * http://lbmworkshop.com/wp-content/uploads/2011/09/
+ * 2011-08-25_Edmonton_IBM.pdf
+ * \param x position in one of the lattice directions
+ * \return contribution towards the interpolation function in one of the
+ *         lattice directions
+ */
+template <typename T>
+T Phi3(T x)
+{
+  T phi = 0;
+  auto x_abs = fabs(x);
+  if (x_abs <= 0.5) {
+    phi = (1 + sqrt(1 - 3 * x * x)) / 3;
+  }
+  else if (x_abs <= 1.5) {
+    phi = (5 - 3 * x_abs - sqrt(-2 + 6 * x_abs - 3 * x * x)) / 6;
+  }
+  return phi;
+}
+
+/**
+ * Immersed Boundary Method Interpolation Stencil
+ * http://lbmworkshop.com/wp-content/uploads/2011/09/
+ * 2011-08-25_Edmonton_IBM.pdf
+ * \param x position in one of the lattice directions
+ * \return contribution towards the interpolation function in one of the
+ *         lattice directions
+ */
+template <typename T>
+T Phi4(T x)
+{
+  T phi = 0;
+  auto x_abs = fabs(x);
+  if (x_abs <= 1) {
+    phi = (3 - 2 * x_abs + sqrt(1 + 4 * x_abs - 4 * x * x)) / 8;
+  }
+  else if (x_abs <= 2) {
+    phi = (5 - 2 * x_abs - sqrt(-7 + 12 * x_abs - 4 * x * x)) / 8;
+  }
+  return phi;
+}
+
+/**
+ * Approximates Dirac delta-function of IBM using using either Phi2, Phi3 or
+ * Phi4.
+ * \param stencil choice of interpolation stencil
+ * \param x x-position in lattice
+ * \param y y-position in lattice
+ * \return approximated Dirac delta-function value
+ *
+ */
+template <typename T, typename U>
+T Dirac(U stencil
+  , T x
+  , T y)
+{
+  switch (stencil) {
+    case 2: {
+      return Phi2(x) * Phi2(y);
+    }
+    case 3: {
+      throw std::runtime_error("Not yet implemented");
+//      return Phi3(x) * Phi3(y);
+    }
+    case 4: {
+      throw std::runtime_error("Not yet implemented");
+//      return Phi4(x) * Phi4(y);
+    }
+    default: {
+      throw std::runtime_error("Unknown interpolation stencil");
+    }
+  }
+}
+
+/**
  * Checks if velocity (u, v) is in steady state based on the following formula
  * |u_curr - u_prev|/|u_curr| <= tol && |v_curr - v_prev|/|v_curr| <= tol
  * This function knows that the model is 2D. "Dry" boundary nodes such as full-

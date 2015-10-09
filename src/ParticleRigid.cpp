@@ -17,6 +17,6 @@ void ParticleRigid::ComputeForces()
   const auto area = area_ / nodes.size();
   for (auto &node : nodes) {
     node.force[0] = -stiffness_ * area * (node.coord[0] - node.coord_ref[0]);
-    node.force[1] = -stiffness_ * area * (node.coord[1] - node.coord_ref[1]);;
+    node.force[1] = -stiffness_ * area * (node.coord[1] - node.coord_ref[1]);
   }  // node
 }

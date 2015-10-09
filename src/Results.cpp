@@ -223,10 +223,10 @@ void Results::WriteResultVTK(int time)
 
   // Write x, y, z coordinates. z set to be 1 since it's 2D
   vtk_file << "X_COORDINATES " << nx << " float" << std::endl;
-  for (auto x = 0; x < nx; ++x) vtk_file << x << " ";
+  for (auto x = 0u; x < nx; ++x) vtk_file << x << " ";
   vtk_file << std::endl;
   vtk_file << "Y_COORDINATES " << ny << " float" << std::endl;
-  for (auto y = 0; y < ny; ++y) vtk_file << y << " ";
+  for (auto y = 0u; y < ny; ++y) vtk_file << y << " ";
   vtk_file << std::endl;
   vtk_file << "Z_COORDINATES " << 1 << " float" << std::endl;
   vtk_file << 0 << std::endl;
