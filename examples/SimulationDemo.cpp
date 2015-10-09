@@ -22,6 +22,8 @@
 
 SUITE(SimulationDemo)
 {
+const static auto g_is_prestream = true;
+const static auto g_is_instant = true;
 const static auto g_dx = 0.0316;
 const static auto g_dt = 0.001;
 const static auto g_cs_sqr = (g_dx / g_dt) * (g_dx / g_dt) / 3.0;
@@ -29,9 +31,7 @@ const static auto g_k_visco = 0.2;
 const static auto g_rho0_f = 1.0;
 const static auto g_d_coeff = 0.2;
 const static auto g_rho0_g = 1.0;
-const static auto g_time_steps = 1000;
-const static auto g_is_instant = true;
-const static auto g_is_prestream = true;
+const static auto g_stencil = 2;
 
 TEST(SimulateDiffusion)
 {
@@ -391,10 +391,11 @@ TEST(SimulateNSCDCouplingWithObstacles)
   result.RegisterCD(&g, &cd);
   result.RegisterObstacles(&bbnsf);
   result.RegisterObstacles(&bbcd);
+  result.WriteNode();
   for (auto t = 0u; t < 501; ++t) {
     f.TakeStep();
     g.TakeStep();
-//    result.WriteResult(t);
+    result.WriteResult(t);
     result.WriteResultVTK(t);
     std::cout << t << std::endl;
   }
@@ -578,15 +579,14 @@ TEST(SimulateKarmanVortex)
   std::vector<std::vector<double>> src_str_f;
   auto k_visco = 0.08;
   // Re5: 0.158, Re40: 1.264, Re150: 4.74
-  auto u_zh = 1.264;
+  auto u_zh = 0.158;
   auto v_zh = 0.0;
-  auto radius = dx * ny / 5;
+  auto radius = ny / 5;
   auto stiffness = 2.0 / dx;
-  auto center_y = dx * ny / 2.0;
-  auto center_x = dx * nx * 0.25;
+  auto center_y = ny / 2.0;
+  auto center_x = nx * 0.25;
   // set boundary node spacing to 0.6 * dx
-  std::size_t num_nodes = 2 * pi * radius / 0.6 / dx;
-  auto interpolation_stencil = 2;
+  std::size_t num_nodes = 2 * pi * radius / 0.6;
   LatticeD2Q9 lm(ny
     , nx
     , dx
@@ -615,7 +615,7 @@ TEST(SimulateKarmanVortex)
   Results result(lm);
   result.RegisterNS(&f, &nsf, g_rho0_f);
   cylinder.CreateCylinder(radius);
-  ImmersedBoundaryMethod ibm(interpolation_stencil
+  ImmersedBoundaryMethod ibm(g_stencil
     , nsf.source
     , lm);
   for (auto x = 0u; x < nx; ++x) {
@@ -636,6 +636,7 @@ TEST(SimulateKarmanVortex)
   outlet.ToggleNormalFlow();
   auto time = 16001u;
   auto interval = time / 500;
+  result.WriteNode();
   for (auto t = 0u; t < time; ++t) {
     cylinder.ComputeForces();
     ibm.SpreadForce();
@@ -643,7 +644,7 @@ TEST(SimulateKarmanVortex)
     ibm.InterpolateFluidVelocity();
     ibm.UpdateParticlePosition();
     if (t % interval == 0) {
-      result.WriteResult(t / interval);
+//      result.WriteResult(t / interval);
       result.WriteResultVTK(t / interval);
 //      WriteResultsCmgui(lm.u, nx, ny, t / interval);
       std::cout << t << std::endl;
@@ -658,20 +659,18 @@ TEST(SimulateParticleMigration)
   std::size_t ny = 100;
   auto dx = 0.316;
   auto dt = 0.1;
-  std::vector<double> u0 = {1.0, 0.0};
+  std::vector<double> u0 = {0.0, 0.0};
   std::vector<std::vector<std::size_t>> src_pos_f;
   std::vector<std::vector<double>> src_str_f;
   auto k_visco = 0.08;
-  // Re5: 0.158, Re40: 1.264, Re150: 4.74
-//  auto u_zh = 0.7;
-//  auto v_zh = 0.0;
-  auto radius = dx * ny / 5;
+  auto u_zh = 0.4;
+  auto v_zh = 0.0;
+  auto radius = ny / 5;
   auto stiffness = 2.0 / dx;
-  auto center_y = dx * ny / 2.0;
-  auto center_x = dx * nx * 0.25;
-  // set boundary node spacing to 0.6 * dx
-  std::size_t num_nodes = 2 * pi * radius / 0.6 / dx;
-  auto interpolation_stencil = 2;
+  auto center_y = ny / 2.0;
+  auto center_x = nx - radius - 1.0;
+  // set boundary node spacing to 0.94 * dx
+  std::size_t num_nodes = 2 * pi * radius / 0.94;
   LatticeD2Q9 lm(ny
     , nx
     , dx
@@ -685,10 +684,10 @@ TEST(SimulateParticleMigration)
     , g_rho0_f);
   BouncebackNodes hwbb(lm
     , &sp);
-//  ZouHeNodes inlet(lm
-//    , nsf);
-//  ZouHeNodes outlet(lm
-//    , nsf);
+  ZouHeNodes inlet(lm
+    , nsf);
+  ZouHeNodes outlet(lm
+    , nsf);
   LatticeBoltzmann f(lm
     , nsf
     , sp);
@@ -701,26 +700,26 @@ TEST(SimulateParticleMigration)
   result.RegisterNS(&f, &nsf, g_rho0_f);
   cylinder.CreateCylinder(radius);
   cylinder.ChangeMobility(true);
-  ImmersedBoundaryMethod ibm(interpolation_stencil
+  ImmersedBoundaryMethod ibm(g_stencil
     , nsf.source
     , lm);
   for (auto x = 0u; x < nx; ++x) {
     hwbb.AddNode(x, 0);
     hwbb.AddNode(x, ny - 1);
   }  // x
-//  for (auto y = 1u; y < ny - 1; ++y) {
-//    // parabolic velocity profile for inlet so flow reach fully developed state
-//    // quicker
-//    inlet.AddNode(0, y, 1.5 * u_zh * (1 - static_cast<double>(abs(y - ny / 2) *
-//        abs(y - ny / 2)) / ny / ny * 4), v_zh);
-//    outlet.AddNode(nx - 1, y, 0.0, 0.0);
-//  }  // y
-//  f.AddBoundaryNodes(&inlet);
-//  f.AddBoundaryNodes(&outlet);
+  for (auto y = 1u; y < ny - 1; ++y) {
+    // parabolic velocity profile for inlet so flow reach fully developed state
+    // quicker
+    inlet.AddNode(0, y, 1.5 * u_zh * (1 - static_cast<double>(abs(y - ny / 2) *
+        abs(y - ny / 2)) / ny / ny * 4), v_zh);
+    outlet.AddNode(nx - 1, y, 0.0, 0.0);
+  }  // y
+  f.AddBoundaryNodes(&inlet);
+  f.AddBoundaryNodes(&outlet);
   f.AddBoundaryNodes(&hwbb);
   ibm.AddParticle(&cylinder);
-//  outlet.ToggleNormalFlow();
-  auto time = 2001u;
+  outlet.ToggleNormalFlow();
+  auto time = 3001u;
   auto interval = time / 500;
   for (auto t = 0u; t < time; ++t) {
     cylinder.ComputeForces();
@@ -728,10 +727,10 @@ TEST(SimulateParticleMigration)
     f.TakeStep();
     ibm.InterpolateFluidVelocity();
     ibm.UpdateParticlePosition();
+//    std::cout << t << std::endl;
     if (t % interval == 0) {
-      result.WriteResult(t / interval);
+//      result.WriteResult(t / interval);
       result.WriteResultVTK(t / interval);
-//      WriteResultsCmgui(lm.u, nx, ny, t / interval);
       std::cout << t << std::endl;
     }
   }
@@ -756,8 +755,7 @@ TEST(SimulateLinearShearFlow)
   auto center_x = dx * nx * 0.25;
   auto center_y = dx * ny * 0.25;
   // set boundary node spacing to 0.6 * dx
-  std::size_t num_nodes = 2 * pi * radius / 0.6 / dx;
-  auto interpolation_stencil = 2;
+  std::size_t num_nodes = 2 * pi * radius / 0.6;
   LatticeD2Q9 lm(ny
     , nx
     , dx
@@ -783,7 +781,7 @@ TEST(SimulateLinearShearFlow)
     , lm);
   cylinder.CreateCylinder(radius);
   cylinder.ChangeMobility(true);
-  ImmersedBoundaryMethod ibm(interpolation_stencil
+  ImmersedBoundaryMethod ibm(g_stencil
     , nsf.source
     , lm);
   for (auto x = 0u; x < nx; ++x) {

@@ -9,3 +9,6 @@ main.cpp
 *.exnode
 *.7z
 *.vtk
+cmgui_output/
+vtk_fluid/
+vtk_particle/

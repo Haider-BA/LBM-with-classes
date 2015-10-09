@@ -65,7 +65,7 @@ TEST(AnalyticalDiffusion)
   std::ofstream myfile;
   myfile.open("diffusion.csv");
   myfile << "rho_y,rho_x" << std::endl;
-  for (auto i = 0; i < nx; ++i) {
+  for (auto i = 0u; i < nx; ++i) {
     auto y = src_coord * nx + i;
     auto x = i * nx + src_coord;
     myfile << cd.rho[y] << "," << cd.rho[x] << std::endl;

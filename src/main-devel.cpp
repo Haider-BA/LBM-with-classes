@@ -5,7 +5,7 @@ int main()
 {
 //  return Unfit::RunAllTheTests();
 
-//  return Unfit::RunOneSuite("TestFunctionality");
+  return Unfit::RunOneSuite("TestFunctionality");
 //  return Unfit::RunOneSuite("TestSteadyState");
 //  return Unfit::RunOneSuite("TestAnalyticalSolutions");
 
@@ -27,8 +27,10 @@ int main()
 //  return Unfit::RunOneTest("SimulateTaylorVortexForce");
 //  return Unfit::RunOneTest("SimulateLidDrivenCavityFlow");
 //  return Unfit::RunOneTest("SimulateKarmanVortex");
-  return Unfit::RunOneTest("SimulateParticleMigration");
+//  return Unfit::RunOneTest("SimulateParticleMigration");
 //  return Unfit::RunOneTest("SimulateLinearShearFlow");
+//  return Unfit::RunOneTest("ImmersedBoundaryClearVelocityForInterpolation");
+//  return Unfit::RunOneTest("ImmersedBoundarySpreadForce");
 
 
   // to run only one suite, uncomment the following line

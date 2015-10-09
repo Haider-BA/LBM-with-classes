@@ -19,7 +19,7 @@ class ImmersedBoundaryMethod {
    * \param lm reference to lattice model, provides information on number of
    *        rows, columns, space step, time step and velocity of the lattice
    */
-  ImmersedBoundaryMethod(int interpolation_stencil
+  ImmersedBoundaryMethod(int stencil
     , std::vector<std::vector<double>> &lattice_force
     , LatticeModel &lm);
 
@@ -33,69 +33,6 @@ class ImmersedBoundaryMethod {
    * \param particle pointer to the particle to be added
    */
   void AddParticle(Particle *particle);
-
-  /**
-   * Immersed Boundary Method Interpolation Stencil
-   * An immersed boundary technique for simulating complex flows
-   * with rigid boundary
-   * \param x position in one of the lattice directions
-   * \return contribution towards the interpolation function in one of the
-   *         lattice directions
-   */
-  double Phi2(double x
-    , double h);
-
-  /**
-   * Immersed Boundary Method Interpolation Stencil
-   * http://lbmworkshop.com/wp-content/uploads/2011/09/
-   * 2011-08-25_Edmonton_IBM.pdf
-   * \param x position in one of the lattice directions
-   * \return contribution towards the interpolation function in one of the
-   *         lattice directions
-   */
-  double Phi3(double x
-    , double h);
-
-  /**
-   * Immersed Boundary Method Interpolation Stencil
-   * http://lbmworkshop.com/wp-content/uploads/2011/09/
-   * 2011-08-25_Edmonton_IBM.pdf
-   * \param x position in one of the lattice directions
-   * \return contribution towards the interpolation function in one of the
-   *         lattice directions
-   */
-  double Phi4(double x
-    , double h);
-
-  /**
-   * Approximates Dirac delta-function of IBM using Phi2
-   * \param x x-position in lattice
-   * \param y y-position in lattice
-   * \return approximated Dirac delta-function value
-   */
-  double Dirac2(double x
-    , double y
-    , double h);
-
-  /**
-   * Approximates Dirac delta-function of IBM using Phi3
-   * \param x x-position in lattice
-   * \param y y-position in lattice
-   * \return approximated Dirac delta-function value
-   */
-  double Dirac3(double x
-    , double y
-    , double h);
-
-  /**
-   * Approximates Dirac delta-function of IBM using Phi4
-   * \param x x-position in lattice
-   * \param y y-position in lattice
-   * \return approximated Dirac delta-function value
-   */
-  double Dirac4(double x
-    , double y
-    , double h);
 
   /**
    * Spread particle forces to the lattice using the specified interpolation
@@ -129,9 +66,9 @@ class ImmersedBoundaryMethod {
 
  private:
   /**
-   * Selection of interpolation stencil to be used. Not yet implemented
+   * Selection of interpolation stencil to be used. 3 and 4 not yet implemented
    */
-  int interpolation_stencil_;
+  int stencil_;
 
   /**
    * Reference to LatticeModel

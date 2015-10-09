@@ -3,9 +3,9 @@ $last = 500;
 $step = 1;
 
 sub anim{
-  gfx read elem lbm$first;
+  gfx read elem "cmgui_output/lbm$first";
   for( $a = $step; $a <= $last; $a = $a + $step ){
-    gfx read elem "lbm$a";
+    gfx read elem "cmgui_output/lbm$a";
     gfx update;
   }
 }
@@ -14,15 +14,15 @@ sub animprint{
   gfx read elem lbm$first;
   gfx print file lbm0.png anti 8 force width 720 height 480;
   for( $a = $step; $a <= $last; $a = $a + $step ){
-    gfx read elem "lbm$a";
+    gfx read elem "cmgui_output/lbm$a";
     $b = $a/$step;
     gfx update;
-    gfx print file "lbm$b.png" anti 8 force  width 720 height 480;
+    gfx print file "cmgui_output/lbm$b.png" anti 8 force  width 720 height 480;
   }
 }
 
-gfx read node lbm;
-gfx read elem lbm$first;
+gfx read node "cmgui_output/lbm";
+gfx read elem "cmgui_output/lbm$first";
 
 gfx define field velocity component u_x u_y;
 gfx define field vmag magnitude field velocity;
