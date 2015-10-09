@@ -14,7 +14,8 @@ class Results {
   /**
    * Constructor: Creates results class with reference to LatticeModel for
    * information on number of rows, columns, space step, time step and lattice
-   * velocity
+   * velocity. Creates and cleans the folders for output results as well.
+   * Throws exception if folder initialization fails
    * \param lm reference to LatticeModel
    */
   Results(LatticeModel &lm);
@@ -33,6 +34,13 @@ class Results {
    * Destructor
    */
   ~Results() = default;
+
+  /**
+   * Creates output folders if they don't already exist and make sure old
+   * results are deleted
+   * \return sum of status codes return by the called commands, 0 if successful
+   */
+  int InitializeCleanFolders();
 
   /**
    * Registers information about Navier-Stokes equation to results
@@ -80,7 +88,6 @@ class Results {
    * with ParaView. Currently writes: coordinates, density difference
    * velocity in x- and y- direction, for NS only. Will throw exception if NS
    * collision model is not registered
-   * NOTE: Cannot create new folder at the moment
    * \param time time point
    */
   void WriteResultVTK(int time);

@@ -391,10 +391,11 @@ TEST(SimulateNSCDCouplingWithObstacles)
   result.RegisterCD(&g, &cd);
   result.RegisterObstacles(&bbnsf);
   result.RegisterObstacles(&bbcd);
+  result.WriteNode();
   for (auto t = 0u; t < 501; ++t) {
     f.TakeStep();
     g.TakeStep();
-//    result.WriteResult(t);
+    result.WriteResult(t);
     result.WriteResultVTK(t);
     std::cout << t << std::endl;
   }

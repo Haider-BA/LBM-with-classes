@@ -18,6 +18,18 @@ Results::Results(LatticeModel &lm)
   const auto nx = lm_.GetNumberOfColumns();
   const auto ny = lm_.GetNumberOfRows();
   obstacles_.assign(nx * ny, false);
+  auto result = Results::InitializeCleanFolders();
+  if (result != 0) throw std::runtime_error("Error in folder initialization");
+}
+
+int Results::InitializeCleanFolders()
+{
+  // creates output folders if they don't exist
+  auto cmgui_folder = system("mkdir -p cmgui_output");
+  auto vtk_folder = system("mkdir -p vtk_fluid");
+  auto old_cmgui_files = system("rm -f cmgui_output/*");
+  auto old_vtk_fluid_files = system("rm -f vtk_fluid/*");
+  return cmgui_folder + vtk_folder + old_cmgui_files + old_vtk_fluid_files;
 }
 
 void Results::RegisterNS(LatticeBoltzmann *f
@@ -60,7 +72,7 @@ void Results::WriteNode()
   const auto nx = lm_.GetNumberOfColumns();
   const auto ny = lm_.GetNumberOfRows();
   std::ofstream cmgui_node_file;
-  cmgui_node_file.open("lbm.exnode");
+  cmgui_node_file.open("cmgui_output/lbm.exnode");
   cmgui_node_file << " Group name : lbm" << std::endl;
   cmgui_node_file << " #Fields=1" << std::endl;
   cmgui_node_file << " 1) coordinates, coordinate, rectangular cartesian, "
@@ -116,7 +128,7 @@ void Results::WriteResult(int time)
     }
   }  // n
   std::ofstream cmgui_elem_file;
-  cmgui_elem_file.open("lbm" + std::to_string(time) + ".exelem");
+  cmgui_elem_file.open("cmgui_output/lbm" + std::to_string(time) + ".exelem");
   cmgui_elem_file << " Group name: lbm" << std::endl;
   cmgui_elem_file << " Shape.  Dimension=1" << std::endl;
   cmgui_elem_file << " Element: 0 0     1" << std::endl;
