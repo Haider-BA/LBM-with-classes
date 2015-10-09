@@ -585,7 +585,7 @@ TEST(SimulateKarmanVortex)
   auto center_y = ny / 2.0;
   auto center_x = nx * 0.25;
   // set boundary node spacing to 0.6 * dx
-  std::size_t num_nodes = 2 * pi * radius / 0.6 / dx;
+  std::size_t num_nodes = 2 * pi * radius / 0.6;
   auto interpolation_stencil = 2;
   LatticeD2Q9 lm(ny
     , nx
@@ -644,7 +644,7 @@ TEST(SimulateKarmanVortex)
     ibm.InterpolateFluidVelocity();
     ibm.UpdateParticlePosition();
     if (t % interval == 0) {
-      result.WriteResult(t / interval);
+//      result.WriteResult(t / interval);
       result.WriteResultVTK(t / interval);
 //      WriteResultsCmgui(lm.u, nx, ny, t / interval);
       std::cout << t << std::endl;

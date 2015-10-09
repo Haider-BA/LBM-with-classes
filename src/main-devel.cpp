@@ -26,8 +26,8 @@ int main()
 //  return Unfit::RunOneTest("SimulateTaylorVortex");
 //  return Unfit::RunOneTest("SimulateTaylorVortexForce");
 //  return Unfit::RunOneTest("SimulateLidDrivenCavityFlow");
-//  return Unfit::RunOneTest("SimulateKarmanVortex");
-  return Unfit::RunOneTest("SimulateParticleMigration");
+  return Unfit::RunOneTest("SimulateKarmanVortex");
+//  return Unfit::RunOneTest("SimulateParticleMigration");
 //  return Unfit::RunOneTest("SimulateLinearShearFlow");
 //  return Unfit::RunOneTest("ImmersedBoundaryClearVelocityForInterpolation");
 //  return Unfit::RunOneTest("ImmersedBoundarySpreadForce");
