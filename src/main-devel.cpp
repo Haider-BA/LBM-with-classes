@@ -8,12 +8,13 @@ int main()
   return Unfit::RunOneSuite("TestFunctionality");
 //  return Unfit::RunOneSuite("TestSteadyState");
 //  return Unfit::RunOneSuite("TestAnalyticalSolutions");
-
+//
 //  return Unfit::RunOneTest("AnalyticalDiffusion");
 //  return Unfit::RunOneTest("AnalyticalPoiseuille");
 //  return Unfit::RunOneTest("AnalyticalTaylorVortex");
 //  return Unfit::RunOneTest("AnalyticalTaylorVortexForce");
 //  return Unfit::RunOneTest("AnalyticalPoiseuilleZH");
+//  return Unfit::RunOneTest("FlooringAccuracy");
 
 //  return Unfit::RunOneTest("SimulateDiffusion");
 //  return Unfit::RunOneTest("SimulateConvectionDiffusion");

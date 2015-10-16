@@ -96,22 +96,22 @@ class Particle {
    */
   bool is_mobile;
 
+  /**
+   * Characteristic lengths of shapes used to recalculate reference node
+   * positions. For cylinder, it's radius.
+   */
+  double char_length;
+
  protected:
   /**
    * Pi, used for calculating areas for cylinder-shaped particles
    */
-  double pi_ = 3.14159265;
+  const double pi_ = 3.14159265358979323846;
 
   /**
    * Particle boundary area
    */
   double area_;
-
-  /**
-   * Characteristic lengths of shapes used to recalculate reference node
-   * positions. For cylinder, it's radius.
-   */
-  double char_length_;
 
   /**
    * Particle stiffness

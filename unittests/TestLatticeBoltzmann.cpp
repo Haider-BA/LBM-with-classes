@@ -1,5 +1,7 @@
 #include <cmath>
 #include <iostream>
+#include <iomanip>
+#include <limits>
 #include <stdexcept>  // runtime_error
 #include <vector>
 #include "Algorithm.hpp"
@@ -51,7 +53,7 @@ static const double g_d_coeff = 0.2;
 static const double g_k_visco = 0.2;
 static const double g_rho0_f = 1.1;
 static const double g_rho0_g = 1.2;
-static const double g_pi = 3.14159265;
+static const double g_pi = 3.14159265358979323846;
 static const int g_stencil = 2;
 static const std::size_t g_ny = 6;
 static const std::size_t g_nx = 8;
@@ -1860,6 +1862,81 @@ TEST(MobileRigidParticle)
     CHECK_CLOSE(exp_coord[n][1], cylinder.nodes[n].coord_ref[1], loose_tol);
   }  // n
 }
+
+//TEST(FlooringAccuracy)
+//{
+//  auto nx = 30u;
+//  auto ny = 20u;
+//  std::size_t num_nodes = 36;
+//  auto scale = num_nodes / 36u;
+//  auto radius = 61.0;
+//  auto stiffness = -1.0;
+//  auto center_x = 1.0;
+//  auto center_y = 1.0;
+//  LatticeD2Q9 lm(ny
+//    , nx
+//    , g_dx
+//    , g_dt
+//    , g_u0);
+//  auto center_x_i = 1;
+//  auto center_y_i = 1;
+//  auto r_i = 2;
+//  for (auto r_d = 2.0; r_d < radius; r_d += 2, r_i += 2) {
+//    ParticleRigid cylinder(stiffness
+//      , num_nodes
+//      , center_x
+//      , center_y
+//      , lm);
+//    cylinder.CreateCylinder(r_d);
+//    std::cout << r_i << std::endl;
+////    std::cout << "N ";
+////    std::cout << std::setprecision(20) << cylinder.nodes[0].coord[0] << " ";
+////    std::cout << center_x_i << " ";
+////    std::cout << std::setprecision(20) << cylinder.nodes[0].coord[0] - center_x_i << " ";
+////    std::cout << (cylinder.nodes[0].coord[0] - center_x_i) / std::numeric_limits<double>::epsilon() << " ";
+////    std::cout << std::setprecision(20) << cylinder.nodes[0].coord[1] << " ";
+////    std::cout << center_y_i + r_i << " ";
+////    std::cout << std::setprecision(20) << cylinder.nodes[0].coord[1] - center_y_i - r_i << " ";
+////    std::cout << (cylinder.nodes[0].coord[1] - center_y_i - r_i) / std::numeric_limits<double>::epsilon() << std::endl;
+//
+//    std::cout << scale * 3.0 / 36.0 << ": ";
+//    std::cout << std::setprecision(20) << (cylinder.nodes[3 * scale].coord[0] - center_x_i - r_i / 2) / std::numeric_limits<double>::epsilon() << std::endl;
+//    std::cout << scale * 6.0 / 36.0 << ": ";
+//    std::cout << std::setprecision(20) << (cylinder.nodes[6 * scale].coord[1] - center_y_i - r_i / 2) / std::numeric_limits<double>::epsilon() << std::endl;
+//
+//    std::cout << scale * 9.0 / 36.0 << ": ";
+////    std::cout << std::setprecision(20) << cylinder.nodes[9].coord[0] << " ";
+////    std::cout << center_x_i + r_i << " ";
+////    std::cout << std::setprecision(20) << cylinder.nodes[9].coord[0] - center_x_i - r_i << " ";
+//    std::cout << std::setprecision(20) << (cylinder.nodes[9 * scale].coord[0] - center_x_i - r_i) / std::numeric_limits<double>::epsilon() << " ";
+////    std::cout << std::setprecision(20) << cylinder.nodes[9].coord[1] << " ";
+////    std::cout << center_y_i << " ";
+////    std::cout << std::setprecision(20) << cylinder.nodes[9].coord[1] - center_y_i << " ";
+//    std::cout << std::setprecision(20) << (cylinder.nodes[9 * scale].coord[1] - center_y_i) / std::numeric_limits<double>::epsilon() << std::endl;
+//
+//    std::cout << scale * 18.0 / 36.0 << ": ";
+////    std::cout << std::setprecision(20) << cylinder.nodes[18].coord[0] << " ";
+////    std::cout << center_x_i << " ";
+////    std::cout << std::setprecision(20) << cylinder.nodes[18].coord[0] - center_x_i << " ";
+//    std::cout << std::setprecision(20) << (cylinder.nodes[18 * scale].coord[0] - center_x_i) / std::numeric_limits<double>::epsilon() << " ";
+////    std::cout << std::setprecision(20) << cylinder.nodes[18].coord[1] << " ";
+////    std::cout << center_y_i - r_i << " ";
+////    std::cout << std::setprecision(20) << cylinder.nodes[18].coord[1] - center_y_i + r_i << " ";
+//    std::cout << std::setprecision(20) << (cylinder.nodes[18 * scale].coord[1] - center_y_i + r_i) / std::numeric_limits<double>::epsilon() << std::endl;
+//
+//    std::cout << scale * 27.0 / 36.0 << ": ";
+////    std::cout << std::setprecision(20) << cylinder.nodes[27].coord[0] << " ";
+////    std::cout << center_x_i - r_i << " ";
+////    std::cout << std::setprecision(20) << cylinder.nodes[27].coord[0] - center_x_i + r_i << " ";
+//    std::cout << std::setprecision(20) << (cylinder.nodes[27 * scale].coord[0] - center_x_i + r_i) / std::numeric_limits<double>::epsilon() << " ";
+////    std::cout << std::setprecision(20) << cylinder.nodes[27].coord[1] << " ";
+////    std::cout << center_y_i << " ";
+////    std::cout << std::setprecision(20) << cylinder.nodes[27].coord[1] - center_y_i << " ";
+//    std::cout << std::setprecision(20) << (cylinder.nodes[27 * scale].coord[1] - center_y_i) / std::numeric_limits<double>::epsilon() << std::endl;
+//    std::cout << scale * 33.0 / 36.0 << ": ";
+//    std::cout << std::setprecision(20) << ((cylinder.nodes[33 * scale].coord[0] - center_x_i + r_i / 2) / std::numeric_limits<double>::epsilon()) / r_i << std::endl;
+//  }
+//}
 }
 
 SUITE(TestSteadyState)

@@ -12,7 +12,7 @@ Particle::Particle(double stiffness
     nodes {},
     is_mobile {mobility},
     area_ {0.0},
-    char_length_ {0.0},
+    char_length {0.0},
     stiffness_ {stiffness},
     number_of_nodes_ {num_nodes},
     lm_ (lm)
@@ -41,16 +41,16 @@ void Particle::CreateCylinder(double radius)
     Particle::AddNode(x, y, x, y, 0.0, 0.0, 0.0, 0.0);
   }  // i
   area_ = 2.0 * pi_ * radius;
-  char_length_ = radius;
+  char_length = radius;
 }
 
 void Particle::UpdateReferencePosition()
 {
   center.coord_ref = center.coord;
   for (auto i = 0u; i < number_of_nodes_; ++i) {
-    nodes[i].coord_ref[0] = center.coord_ref[0] + char_length_ * sin(2.0 * pi_ *
+    nodes[i].coord_ref[0] = center.coord_ref[0] + char_length * sin(2.0 * pi_ *
         static_cast<double>(i) / number_of_nodes_);
-    nodes[i].coord_ref[1] = center.coord_ref[1] + char_length_ * cos(2.0 * pi_ *
+    nodes[i].coord_ref[1] = center.coord_ref[1] + char_length * cos(2.0 * pi_ *
         static_cast<double>(i) / number_of_nodes_);
   }  // i
 }

@@ -2,6 +2,7 @@
 #define ALGORITHM_HPP_
 #include <cmath>  // fabs
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <typeinfo>
 #include <vector>

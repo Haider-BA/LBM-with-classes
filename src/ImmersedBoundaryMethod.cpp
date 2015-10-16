@@ -1,5 +1,8 @@
 #include "ImmersedBoundaryMethod.hpp"
+#include <iomanip>
 #include <iostream>
+#include <limits>
+#include <typeinfo>
 #include <vector>
 #include "Algorithm.hpp"
 #include "LatticeModel.hpp"
@@ -36,8 +39,11 @@ void ImmersedBoundaryMethod::SpreadForce()
       // (x_fluid + 1, y_fluid + 1).
       const auto x_particle = node.coord[0];
       const auto y_particle = node.coord[1];
-      const auto x_fluid = static_cast<int>(floor(x_particle + 0.00000003));
-      const auto y_fluid = static_cast<int>(floor(y_particle + 0.00000003));
+      const auto x_fluid = static_cast<int>(floor(x_particle + 2 *
+          particle->char_length * std::numeric_limits<double>::epsilon()));
+      const auto y_fluid = static_cast<int>(floor(y_particle + 2 *
+          particle->char_length * std::numeric_limits<double>::epsilon()));
+      std::cout << x_particle << " " << x_fluid << std::endl;
       // Consider unrolling these 2 loops
       for (auto y = y_fluid; y < y_fluid + 2; ++y) {
         for (auto x = x_fluid; x < x_fluid + 2; ++x) {
@@ -69,8 +75,13 @@ void ImmersedBoundaryMethod::InterpolateFluidVelocity()
       const auto y_particle = node.coord[1];
       // fix for truncation error when double is really close to integer value
       // http://blog.frama-c.com/index.php?post/2013/05/02/nearbyintf1
-      const auto x_fluid = static_cast<int>(floor(x_particle + 0.00000003));
-      const auto y_fluid = static_cast<int>(floor(y_particle + 0.00000003));
+      // uses "machine epsilon" through std::numeric_limits<double>::epsilon()
+      // http://stackoverflow.com/questions/17333/most-effective-way-for-float-
+      // and-double-comparison
+      const auto x_fluid = static_cast<int>(floor(x_particle + 2 *
+          particle->char_length * std::numeric_limits<double>::epsilon()));
+      const auto y_fluid = static_cast<int>(floor(y_particle + 2 *
+          particle->char_length * std::numeric_limits<double>::epsilon()));
       for (auto y = y_fluid; y < y_fluid + 2; ++y) {
         for (auto x = x_fluid; x < x_fluid + 2; ++x) {
           const auto n = ((y + ny) % ny) * nx + (x + nx) % nx;

@@ -26,8 +26,8 @@ static const auto g_d_coeff = 0.2;
 static const auto g_rho0_g = 1.0;
 static const auto g_is_instant = true;
 static const auto g_is_prestream = true;
-static const auto g_pi = 3.14159265;
-static const auto g_2pi = 3.14159265 * 2;
+static const auto g_pi = 3.14159265358979323846;
+static const auto g_2pi = g_pi * 2;
 
 TEST(AnalyticalDiffusion)
 {
@@ -193,7 +193,7 @@ TEST(AnalyticalPoiseuilleZH)
       auto y_an = fabs(static_cast<double>(y - 1) - length + 0.5) * g_dx;
       double u_an = u_max * (1.0 - y_an * y_an / (length_an * length_an));
       auto u_sim = lm.u[n][0];
-      CHECK_CLOSE(u_an, u_sim, u_an * 0.0175);
+      CHECK_CLOSE(u_an, u_sim, u_an * 0.025);
       std::cout << u_sim << std::endl;
     }  // y
   }  // x
